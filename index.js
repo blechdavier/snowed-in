@@ -1,11 +1,11 @@
-const WORLD_WIDTH = 128;//width of the world in tiles
-const WORLD_HEIGHT = 64;//height of the world in tiles
+const WORLD_WIDTH = 16;//width of the world in tiles
+const WORLD_HEIGHT = 32;//height of the world in tiles
 
 const TILE_WIDTH = 8;//width of a tile in pixels
 const TILE_HEIGHT = 8;//height of a tile in pixels
 const TILESET_SIZE = 16;//number of tiles in the tileset (do not change this as parts of the program will break)
 
-const UPSCALE_SIZE = 6;//number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
+let upscaleSize = 6;//number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
 
 let worldTiles = [];//number for each tile in the  ex: [1, 1, 0, 1, 2, 0, 0, 1...  ]
@@ -28,7 +28,19 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
+
+    //go for a scale of <32 blocks wide screen
+    upscaleSize = ceil(windowWidth/32/TILE_WIDTH);
+
+    //if the world is too zoomed out, then zoom it in.
+    while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
+        upscaleSize++;
+    }
+
+    //remove texture interpolation
     noSmooth();
+
+    //define the p5.Graphics object that holds an image of the tiles of the world.  This acts sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
     tileLayer = createGraphics(WORLD_WIDTH*TILE_WIDTH, WORLD_HEIGHT*TILE_HEIGHT);
     generateWorld();
     //p5js erase()
@@ -41,7 +53,7 @@ function draw() {
 
     moveCamera()
     //draw the tile layer onto the screen
-    image(tileLayer, 0, 0, width, height, camX, camY, width/UPSCALE_SIZE, height/UPSCALE_SIZE);
+    image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
     //renderEntities();
     text(round(frameRate()), mouseX, mouseY);
 }
@@ -53,14 +65,14 @@ function moveCamera() {
     if(camX<0) {
         camX = 0;
     }
-    else if(camX>WORLD_WIDTH*TILE_WIDTH-width/UPSCALE_SIZE) {
-        camX = WORLD_WIDTH*TILE_WIDTH-width/UPSCALE_SIZE;
+    else if(camX>WORLD_WIDTH*TILE_WIDTH-width/upscaleSize) {
+        camX = WORLD_WIDTH*TILE_WIDTH-width/upscaleSize;
     }
     if(camY<0) {
         camY = 0;
     }
-    else if(camY>WORLD_HEIGHT*TILE_HEIGHT-height/UPSCALE_SIZE) {
-        camY = WORLD_HEIGHT*TILE_HEIGHT-height/UPSCALE_SIZE;
+    else if(camY>WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize) {
+        camY = WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize;
     }
 }
 
@@ -93,5 +105,17 @@ function generateWorld() {
                 tileLayer.image(tilesetImage, j*TILE_WIDTH, i*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, TILESET_POSITIONS[worldTiles[i*WORLD_WIDTH+j]]*TILE_WIDTH*TILESET_SIZE+tilesetIndex*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
             }
         }
+    }
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+
+    //go for a scale of <32 blocks wide screen
+    upscaleSize = ceil(windowWidth/32/TILE_WIDTH);
+
+    //if the world is too zoomed out, then zoom it in.
+    while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
+        upscaleSize++;
     }
 }
