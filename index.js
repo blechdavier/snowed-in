@@ -1,7 +1,7 @@
 let world = [];
 
 function setup() {
-    createCanvas(512*16, 512*16);
+    resizeCanvas(windowWidth, windowHeight, WEBGL);
     for(let i = 0; i<512; i++) {
         world.push([]);
         for(let j = 0; j<511; j++) {
@@ -19,14 +19,18 @@ function draw() {
 }
 
 function renderTiles() {
-    fill(200, 240, 255);
-    noStroke();
-    console.log("frame");
-    for(let i = 0; i<world.length; i++) {
-        for(let j = 0; j<world[i].length; j++) {
-            if(world[i][j]) {
-                rect(i*16, height-j*16, 16);
-            }
-        }
-    }
+    // fill(200, 240, 255);
+    // noStroke();
+    // console.log("frame");
+    // for(let i = 0; i<world.length; i++) {
+    //     for(let j = 0; j<world[i].length; j++) {
+    //         if(world[i][j]) {
+    //             rect(i*16, height-j*16, 16);
+    //         }
+    //     }
+    // }
+
+    shader(tileShader);
+
+    rect();
 }
