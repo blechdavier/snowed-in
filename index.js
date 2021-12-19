@@ -49,8 +49,8 @@ function setup() {
 
 function draw() {
 
-    //wipe the screen with a happy little layer of black
-    background(0);
+    //wipe the screen with a happy little layer of light blue
+    background(129, 206, 243);
     //move camera
     moveCamera()
     //update mouse position
