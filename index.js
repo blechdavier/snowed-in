@@ -19,23 +19,29 @@ const TILESET_POSITIONS = [
     0                       //snow
 ];
 
+let hotbar = [[1, 56], [1, 23], [0, 0], [0, 24], [1, 2]];
+
 let worldMouseX = 0;
 let worldMouseY = 0;
 
 function preload() {
     tilesetImage = loadImage("assets/textures/tilesets/indexedsnow.png");
+    uiSlotImage = loadImage("assets/textures/ui/uislot.png");
+    itemsImage = loadImage("assets/textures/items/items.png");
 };
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
-    //go for a scale of <32 blocks wide screen
-    upscaleSize = ceil(windowWidth/32/TILE_WIDTH);
+    //go for a scale of <64 blocks wide screen
+    upscaleSize = ceil(windowWidth/64/TILE_WIDTH);
 
     //if the world is too zoomed out, then zoom it in.
     while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
         upscaleSize++;
     }
+
+    cursor("assets/textures/cursors/cursor.png");
 
     //remove texture interpolation
     noSmooth();
@@ -44,7 +50,7 @@ function setup() {
     tileLayer = createGraphics(WORLD_WIDTH*TILE_WIDTH, WORLD_HEIGHT*TILE_HEIGHT);
     //any shape erases instead of draws on the tile layer - this doesn't work with images.
     generateWorld();
-    //p5js erase()
+
 }
 
 function draw() {
@@ -59,6 +65,13 @@ function draw() {
     image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
     //renderEntities();
     text(round(frameRate()), mouseX, mouseY);
+
+    //draw the hotbar
+    for(let i = 0; i<hotbar.length; i++) {
+        image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
+        image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize);
+    }
+    
 }
 
 function moveCamera() {
@@ -114,16 +127,18 @@ function generateWorld() {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 
-    //go for a scale of <32 blocks wide screen
-    upscaleSize = ceil(windowWidth/32/TILE_WIDTH);
+    //go for a scale of <64 blocks wide screen
+    upscaleSize = ceil(windowWidth/64/TILE_WIDTH);
 
     //if the world is too zoomed out, then zoom it in.
     while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
         upscaleSize++;
     }
+    
 }
 
 function updateMouse() {
+    //world mouse x and y variables hold the mouse position in world tiles.  0, 0 is top left
     worldMouseX = floor((camX+mouseX/upscaleSize)/TILE_WIDTH);
     worldMouseY = floor((camY+mouseY/upscaleSize)/TILE_HEIGHT);
 }
