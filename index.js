@@ -71,6 +71,9 @@ function draw() {
         image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize);
     }
+
+    //set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
+    frameRate(Infinity);
     
 }
 
@@ -134,7 +137,7 @@ function windowResized() {
     while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
         upscaleSize++;
     }
-    
+
 }
 
 function updateMouse() {
