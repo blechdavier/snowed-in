@@ -1,14 +1,22 @@
-const WORLD_WIDTH = 64;//width of the world in tiles
-const WORLD_HEIGHT = 256;//height of the world in tiles
+// let ts = 5;
+
+const WORLD_WIDTH = 128;//width of the world in tiles
+const WORLD_HEIGHT = 128;//height of the world in tiles
 
 const TILE_WIDTH = 8;//width of a tile in pixels
 const TILE_HEIGHT = 8;//height of a tile in pixels
+const BACK_TILE_WIDTH = 12;//width of a tile in pixels
+const BACK_TILE_HEIGHT = 12;//height of a tile in pixels
 const TILESET_SIZE = 16;//number of tiles in the tileset (do not change this as parts of the program will break)
+
+let backTileLayerOffsetWidth = -2;//calculated in the setup function, this variable is the number of pixels left of a tile to draw a background tile from at the same position
+let backTileLayerOffsetHeight = -2;//calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
 
 let upscaleSize = 6;//number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
 
 let worldTiles = [];//number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+let backgroundTiles = [];//number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
 
 let camX = 0;//position of the top left corner of the screen in un-upscaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
@@ -25,9 +33,11 @@ let worldMouseX = 0;
 let worldMouseY = 0;
 
 function preload() {
-    tilesetImage = loadImage("assets/textures/tilesets/indexedsnow.png");
+    tilesetImage = loadImage("assets/textures/tilesets/foreground/indexedsnow.png");
+    backgroundTilesetImage = loadImage("assets/textures/tilesets/background/backgroundsnow.png");
     uiSlotImage = loadImage("assets/textures/ui/uislot.png");
     itemsImage = loadImage("assets/textures/items/items.png");
+    TitleFont = loadFont("assets/fonts/Cave-Story.ttf");
 };
 
 function setup() {
@@ -46,9 +56,16 @@ function setup() {
     //remove texture interpolation
     noSmooth();
 
-    //define the p5.Graphics object that holds an image of the tiles of the world.  This acts sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
+    //define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
     tileLayer = createGraphics(WORLD_WIDTH*TILE_WIDTH, WORLD_HEIGHT*TILE_HEIGHT);
-    //any shape erases instead of draws on the tile layer - this doesn't work with images.
+    backTileLayer = createGraphics(WORLD_WIDTH*TILE_WIDTH, WORLD_HEIGHT*TILE_HEIGHT);
+
+
+    //calculate these variables:
+    backTileLayerOffsetWidth = (TILE_WIDTH-BACK_TILE_WIDTH)/2;//calculated in the setup function, this variable is the number of pixels left of a tile to draw a background tile from at the same position
+    backTileLayerOffsetHeight = (TILE_HEIGHT-BACK_TILE_HEIGHT)/2;//calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
+    
+    //generate and draw the world onto the p5.Graphics objects
     generateWorld();
 
 }
@@ -61,10 +78,16 @@ function draw() {
     moveCamera()
     //update mouse position
     updateMouse();
+    //draw the background tile layer onto the screen
+    image(backTileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
     //draw the tile layer onto the screen
     image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
+
     //renderEntities();
-    text(round(frameRate()), mouseX, mouseY);
+
+    // textFont(TitleFont);
+    // textSize(ts);
+    // text("The quick brown fox jumps over the lazy dog.", floor(mouseX/2), floor(mouseY/2));
 
     //draw the hotbar
     for(let i = 0; i<hotbar.length; i++) {
@@ -99,11 +122,22 @@ function generateWorld() {
     //this generation algorithm is by no means optimized
     for(let i = 0; i<WORLD_HEIGHT; i++) {//i is y position of tile being generated
         for(let j = 0; j<WORLD_WIDTH; j++) {//j is x position " "    "      "
-            if(noise(j/50)*32<i && noise(j/20, i/20)<0.68) {
+            if(belowTerrainHeight(j, i) && noise(j/20, i/20)<0.6) {
                worldTiles.push(1); 
             }
             else {
                 worldTiles.push(0);
+            }
+        }
+    }
+    for(let i = 0; i<WORLD_HEIGHT; i++) {//i is y position of background tile being generated
+        for(let j = 0; j<WORLD_WIDTH; j++) {//j is x position " "    "      "
+            //if this tile and its eight surrounding tiles are below the height of the terrain (at one point could be a block of snow, ice, etc.), then add a background tile there.
+            if(belowTerrainHeight(j-1, i-1) && belowTerrainHeight(j-1, i) && belowTerrainHeight(j-1, i+1) && belowTerrainHeight(j, i-1) && belowTerrainHeight(j, i) && belowTerrainHeight(j, i+1) && belowTerrainHeight(j+1, i-1) && belowTerrainHeight(j+1, i) && belowTerrainHeight(j+1, i+1)) {
+               backgroundTiles.push(1); 
+            }
+            else {
+                backgroundTiles.push(0);
             }
         }
     }
@@ -121,7 +155,12 @@ function generateWorld() {
                 tilesetIndex = 8*topTileBool+4*rightTileBool+2*bottomTileBool+leftTileBool;
 
                 //draw the correct image for the tile onto the tile layer
-                tileLayer.image(tilesetImage, j*TILE_WIDTH, i*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, TILESET_POSITIONS[worldTiles[i*WORLD_WIDTH+j]]*TILE_WIDTH*TILESET_SIZE+tilesetIndex*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
+                tileLayer.image(tilesetImage, j*TILE_WIDTH, i*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, (TILESET_POSITIONS[worldTiles[i*WORLD_WIDTH+j]]*TILESET_SIZE+tilesetIndex)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
+            }
+            if(backgroundTiles[i*WORLD_WIDTH+j] != 0) {
+
+                //draw the correct image for the background tile onto the background tile layer
+                backTileLayer.image(backgroundTilesetImage, j*TILE_WIDTH+backTileLayerOffsetWidth, i*TILE_HEIGHT+backTileLayerOffsetHeight, BACK_TILE_WIDTH, BACK_TILE_HEIGHT, (TILESET_POSITIONS[backgroundTiles[i*WORLD_WIDTH+j]])*BACK_TILE_WIDTH, 0, BACK_TILE_WIDTH, BACK_TILE_HEIGHT);
             }
         }
     }
@@ -182,3 +221,11 @@ function drawTile(j, i) {
         tileLayer.image(tilesetImage, j*TILE_WIDTH, i*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, TILESET_POSITIONS[worldTiles[i*WORLD_WIDTH+j]]*TILE_WIDTH*TILESET_SIZE+tilesetIndex*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT);
     }
 }
+
+function belowTerrainHeight(x, y) {
+    return noise(x/50)*16<y;
+}
+
+// function keyReleased() {
+//     ts++;
+// }
