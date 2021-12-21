@@ -22,6 +22,18 @@ let backgroundTiles = [];//number for each background tile in the world ex: [1, 
 let camX = 0;//position of the top left corner of the screen in un-upscaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
 let camY = 0;//position of the top left corner of the screen in un-upscaled pixels (0 is top of world) (WORLD_HEIGHT*TILE_HEIGHT is bottom of world)
 
+
+//tick management
+let msSinceTick = 0; //this is the running counter of how many milliseconds it has been since the last tick.  The game can then 
+let msPerTick = 50; //the number of milliseconds per game tick.  1000/msPerTick = ticks per second
+let forgivenessCount = 50; //if the computer needs to do more than 50 ticks in a single frame, then it could be running behind, probably because of a freeze or the user being on a different tab.  In these cases, it's probably best to just ignore that any time has passed to avoid further freezing
+let physicsInterpolation = false;
+
+//character physics information
+let charX = 16;
+let charY = 0;
+
+
 const TILESET_POSITIONS = [
     undefined,              //air
     0                       //snow
@@ -74,12 +86,19 @@ function draw() {
 
     //wipe the screen with a happy little layer of light blue
     background(129, 206, 243);
+
+    //do the tick calculations
+    doTicks();
+
     //move camera
     moveCamera()
+
     //update mouse position
     updateMouse();
+
     //draw the background tile layer onto the screen
     image(backTileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
+
     //draw the tile layer onto the screen
     image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
 
@@ -229,3 +248,26 @@ function belowTerrainHeight(x, y) {
 // function keyReleased() {
 //     ts++;
 // }
+
+function doTicks() {
+
+    //increase the time since a tick has happened by deltaTime, which is a built-in p5.js value
+    msSinceTick += deltaTime;
+
+    //define a temporary variable called ticksThisFrame - this is used to keep track of how many ticks have been calculated within the duration of the current frame.  As long as this value is less than the forgivenessCount variable, it continues to calculate ticks as necessary.
+    ticksThisFrame = 0;
+    while(msSinceTick>msPerTick && ticksThisFrame!==forgivenessCount) {
+        //
+        doTick();
+        msSinceTick -= msPerTick;
+        ticksThisFrame++;
+    }
+    if(ticksThisFrame===forgivenessCount) {
+        msSinceTick = 0;
+        console.warn("lag spike detected, tick calculations couldn't keep up");
+    }
+}
+
+function doTick() {
+    console.log("did tick");
+}
