@@ -6,8 +6,16 @@ Fonts:
         License: https://creativecommons.org/licenses/by-sa/3.0/
         Description: "Pixel font copied from Cave Story+. Really great game. I also added some Ikachans around U+2020, 2039, 203A. Have fun!"
     
-HTML/JS: blechdavier
+HTML/JS: github/blechdavier
 
 CSS: aferriss (no affiliation)
 
-Textures: blechdavier
+Textures: github/blechdavier
+
+
+
+Tutorials:
+
+Collision Tutorial: youtube/javidx9 (no affiliation)
+
+Drag/Air Resistance Tutorial: youtube/thecodingtrain (no affiliation)
