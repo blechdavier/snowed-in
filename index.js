@@ -13,7 +13,7 @@
 let tempcol;
 
 const WORLD_WIDTH = 512;//width of the world in tiles
-const WORLD_HEIGHT = 512;//height of the world in tiles
+const WORLD_HEIGHT = 64;//height of the world in tiles
 
 const TILE_WIDTH = 8;//width of a tile in pixels
 const TILE_HEIGHT = 8;//height of a tile in pixels
@@ -38,13 +38,13 @@ let camY = 0;//position of the top left corner of the screen in un-upscaled pixe
 //tick management
 let msSinceTick = 0; //this is the running counter of how many milliseconds it has been since the last tick.  The game can then 
 let msPerTick = 20; //the number of milliseconds per game tick.  1000/msPerTick = ticks per second
+let amountSinceLastTick = 0;//this is a variable calculated every frame used for interpolation - domain[0,1)
 let forgivenessCount = 50; //if the computer needs to do more than 50 ticks in a single frame, then it could be running behind, probably because of a freeze or the user being on a different tab.  In these cases, it's probably best to just ignore that any time has passed to avoid further freezing
-let physicsInterpolation = false;
 
 
 //physics constants
 const GRAVITY_SPEED = 0.04; // in units per second per tick, positive means downward gravity, negative means upward gravity
-const DRAG_COEFFICIENT = 0.2;//arbitrary number, 0 means no drag
+const DRAG_COEFFICIENT = 0.21;//arbitrary number, 0 means no drag
 
 
 //player instance holder
@@ -55,7 +55,14 @@ let player;
 
 const TILESET_POSITIONS = [
     undefined,              //air
-    0                       //snow
+    0,                       //snow
+    1                       //ice
+];
+
+const FRICTION_CONSTANTS = [
+    0,              //air
+    0.3,                      //snow
+    0.05,                      //ice
 ];
 
 let hotbar = [[1, 56], [1, 23], [0, 0], [0, 24], [1, 2]];
@@ -67,7 +74,7 @@ let keys = [];
 
 function preload() {
     //load all the in-game assets
-    tilesetImage = loadImage("assets/textures/tilesets/foreground/indexedsnow.png");//the image that holds all versions of each tile (snow, ice, etc.)
+    tilesetImage = loadImage("assets/textures/tilesets/foreground/indexedtileset.png");//the image that holds all versions of each tile (snow, ice, etc.)
     backgroundTilesetImage = loadImage("assets/textures/tilesets/background/backgroundsnow.png");//the image that holds each background tile (snow, ice, etc.)
     uiSlotImage = loadImage("assets/textures/ui/uislot.png");//the image of each UI slot
     itemsImage = loadImage("assets/textures/items/items.png");//the image that holds all item images (tile of snow, winterberries, etc.)
@@ -111,6 +118,9 @@ function setup() {
         keys.push(false);
     }
 
+
+    //set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
+    frameRate(Infinity);
 }
 
 
@@ -152,11 +162,12 @@ function draw() {
     //draw the tile layer onto the screen
     image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
 
-    fill(255, 100, 100);
-    rect(((player.x+player.xVel)*TILE_WIDTH-camX)*upscaleSize, ((player.y+player.yVel)*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
+    //fill(255, 100, 100);
+    //rect(((player.x+player.xVel)*TILE_WIDTH-camX)*upscaleSize, ((player.y+player.yVel)*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
     fill(255, 0, 0);
     noStroke();
-    rect((player.x*TILE_WIDTH-camX)*upscaleSize, (player.y*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
+    player.findInterpolatedCoordinates();
+    rect((player.interpolatedX*TILE_WIDTH-camX)*upscaleSize, (player.interpolatedY*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
 
     //renderEntities();
 
@@ -169,9 +180,6 @@ function draw() {
         image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize);
     }
-
-    //set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
-    frameRate(Infinity);
     
 }
 
@@ -217,8 +225,13 @@ function generateWorld() {
     //this generation algorithm is by no means optimized
     for(let i = 0; i<WORLD_HEIGHT; i++) {//i is y position of tile being generated
         for(let j = 0; j<WORLD_WIDTH; j++) {//j is x position " "    "      "
-            if(belowTerrainHeight(j, i) && noise(j/20, i/20)<0.6) {
-               worldTiles[i*WORLD_WIDTH+j] = 1; 
+            if(belowTerrainHeight(j, i)) {
+                if(belowIceHeight(j, i)) {
+                    worldTiles[i*WORLD_WIDTH+j] = 2; 
+                }
+                else {
+                    worldTiles[i*WORLD_WIDTH+j] = 1; 
+                }
             }
             else {
                 worldTiles[i*WORLD_WIDTH+j] = 0;
@@ -282,6 +295,10 @@ function belowTerrainHeight(x, y) {
     return noise(x/50)*16+20<y;
 }
 
+function belowIceHeight(x, y) {
+    return noise(x/50)*6+31<y+noise(x/2, y/2)*0;
+}
+
 // function keyReleased() {
 //     ts++;
 // }
@@ -303,6 +320,7 @@ function doTicks() {
         msSinceTick = 0;
         console.warn("lag spike detected, tick calculations couldn't keep up");
     }
+    amountSinceLastTick = msSinceTick/msPerTick;
 }
 
 function doTick() {
@@ -312,7 +330,6 @@ function doTick() {
     player.applyGravityAndDrag();
     player.applyVelocityAndCollide();
 
-    console.log(rectVsRay(0, 0, 1, 1, 0, 0, 0.1, 0.05));
 }
 
 
@@ -365,18 +382,29 @@ class physicsRect {
 
         this.collisionData;
         this.closestCollision = [1, 0, Infinity];
+
+        this.interpolatedX = x;
+        this.interpolatedY = y;
+
+        this.pX = x-xVel;
+        this.pY = y-yVel;
+        this.pXVel = xVel;
+        this.pYVel = yVel;
     }
 
     keyboardInput() {
         if(this.controllable) {
-            this.xVel += 0.01*((keys[68] || keys[39]) - (keys[65] || keys[37]));
+            this.xVel += 0.02*((keys[68] || keys[39]) - (keys[65] || keys[37]));
             if(this.grounded && (keys[87] || keys[38] || keys[32]) ) {
-                this.yVel = -1;
+                this.yVel = -1.5;
             }
         }
     }
 
     applyGravityAndDrag() {//this function changes the object's next tick's velocity in both the x and the y directions
+
+        this.pXVel = this.xVel;
+        this.pYVel = this.yVel;
 
         this.xVel -= abs(this.xVel)*this.xVel*DRAG_COEFFICIENT*this.w/this.mass;
         this.yVel += GRAVITY_SPEED;
@@ -384,7 +412,26 @@ class physicsRect {
 
     }
 
+    findInterpolatedCoordinates() {//this function essentially makes the character lag behind one tick, but means that it gets displayed at the maximum frame rate.
+        if(this.pXVel>0) {
+            this.interpolatedX = min(this.pX+this.pXVel*amountSinceLastTick, this.x);
+        }
+        else {
+            this.interpolatedX = max(this.pX+this.pXVel*amountSinceLastTick, this.x);
+        }
+        if(this.pYVel>0) {
+            this.interpolatedY = min(this.pY+this.pYVel*amountSinceLastTick, this.y);
+            console.log(this.pY+this.yVel*amountSinceLastTick+", "+this.y);
+        }
+        else {
+            this.interpolatedY = max(this.pY+this.pYVel*amountSinceLastTick, this.y);
+        }
+    }
+
     applyVelocityAndCollide() {
+
+        this.pX = this.x;
+        this.pY = this.y;
 
         this.grounded = false;
 
@@ -427,8 +474,6 @@ class physicsRect {
 
         if(this.closestCollision[2] !== Infinity) {//there has been at least one collision
 
-            //console.log(tempcol);
-
             //go to the point of collision (this makes it behave as if the walls are sticky, but we will later slide against the walls)
             this.x += this.xVel*this.closestCollision[2];
             this.y += this.yVel*this.closestCollision[2];
@@ -440,13 +485,11 @@ class physicsRect {
                 if(this.closestCollision[1] === -1) {//if it collided on the higher side, it must be touching the ground. (higher y is down)
                     this.grounded = true;
                 }
-               // console.log("sliding horiz");
             }
             else {
                 this.xVel = 0;//set the x velocity to 0 because wall go oof
                 this.slideX = 0;//it doesn't slide in the x direction because there's a wall /(._.)\
                 this.slideY = this.yVel*(1-this.closestCollision[2]);//this is the remaining distance to slide after the collision
-                //console.log("sliding vert");
             }
 
 
@@ -477,7 +520,6 @@ class physicsRect {
 
             //it has collided while trying to slide
             if(this.closestCollision[2] !== Infinity) {
-            //console.log(tempcol);
 
                 this.x += this.slideX*this.closestCollision[2];
                 this.y += this.slideY*this.closestCollision[2];
@@ -522,6 +564,7 @@ class physicsRect {
         else if(this.y+this.h>WORLD_HEIGHT) {
             this.y = WORLD_HEIGHT-this.h;
             this.yVel = 0;
+            this.grounded = true;
         }
 
     }
