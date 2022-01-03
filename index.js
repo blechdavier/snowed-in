@@ -707,8 +707,8 @@ function windowResized() {
 
 function updateMouse() {
     //world mouse x and y variables hold the mouse position in world tiles.  0, 0 is top left
-    worldMouseX = floor((camX+mouseX/upscaleSize)/TILE_WIDTH);
-    worldMouseY = floor((camY+mouseY/upscaleSize)/TILE_HEIGHT);
+    worldMouseX = floor((interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH);
+    worldMouseY = floor((interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT);
 }
 
 function mousePressed() {
