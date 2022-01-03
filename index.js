@@ -1,4 +1,24 @@
 /*
+TODO:
+
+decent camera system
+sounds
+npcs
+dirt
+stone
+better worldgen
+inventory functional
+font consistency
+pause menu
+
+*/
+
+
+
+
+
+
+/*
  /$$    /$$                    /$$           /$$       /$$                        
 | $$   | $$                   |__/          | $$      | $$                        
 | $$   | $$ /$$$$$$   /$$$$$$  /$$  /$$$$$$ | $$$$$$$ | $$  /$$$$$$   /$$$$$$$ /$$
@@ -30,9 +50,12 @@ let upscaleSize = 6;//number of screen pixels per texture pixels (think of this 
 let worldTiles = new Uint8Array(WORLD_WIDTH*WORLD_HEIGHT);//number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 let backgroundTiles = new Uint8Array(WORLD_WIDTH*WORLD_HEIGHT);//number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
-
 let camX = 0;//position of the top left corner of the screen in un-upscaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
 let camY = 0;//position of the top left corner of the screen in un-upscaled pixels (0 is top of world) (WORLD_HEIGHT*TILE_HEIGHT is bottom of world)
+let pCamX = 0;//last frame's x of the camera
+let pCamY = 0;//last frame's y of the camera
+let interpolatedCamX = 0;//interpolated position of the camera
+let interpolatedCamY = 0;//interpolated position of the camera
 
 
 //tick management
@@ -74,11 +97,13 @@ let keys = [];
 
 function preload() {
     //load all the in-game assets
-    tilesetImage = loadImage("assets/textures/tilesets/foreground/indexedtileset.png");//the image that holds all versions of each tile (snow, ice, etc.)
+    tilesetImage = loadImage("assets/textures/tilesets/middleground/indexedtileset.png");//the image that holds all versions of each tile (snow, ice, etc.)
     backgroundTilesetImage = loadImage("assets/textures/tilesets/background/backgroundsnow.png");//the image that holds each background tile (snow, ice, etc.)
+    //foregroundTilesetImage = loadImage("assets/textures/tilesets/foreground/indexedpipe.png")
     uiSlotImage = loadImage("assets/textures/ui/uislot.png");//the image of each UI slot
     itemsImage = loadImage("assets/textures/items/items.png");//the image that holds all item images (tile of snow, winterberries, etc.)
     TitleFont = loadFont("assets/fonts/Cave-Story.ttf");//the font
+
 };
 
 function setup() {
@@ -150,24 +175,24 @@ function draw() {
     //do the tick calculations
     doTicks();
 
-    //move camera
-    moveCamera()
-
     //update mouse position
     updateMouse();
 
+    //update the camera's interpolation
+    moveCamera();
+
     //draw the background tile layer onto the screen
-    image(backTileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
+    image(backTileLayer, 0, 0, width, height, interpolatedCamX*TILE_WIDTH, interpolatedCamY*TILE_WIDTH, width/upscaleSize, height/upscaleSize);
 
     //draw the tile layer onto the screen
-    image(tileLayer, 0, 0, width, height, camX, camY, width/upscaleSize, height/upscaleSize);
+    image(tileLayer, 0, 0, width, height, interpolatedCamX*TILE_WIDTH, interpolatedCamY*TILE_WIDTH, width/upscaleSize, height/upscaleSize);
 
     //fill(255, 100, 100);
     //rect(((player.x+player.xVel)*TILE_WIDTH-camX)*upscaleSize, ((player.y+player.yVel)*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
     fill(255, 0, 0);
     noStroke();
     player.findInterpolatedCoordinates();
-    rect((player.interpolatedX*TILE_WIDTH-camX)*upscaleSize, (player.interpolatedY*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
+    rect((player.interpolatedX*TILE_WIDTH-interpolatedCamX*TILE_WIDTH)*upscaleSize, (player.interpolatedY*TILE_HEIGHT-interpolatedCamY*TILE_HEIGHT)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
 
     //renderEntities();
 
@@ -180,6 +205,7 @@ function draw() {
         image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize);
     }
+
     
 }
 
@@ -204,21 +230,9 @@ function draw() {
 
 
 function moveCamera() {
-    camX += round((mouseX-width/2)*0.025)/4;
-    camY += round((mouseY-height/2)*0.025)/4;
-    
-    if(camX<0) {
-        camX = 0;
-    }
-    else if(camX>WORLD_WIDTH*TILE_WIDTH-width/upscaleSize) {
-        camX = WORLD_WIDTH*TILE_WIDTH-width/upscaleSize;
-    }
-    if(camY<0) {
-        camY = 0;
-    }
-    else if(camY>WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize) {
-        camY = WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize;
-    }
+    interpolatedCamX = pCamX+(camX-pCamX)*amountSinceLastTick;
+    interpolatedCamY = pCamY+(camY-pCamY)*amountSinceLastTick;
+    console.log(pCamY);
 }
 
 function generateWorld() {
@@ -329,6 +343,23 @@ function doTick() {
     player.keyboardInput();
     player.applyGravityAndDrag();
     player.applyVelocityAndCollide();
+
+    pCamX = camX;
+    pCamY = camY;
+    desiredCamX = player.x+player.w/2-width/2/TILE_WIDTH/upscaleSize+player.xVel*40;
+    desiredCamY = player.y+player.h/2-height/2/TILE_HEIGHT/upscaleSize+player.yVel*20;
+    camX = (desiredCamX+camX*24)/25;
+    camY = (desiredCamY+camY*24)/25; 
+
+    if(camX<0) {
+        camX = 0;
+    }
+    else if(camX>WORLD_WIDTH-width/upscaleSize/TILE_WIDTH) {
+        camX = WORLD_WIDTH-width/upscaleSize/TILE_WIDTH;
+    }
+    if(camY>WORLD_HEIGHT-height/upscaleSize/TILE_HEIGHT) {
+        camY = WORLD_HEIGHT-height/upscaleSize/TILE_HEIGHT;
+    }
 
 }
 
