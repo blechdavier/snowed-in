@@ -1,15 +1,29 @@
 /*
 TODO:
 
-decent camera system
 sounds
 npcs
 dirt
 stone
 better worldgen
-inventory functional
 font consistency
+finish item management
 pause menu
+fix cursor input lag (separate cursor and animation images)
+fix stuck on side of block bug
+fix collide with sides of map bug
+
+
+
+
+
+
+
+item management behavior todo:
+
+merge
+right click stack to pick up ceil(half of it)
+right click when picked up to add 1 if 0 or match
 
 */
 
@@ -85,19 +99,21 @@ const TILESET_POSITIONS = [
     1                       //ice
 ];
 
-const TILE_BROKEN = [//the positions of each block in the items.png image
+const TILE_BROKEN = [//what drops when you break a tile
     //[broken, broken_quantity]
     [undefined, undefined],
     [4, 4],
     [5, 4]
 ];
 
-const ITEM_DESCRIPTIONS = [
-    ["Snowberries", "Tasty."],
-    ["Snow Tile", "Can be placed."],
-    ["Ice Tile", "Can be placed."],
-    ["Snowball", "Can be thrown or 4 can be compacted to make Snow Tile."],
-    ["Ice Shards", "4 can be compacted to make Ice Tile."]
+const ITEM_DATA = [
+    //["name", "description", #stackSize]
+    [undefined, undefined, Infinity],
+    ["Snowberries", "Tasty.", 100],
+    ["Snow Tile", "Can be placed.", 1000],
+    ["Ice Tile", "Can be placed.", 1000],
+    ["Snowball", "Can be thrown or 4 can be compacted to make Snow Tile.", 1000],
+    ["Ice Shards", "4 can be compacted to make Ice Tile.", 1000]
 ];
 
 // const FRICTION_CONSTANTS = [
@@ -106,7 +122,11 @@ const ITEM_DESCRIPTIONS = [
 //     0.05,                      //ice
 // ];
 
-let hotbar = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]];
+let hotbar = [[1, 5], [0, 0], [1, 90], [1, 100], [1, 8], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
+let selectedSlot = 0;
+let pickedUpSlot = -1;
+let dragging = false;
+let pickUpAbleItems;
 
 let worldMouseX = 0;//the mouse position in world coordinates
 let worldMouseY = 0;//the mouse position in world coordinates
@@ -140,12 +160,34 @@ let cursorForgivenessCount = 3;
 let cursorIndex = 1;
 
 
+//the keycode for the key that does the action
+let controls = [
+    68,//right
+    65,//left
+    87,//jump
+    27,//settings
+    69,//inventory?
+    49,//hotbar1
+    50,//hotbar2
+    51,//hotbar3
+    52,//hotbar4
+    52,//hotbar5
+    54,//hotbar6
+    55,//hotbar7
+    56,//hotbar8
+    57,//hotbar9
+    48,//hotbar10
+    189,//hotbar11
+    187,//hotbar12
+];
+
 function preload() {
     //load all the in-game assets
     tilesetImage = loadImage("assets/textures/tilesets/middleground/indexedtileset.png");//the image that holds all versions of each tile (snow, ice, etc.)
     backgroundTilesetImage = loadImage("assets/textures/tilesets/background/backgroundsnow.png");//the image that holds each background tile (snow, ice, etc.)
     //foregroundTilesetImage = loadImage("assets/textures/tilesets/foreground/indexedpipe.png")
     uiSlotImage = loadImage("assets/textures/ui/uislot.png");//the image of each UI slot
+    selectedUISlotImage = loadImage("assets/textures/ui/selecteduislot.png");//the image of the selected UI slot
     itemsImage = loadImage("assets/textures/items/items.png");//the image that holds all item images (tile of snow, winterberries, etc.)
     TitleFont = loadFont("assets/fonts/Cave-Story.ttf");//the font
     snowflakeImage = loadImage("assets/textures/particles/snowflakes.png");//the image containing two snowflakes that are randomly chosen between.
@@ -164,7 +206,7 @@ function setup() {
     canv.mouseOut(mouseExited);
     canv.mouseOver(mouseEntered);
 
-    //go for a scale of <64 blocks wide screen
+    //go for a scale of <64 tiles wide screen
     upscaleSize = ceil(windowWidth/64/TILE_WIDTH/2)*2;
 
     //if the world is too zoomed out, then zoom it in.
@@ -198,6 +240,9 @@ function setup() {
     }
 
 
+    updatePickUpAbleItems();
+
+
     //set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
     frameRate(Infinity);
 }
@@ -223,7 +268,7 @@ function setup() {
 
 function draw() {
 
-    console.time("frame");
+    //console.time("frame");
 
     //wipe the screen with a happy little layer of light blue
     background(129, 206, 243);
@@ -247,16 +292,37 @@ function draw() {
     renderEntities();
 
     //draw the hotbar
+    noStroke();
+    textAlign(RIGHT, BOTTOM);
+    textSize(5*upscaleSize);
     for(let i = 0; i<hotbar.length; i++) {
-        image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-        if(hotbar[i][0]!==0)
-        image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize, 8*hotbar[i][0]-8, 0, 8, 8);
+        if(selectedSlot===i) {
+            image(selectedUISlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
+        }
+        else {
+            image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
+        }
+        if(hotbar[i][0]!==0){
+            fill(0);
+            if(pickedUpSlot===i) {
+                if(hotbar[i][1]>1) {
+                    text(hotbar[i][1], mouseX+16*upscaleSize, mouseY+16*upscaleSize);
+                }
+                tint(255, 127);
+                fill(0, 127);
+            }
+            image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize, 8*hotbar[i][0]-8, 0, 8, 8);
+            if(hotbar[i][1]>1) {
+                text(hotbar[i][1], 16*upscaleSize+16*i*upscaleSize, 16*upscaleSize);
+            }
+            noTint();
+        }
     }
 
     //draw the cursor
     drawCursor();
 
-    console.timeEnd("frame");
+    //console.timeEnd("frame");
 }
 
 
@@ -303,7 +369,7 @@ function generateWorld() {
     }
     for(let i = 0; i<WORLD_HEIGHT; i++) {//i is y position of background tile being generated
         for(let j = 0; j<WORLD_WIDTH; j++) {//j is x position " "    "      "
-            //if this tile and its eight surrounding tiles are below the height of the terrain (at one point could be a block of snow, ice, etc.), then add a background tile there.
+            //if this tile and its eight surrounding tiles are below the height of the terrain (at one point could be a tile of snow, ice, etc.), then add a background tile there.
             if(belowTerrainHeight(j-1, i-1) && belowTerrainHeight(j-1, i) && belowTerrainHeight(j-1, i+1) && belowTerrainHeight(j, i-1) && belowTerrainHeight(j, i) && belowTerrainHeight(j, i+1) && belowTerrainHeight(j+1, i-1) && belowTerrainHeight(j+1, i) && belowTerrainHeight(j+1, i+1)) {
                backgroundTiles[i*WORLD_WIDTH+j] = 1; 
             }
@@ -374,9 +440,9 @@ function doTicks() {
     //define a temporary variable called ticksThisFrame - this is used to keep track of how many ticks have been calculated within the duration of the current frame.  As long as this value is less than the forgivenessCount variable, it continues to calculate ticks as necessary.
     ticksThisFrame = 0;
     while(msSinceTick>msPerTick && ticksThisFrame!==forgivenessCount) {
-        console.time("tick");
+        //console.time("tick");
         doTick();
-        console.timeEnd("tick");
+        //console.timeEnd("tick");
         msSinceTick -= msPerTick;
         ticksThisFrame++;
     }
@@ -422,7 +488,12 @@ function doTick() {
         physicsRects[i].applyGravityAndDrag();
         physicsRects[i].applyVelocityAndCollide();
     }
-
+    for(let i = 0; i<physicsRects.length; i++) {
+        if(physicsRects[i].deleted === true) {
+            physicsRects.splice(i, 1);
+            i--;
+        }
+    }
 }
 
 
@@ -524,6 +595,7 @@ class physicsRect {
         //for items
         this.type;
         this.itemType;
+        this.deleted = false;
     }
 
     keyboardInput() {
@@ -536,10 +608,10 @@ class physicsRect {
     }
 
     goTowardsPlayer() {
-        if((this.x+this.w/2-player.x-player.w/2)*(this.x+this.w/2-player.x-player.w/2)+(this.y+this.h/2-player.y-player.h/2)*(this.y+this.h/2-player.y-player.h/2)<50) {
+        if(pickUpAbleItems[this.itemType] && (this.x+this.w/2-player.x-player.w/2)*(this.x+this.w/2-player.x-player.w/2)+(this.y+this.h/2-player.y-player.h/2)*(this.y+this.h/2-player.y-player.h/2)<50) {
             if((this.x+this.w/2-player.x-player.w/2)*(this.x+this.w/2-player.x-player.w/2)+(this.y+this.h/2-player.y-player.h/2)*(this.y+this.h/2-player.y-player.h/2)<1) {
-                //delete item
-                this.y -= 10;
+                this.deleted = true;
+                pickUpItem(this.itemType);
             }
             else {
                 this.xVel -= (this.x+this.w/2-player.x-player.w/2)/20;
@@ -812,7 +884,55 @@ function dropItem(type,  count, x, y) {
     }
 };
 
+function pickUpItem(type) {
+    //see if there is already a stack of this item in the hotbar, if so, check if it's less than the max stack size, if so, then add it to the stack
+    for(let i = 0; i<hotbar.length; i++) {
+        if(hotbar[i][0]===type && hotbar[i][1]<ITEM_DATA[type][2])
+        {
+            hotbar[i][1]++;
+            //if the stack is full, then the possible items to pick up have changed.
+            if(hotbar[i][1]===ITEM_DATA[type][2]) {
+                updatePickUpAbleItems();
+            }
+            return;
+        }
+    }
+    //see if there is a blank slot in the hotbar
+    for(let i = 0; i<hotbar.length; i++) {
+        if(hotbar[i][0]===0)
+        {
+            hotbar[i] = [type, 1];
 
+            updatePickUpAbleItems();
+            return;
+        }
+    }
+    console.error("Item "+type+" couldn't be picked up.  The program shouldn't have tried to pick it up in the first place.");
+}
+
+function updatePickUpAbleItems() {
+    pickUpAbleItems = [];
+    outerloop:
+        for(let i = 0; i<ITEM_DATA.length; i++) {
+            //see if there is already a stack of this item in the hotbar, if so, check if it's less than the max stack size
+            for(let j = 0; j<hotbar.length; j++) {
+                if(hotbar[j][0]===i && hotbar[j][1]<ITEM_DATA[i][2])
+                {
+                    pickUpAbleItems.push(true);
+                    continue outerloop;
+                }
+            }
+            //see if there is a blank slot in the hotbar
+            for(let j = 0; j<hotbar.length; j++) {
+                if(hotbar[j][0]===0)
+                {
+                    pickUpAbleItems.push(true);
+                    continue outerloop;
+                }
+            }
+            pickUpAbleItems.push(false);
+        }
+}
 
 
 /*
@@ -833,7 +953,7 @@ function dropItem(type,  count, x, y) {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 
-    //go for a scale of <64 blocks wide screen
+    //go for a scale of <64 tiles wide screen
     upscaleSize = ceil(windowWidth/64/TILE_WIDTH/2)*2;
 
     //if the world is too zoomed out, then zoom it in.
@@ -858,29 +978,84 @@ function updateMouse() {
 }
 
 function mousePressed() {
-
-    dropItem(TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][0], TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][1], worldMouseX, worldMouseY);
+    //image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
     
-    //set the broken block to air in the world data
-    worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX] = 0;
+    if(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize) {
+        if(pickedUpSlot===-1) {
+            if(hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)][0]!==0) {
+                pickedUpSlot = floor((mouseX-2*upscaleSize)/16/upscaleSize);
+            }
+        }
+        else {
+            temp = hotbar[pickedUpSlot];
+            hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
+            pickedUpSlot = -1;
+            hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
+        }
+    }
+    else {
 
-    //erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-    tileLayer.erase();
-    tileLayer.noStroke();
-    tileLayer.rect((worldMouseX-1)*TILE_WIDTH, worldMouseY*TILE_HEIGHT, TILE_WIDTH*3, TILE_HEIGHT);
-    tileLayer.rect(worldMouseX*TILE_WIDTH, (worldMouseY-1)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT*3);
-    tileLayer.noErase();
-    
-    //redraw the neighboring tiles
-    drawTile(worldMouseX+1, worldMouseY);
-    drawTile(worldMouseX-1, worldMouseY);
-    drawTile(worldMouseX, worldMouseY+1);
-    drawTile(worldMouseX, worldMouseY-1);
+        dropItem(TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][0], TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][1], worldMouseX, worldMouseY);
+        
+        //set the broken tile to air in the world data
+        worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX] = 0;
 
+        //erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
+        tileLayer.erase();
+        tileLayer.noStroke();
+        tileLayer.rect((worldMouseX-1)*TILE_WIDTH, worldMouseY*TILE_HEIGHT, TILE_WIDTH*3, TILE_HEIGHT);
+        tileLayer.rect(worldMouseX*TILE_WIDTH, (worldMouseY-1)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT*3);
+        tileLayer.noErase();
+        
+        //redraw the neighboring tiles
+        drawTile(worldMouseX+1, worldMouseY);
+        drawTile(worldMouseX-1, worldMouseY);
+        drawTile(worldMouseX, worldMouseY+1);
+        drawTile(worldMouseX, worldMouseY-1);
+
+    }
+
+}
+
+function mouseReleased() {
+    if(pickedUpSlot !== -1) {
+        if(!(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize)) {
+            dropItem(hotbar[pickedUpSlot][0], hotbar[pickedUpSlot][1], (interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH, (interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT);
+            hotbar[pickedUpSlot] = [0, 0];
+            pickedUpSlot = -1;
+        }
+        else if(floor((mouseX-2*upscaleSize)/16/upscaleSize) !== pickedUpSlot) {
+            temp = hotbar[pickedUpSlot];
+            hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
+            pickedUpSlot = -1;
+            hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
+        }
+    }
 }
 
 function keyPressed() {
     keys[keyCode] = true;
+    if(controls.includes(keyCode)) {
+        //hotbar slots
+        for(let i = 0; i<12; i++) {
+            console.log();
+            if(keyCode === controls[i+5]) {
+                if(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize) {
+                    temp = hotbar[i];
+                    hotbar[i] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
+                    hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
+                }
+                else
+                selectedSlot = i;
+                return;
+            }
+        }
+        
+
+        if(keyCode === controls[4]) {
+
+        }
+    }
 }
 
 function keyReleased() {
@@ -896,5 +1071,8 @@ function drawCursor() {
         msSinceCursorAnimFrame -= msPerCursorAnimFrame * floor(msSinceCursorAnimFrame/msPerCursorAnimFrame);
         cursorAnimFrame = cursorAnimFrame%cursors[cursorIndex].length;
         image(cursors[cursorIndex][cursorAnimFrame], mouseX, mouseY);
+    }
+    if(pickedUpSlot>-1) {
+        image(itemsImage, mouseX+6*upscaleSize, mouseY+6*upscaleSize, 8*upscaleSize, 8*upscaleSize, 8*hotbar[pickedUpSlot][0]-8, 0, 8, 8);
     }
 }
