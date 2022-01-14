@@ -73,6 +73,9 @@ const DRAG_COEFFICIENT = 0.21;//arbitrary number, 0 means no drag
 //player instance holder
 let player;
 
+//array for all the non-player physicsRects
+let physicsRects = [];
+
 //CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
 
@@ -82,18 +85,60 @@ const TILESET_POSITIONS = [
     1                       //ice
 ];
 
-const FRICTION_CONSTANTS = [
-    0,              //air
-    0.3,                      //snow
-    0.05,                      //ice
+const TILE_BROKEN = [//the positions of each block in the items.png image
+    //[broken, broken_quantity]
+    [undefined, undefined],
+    [4, 4],
+    [5, 4]
 ];
 
-let hotbar = [[1, 56], [1, 23], [0, 0], [0, 24], [1, 2]];
+const ITEM_DESCRIPTIONS = [
+    ["Snowberries", "Tasty."],
+    ["Snow Tile", "Can be placed."],
+    ["Ice Tile", "Can be placed."],
+    ["Snowball", "Can be thrown or 4 can be compacted to make Snow Tile."],
+    ["Ice Shards", "4 can be compacted to make Ice Tile."]
+];
 
-let worldMouseX = 0;
-let worldMouseY = 0;
+// const FRICTION_CONSTANTS = [
+//     0,              //air
+//     0.3,                      //snow
+//     0.05,                      //ice
+// ];
+
+let hotbar = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]];
+
+let worldMouseX = 0;//the mouse position in world coordinates
+let worldMouseY = 0;//the mouse position in world coordinates
+let mouseOn = true;//is the mouse on the window?
 
 let keys = [];
+
+
+
+//world info
+
+let isSnowing = true;
+
+//performance
+
+let particleMultiplier = 1.0;
+//maybe add particle interpolation.
+
+//particle layers
+
+let backgroundParticles = [];
+let foregroundParticles = [];
+
+
+//cursor stuff
+let cursors = [];//array of all the different images of the cursors.  divided into animations, and then frames, like [[dig image 1, dig image 2], [compact image 1, compact image 2, compact image 3]]
+let cursorAnimFrame = 0;
+let msSinceCursorAnimFrame = 0;
+let msPerCursorAnimFrame = 100;
+let cursorForgivenessCount = 3;
+let cursorIndex = 1;
+
 
 function preload() {
     //load all the in-game assets
@@ -103,23 +148,32 @@ function preload() {
     uiSlotImage = loadImage("assets/textures/ui/uislot.png");//the image of each UI slot
     itemsImage = loadImage("assets/textures/items/items.png");//the image that holds all item images (tile of snow, winterberries, etc.)
     TitleFont = loadFont("assets/fonts/Cave-Story.ttf");//the font
+    snowflakeImage = loadImage("assets/textures/particles/snowflakes.png");//the image containing two snowflakes that are randomly chosen between.
+
+    //load the cursor images
+    cursors = [
+        [loadImage("assets/textures/cursors/cursor.png")],
+        [loadImage("assets/textures/cursors/cursor_dig_0.png"), loadImage("assets/textures/cursors/cursor_dig_1.png"), loadImage("assets/textures/cursors/cursor_dig_2.png"), loadImage("assets/textures/cursors/cursor_dig_3.png"), loadImage("assets/textures/cursors/cursor_dig_4.png"), loadImage("assets/textures/cursors/cursor_dig_5.png"), loadImage("assets/textures/cursors/cursor_dig_6.png"), loadImage("assets/textures/cursors/cursor_dig_7.png"), loadImage("assets/textures/cursors/cursor_dig_8.png"), loadImage("assets/textures/cursors/cursor_dig_9.png"), loadImage("assets/textures/cursors/cursor_dig_10.png"), loadImage("assets/textures/cursors/cursor_dig_11.png")],
+    ];
 
 };
 
 function setup() {
     //make a canvas that fills the whole screen (a canvas is what is drawn to in p5.js, as well as lots of other JS rendering libraries)
-    createCanvas(windowWidth, windowHeight);
+    canv = createCanvas(windowWidth, windowHeight);
+    canv.mouseOut(mouseExited);
+    canv.mouseOver(mouseEntered);
 
     //go for a scale of <64 blocks wide screen
-    upscaleSize = ceil(windowWidth/64/TILE_WIDTH);
+    upscaleSize = ceil(windowWidth/64/TILE_WIDTH/2)*2;
 
     //if the world is too zoomed out, then zoom it in.
     while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
-        upscaleSize++;
+        upscaleSize+=2;
     }
 
-    //set the cursor to a custom image for a cursor.  This isn't in preload because it's not too jarring if it loads slightly after the rest of the project loads (the cursor() function is async afaik)
-    cursor("assets/textures/cursors/cursor.png");
+    //turn off the cursor image
+    noCursor();
 
     //remove texture interpolation
     noSmooth();
@@ -136,7 +190,7 @@ function setup() {
     //generate and draw the world onto the p5.Graphics objects
     generateWorld();
 
-    player = new physicsRect(16, 4, 12/TILE_WIDTH, 20/TILE_HEIGHT, 0, 0);
+    player = new physicsRect(16, 4, 12/TILE_WIDTH, 20/TILE_HEIGHT, 0, 0, true);
 
     //the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
     for(let i = 0; i<255; i++) {
@@ -169,6 +223,8 @@ function setup() {
 
 function draw() {
 
+    console.time("frame");
+
     //wipe the screen with a happy little layer of light blue
     background(129, 206, 243);
 
@@ -187,26 +243,20 @@ function draw() {
     //draw the tile layer onto the screen
     image(tileLayer, 0, 0, width, height, interpolatedCamX*TILE_WIDTH, interpolatedCamY*TILE_WIDTH, width/upscaleSize, height/upscaleSize);
 
-    //fill(255, 100, 100);
-    //rect(((player.x+player.xVel)*TILE_WIDTH-camX)*upscaleSize, ((player.y+player.yVel)*TILE_HEIGHT-camY)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
-    fill(255, 0, 0);
-    noStroke();
-    player.findInterpolatedCoordinates();
-    rect((player.interpolatedX*TILE_WIDTH-interpolatedCamX*TILE_WIDTH)*upscaleSize, (player.interpolatedY*TILE_HEIGHT-interpolatedCamY*TILE_HEIGHT)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
-
-    //renderEntities();
-
-    // textFont(TitleFont);
-    // textSize(ts);
-    // text("The quick brown fox jumps over the lazy dog.", floor(mouseX/2), floor(mouseY/2));
+    //render the player, all items, etc.  Basically any physicsRect or particle
+    renderEntities();
 
     //draw the hotbar
     for(let i = 0; i<hotbar.length; i++) {
         image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-        image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize);
+        if(hotbar[i][0]!==0)
+        image(itemsImage, 6*upscaleSize+16*i*upscaleSize, 6*upscaleSize, 8*upscaleSize, 8*upscaleSize, 8*hotbar[i][0]-8, 0, 8, 8);
     }
 
-    
+    //draw the cursor
+    drawCursor();
+
+    console.timeEnd("frame");
 }
 
 
@@ -232,7 +282,6 @@ function draw() {
 function moveCamera() {
     interpolatedCamX = pCamX+(camX-pCamX)*amountSinceLastTick;
     interpolatedCamY = pCamY+(camY-pCamY)*amountSinceLastTick;
-    console.log(pCamY);
 }
 
 function generateWorld() {
@@ -325,8 +374,9 @@ function doTicks() {
     //define a temporary variable called ticksThisFrame - this is used to keep track of how many ticks have been calculated within the duration of the current frame.  As long as this value is less than the forgivenessCount variable, it continues to calculate ticks as necessary.
     ticksThisFrame = 0;
     while(msSinceTick>msPerTick && ticksThisFrame!==forgivenessCount) {
-        //
+        console.time("tick");
         doTick();
+        console.timeEnd("tick");
         msSinceTick -= msPerTick;
         ticksThisFrame++;
     }
@@ -339,7 +389,6 @@ function doTicks() {
 
 function doTick() {
     
-    //check
     player.keyboardInput();
     player.applyGravityAndDrag();
     player.applyVelocityAndCollide();
@@ -360,11 +409,59 @@ function doTick() {
     if(camY>WORLD_HEIGHT-height/upscaleSize/TILE_HEIGHT) {
         camY = WORLD_HEIGHT-height/upscaleSize/TILE_HEIGHT;
     }
+    for(let i = 0; i<backgroundParticles.length; i++) {
+        backgroundParticles[i].updatePhysics();
+    }
+    for(let i = 0; i<foregroundParticles.length; i++) {
+        foregroundParticles[i].updatePhysics();
+    }
+    for(let i = 0; i<physicsRects.length; i++) {
+        if(physicsRects[i].type==="item") {
+            physicsRects[i].goTowardsPlayer();
+        }
+        physicsRects[i].applyGravityAndDrag();
+        physicsRects[i].applyVelocityAndCollide();
+    }
 
 }
 
 
 
+/*
+ /$$$$$$$                       /$$     /$$           /$$                        
+| $$__  $$                     | $$    |__/          | $$                        
+| $$  \ $$ /$$$$$$   /$$$$$$  /$$$$$$   /$$  /$$$$$$$| $$  /$$$$$$   /$$$$$$$ /$$
+| $$$$$$$/|____  $$ /$$__  $$|_  $$_/  | $$ /$$_____/| $$ /$$__  $$ /$$_____/|__/
+| $$____/  /$$$$$$$| $$  \__/  | $$    | $$| $$      | $$| $$$$$$$$|  $$$$$$     
+| $$      /$$__  $$| $$        | $$ /$$| $$| $$      | $$| $$_____/ \____  $$ /$$
+| $$     |  $$$$$$$| $$        |  $$$$/| $$|  $$$$$$$| $$|  $$$$$$$ /$$$$$$$/|__/
+|__/      \_______/|__/         \___/  |__/ \_______/|__/ \_______/|_______/  
+
+*/
+
+
+class snowflake {
+    
+    constructor(x, y, isForeground) {
+        this.x = x;
+        this.y = y;
+        this.isForeground = isForeground;
+        this.xVel = random(-0.4, 0.4);
+        this.yVel = random(0.6, 0.9);
+        this.snowflakeIndex = floor(random(2));
+    }
+
+    updatePhysics() {
+        this.xVel += random(-0.05, 0.05);
+        this.x += this.xVel;
+        this.y += this.yVel;
+    }
+
+    display() {
+        image(snowflakeImage, (this.x-camX)/TILE_WIDTH*upscaleSize, (this.y-camY)/TILE_HEIGHT*upscaleSize, 3, 3, this.snowflakeIndex*3, 0, 3, 3);
+    }
+
+}
 
 
 
@@ -397,8 +494,9 @@ function doTick() {
 //this class holds an axis-aligned rectangle affected by gravity, drag, and collisions with tiles.
 class physicsRect {
 
-    constructor(x, y, w, h, xVel, yVel, mass = w*h) {
+    constructor(x, y, w, h, xVel, yVel, controllable, mass = w*h) {
 
+        //generic
         this.x = x;
         this.y = y;
         this.w = w;
@@ -407,7 +505,7 @@ class physicsRect {
         this.yVel = yVel;
         this.mass = mass;
 
-        this.controllable = true;
+        this.controllable = controllable;
 
         this.grounded = false;
 
@@ -421,6 +519,11 @@ class physicsRect {
         this.pY = y-yVel;
         this.pXVel = xVel;
         this.pYVel = yVel;
+
+
+        //for items
+        this.type;
+        this.itemType;
     }
 
     keyboardInput() {
@@ -428,6 +531,19 @@ class physicsRect {
             this.xVel += 0.02*((keys[68] || keys[39]) - (keys[65] || keys[37]));
             if(this.grounded && (keys[87] || keys[38] || keys[32]) ) {
                 this.yVel = -1.5;
+            }
+        }
+    }
+
+    goTowardsPlayer() {
+        if((this.x+this.w/2-player.x-player.w/2)*(this.x+this.w/2-player.x-player.w/2)+(this.y+this.h/2-player.y-player.h/2)*(this.y+this.h/2-player.y-player.h/2)<50) {
+            if((this.x+this.w/2-player.x-player.w/2)*(this.x+this.w/2-player.x-player.w/2)+(this.y+this.h/2-player.y-player.h/2)*(this.y+this.h/2-player.y-player.h/2)<1) {
+                //delete item
+                this.y -= 10;
+            }
+            else {
+                this.xVel -= (this.x+this.w/2-player.x-player.w/2)/20;
+                this.yVel -= (this.y+this.h/2-player.y-player.h/2)/20;
             }
         }
     }
@@ -452,7 +568,6 @@ class physicsRect {
         }
         if(this.pYVel>0) {
             this.interpolatedY = min(this.pY+this.pYVel*amountSinceLastTick, this.y);
-            console.log(this.pY+this.yVel*amountSinceLastTick+", "+this.y);
         }
         else {
             this.interpolatedY = max(this.pY+this.pYVel*amountSinceLastTick, this.y);
@@ -671,8 +786,31 @@ function rectVsRay(rectX, rectY, rectW, rectH, rayX, rayY, rayW, rayH) {
 }
 
 
+function renderEntities() {
+
+    //draw player
+    fill(255, 0, 0);
+    noStroke();
+    player.findInterpolatedCoordinates();
+    rect((player.interpolatedX*TILE_WIDTH-interpolatedCamX*TILE_WIDTH)*upscaleSize, (player.interpolatedY*TILE_HEIGHT-interpolatedCamY*TILE_HEIGHT)*upscaleSize, player.w*upscaleSize*TILE_WIDTH, player.h*upscaleSize*TILE_HEIGHT);
+
+    for(let i = 0; i<physicsRects.length; i++) {
+        physicsRects[i].findInterpolatedCoordinates();
+        if(physicsRects[i].type==="item") {
+            image(itemsImage, (physicsRects[i].interpolatedX*TILE_WIDTH-interpolatedCamX*TILE_WIDTH)*upscaleSize, (physicsRects[i].interpolatedY*TILE_HEIGHT-interpolatedCamY*TILE_HEIGHT)*upscaleSize, physicsRects[i].w*upscaleSize*TILE_WIDTH, physicsRects[i].h*upscaleSize*TILE_HEIGHT, 8*physicsRects[i].itemType-8, 0, 8, 8);
+        }
+    }
+}
 
 
+
+function dropItem(type,  count, x, y) {
+    for(let i = 0; i<count; i++) {
+        physicsRects.push(new physicsRect(x, y, 0.5, 0.5, random(-0.1, 0.1), random(-0.1, 0)));
+        physicsRects[physicsRects.length-1].type = "item";
+        physicsRects[physicsRects.length-1].itemType = type;
+    }
+};
 
 
 
@@ -696,13 +834,21 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 
     //go for a scale of <64 blocks wide screen
-    upscaleSize = ceil(windowWidth/64/TILE_WIDTH);
+    upscaleSize = ceil(windowWidth/64/TILE_WIDTH/2)*2;
 
     //if the world is too zoomed out, then zoom it in.
     while(WORLD_WIDTH*TILE_WIDTH-width/upscaleSize<0 || WORLD_HEIGHT*TILE_HEIGHT-height/upscaleSize<0) {
-        upscaleSize++;
+        upscaleSize+=2;
     }
 
+}
+
+function mouseExited() {
+    mouseOn = false;
+}
+
+function mouseEntered() {
+    mouseOn = true;
 }
 
 function updateMouse() {
@@ -712,6 +858,8 @@ function updateMouse() {
 }
 
 function mousePressed() {
+
+    dropItem(TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][0], TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][1], worldMouseX, worldMouseY);
     
     //set the broken block to air in the world data
     worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX] = 0;
@@ -737,4 +885,16 @@ function keyPressed() {
 
 function keyReleased() {
     keys[keyCode] = false;
+}
+
+
+function drawCursor() {
+    if(mouseOn) {//don't do anything if the mouse isn't on the screen
+        //increase the time since an animFrame has happened by deltaTime, which is a built-in p5.js value
+        msSinceCursorAnimFrame += deltaTime;
+        cursorAnimFrame += floor(msSinceCursorAnimFrame/msPerCursorAnimFrame);
+        msSinceCursorAnimFrame -= msPerCursorAnimFrame * floor(msSinceCursorAnimFrame/msPerCursorAnimFrame);
+        cursorAnimFrame = cursorAnimFrame%cursors[cursorIndex].length;
+        image(cursors[cursorIndex][cursorAnimFrame], mouseX, mouseY);
+    }
 }
