@@ -25,6 +25,7 @@ merge
 right click stack to pick up ceil(half of it)
 right click when picked up to add 1 if 0 or match
 
+
 */
 
 
@@ -171,7 +172,7 @@ let controls = [
     50,//hotbar2
     51,//hotbar3
     52,//hotbar4
-    52,//hotbar5
+    53,//hotbar5
     54,//hotbar6
     55,//hotbar7
     56,//hotbar8
@@ -287,6 +288,10 @@ function draw() {
 
     //draw the tile layer onto the screen
     image(tileLayer, 0, 0, width, height, interpolatedCamX*TILE_WIDTH, interpolatedCamY*TILE_WIDTH, width/upscaleSize, height/upscaleSize);
+
+
+    image(/*selectedImages[selectType][selectAnimFrame]*/uiSlotImage, (worldMouseX-interpolatedCamX)*upscaleSize*TILE_WIDTH);
+
 
     //render the player, all items, etc.  Basically any physicsRect or particle
     renderEntities();
@@ -529,7 +534,7 @@ class snowflake {
     }
 
     display() {
-        image(snowflakeImage, (this.x-camX)/TILE_WIDTH*upscaleSize, (this.y-camY)/TILE_HEIGHT*upscaleSize, 3, 3, this.snowflakeIndex*3, 0, 3, 3);
+        image(snowflakeImage, (this.x-interpolatedCamX)/TILE_WIDTH*upscaleSize, (this.y-interpolatedCamY)/TILE_HEIGHT*upscaleSize, 3, 3, this.snowflakeIndex*3, 0, 3, 3);
     }
 
 }
@@ -973,63 +978,68 @@ function mouseEntered() {
 
 function updateMouse() {
     //world mouse x and y variables hold the mouse position in world tiles.  0, 0 is top left
-    worldMouseX = floor((interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH);
-    worldMouseY = floor((interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT);
+    worldMouseX = constrain(floor((interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH), 0, WORLD_WIDTH);
+    worldMouseY = constrain(floor((interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT), 0, WORLD_HEIGHT);
+    console.log(worldMouseY);
 }
 
-function mousePressed() {
+function mousePressed(event) {
     //image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
     
-    if(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize) {
-        if(pickedUpSlot===-1) {
-            if(hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)][0]!==0) {
-                pickedUpSlot = floor((mouseX-2*upscaleSize)/16/upscaleSize);
+    if(true) {
+        if(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize) {
+            if(pickedUpSlot===-1) {
+                if(hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)][0]!==0) {
+                    pickedUpSlot = floor((mouseX-2*upscaleSize)/16/upscaleSize);
+                }
+            }
+            else {
+                temp = hotbar[pickedUpSlot];
+                hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
+                pickedUpSlot = -1;
+                hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
             }
         }
         else {
-            temp = hotbar[pickedUpSlot];
-            hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
-            pickedUpSlot = -1;
-            hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
+
+            dropItem(TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][0], TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][1], worldMouseX, worldMouseY);
+            
+            //set the broken tile to air in the world data
+            worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX] = 0;
+
+            //erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
+            tileLayer.erase();
+            tileLayer.noStroke();
+            tileLayer.rect((worldMouseX-1)*TILE_WIDTH, worldMouseY*TILE_HEIGHT, TILE_WIDTH*3, TILE_HEIGHT);
+            tileLayer.rect(worldMouseX*TILE_WIDTH, (worldMouseY-1)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT*3);
+            tileLayer.noErase();
+            
+            //redraw the neighboring tiles
+            drawTile(worldMouseX+1, worldMouseY);
+            drawTile(worldMouseX-1, worldMouseY);
+            drawTile(worldMouseX, worldMouseY+1);
+            drawTile(worldMouseX, worldMouseY-1);
+
         }
     }
-    else {
-
-        dropItem(TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][0], TILE_BROKEN[worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX]][1], worldMouseX, worldMouseY);
-        
-        //set the broken tile to air in the world data
-        worldTiles[WORLD_WIDTH*worldMouseY+worldMouseX] = 0;
-
-        //erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-        tileLayer.erase();
-        tileLayer.noStroke();
-        tileLayer.rect((worldMouseX-1)*TILE_WIDTH, worldMouseY*TILE_HEIGHT, TILE_WIDTH*3, TILE_HEIGHT);
-        tileLayer.rect(worldMouseX*TILE_WIDTH, (worldMouseY-1)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT*3);
-        tileLayer.noErase();
-        
-        //redraw the neighboring tiles
-        drawTile(worldMouseX+1, worldMouseY);
-        drawTile(worldMouseX-1, worldMouseY);
-        drawTile(worldMouseX, worldMouseY+1);
-        drawTile(worldMouseX, worldMouseY-1);
-
-    }
-
 }
 
-function mouseReleased() {
-    if(pickedUpSlot !== -1) {
-        if(!(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize)) {
-            dropItem(hotbar[pickedUpSlot][0], hotbar[pickedUpSlot][1], (interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH, (interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT);
-            hotbar[pickedUpSlot] = [0, 0];
-            pickedUpSlot = -1;
-        }
-        else if(floor((mouseX-2*upscaleSize)/16/upscaleSize) !== pickedUpSlot) {
-            temp = hotbar[pickedUpSlot];
-            hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
-            pickedUpSlot = -1;
-            hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
-        }
+function mouseReleased(event) {
+    //so far, the only time this function needs to be called is with left click, so if it isn't left click, nothing needs to happen.
+    if(event.button !== 0) return;
+    //if there's nothing picked up, then nothing needs to happen.
+    if(pickedUpSlot === -1) return;
+
+    if(!(mouseX>2*upscaleSize && mouseX<2*upscaleSize+16*upscaleSize*hotbar.length && mouseY>2*upscaleSize && mouseY<18*upscaleSize)) {
+        dropItem(hotbar[pickedUpSlot][0], hotbar[pickedUpSlot][1], (interpolatedCamX*TILE_WIDTH+mouseX/upscaleSize)/TILE_WIDTH, (interpolatedCamY*TILE_HEIGHT+mouseY/upscaleSize)/TILE_HEIGHT);
+        hotbar[pickedUpSlot] = [0, 0];
+        pickedUpSlot = -1;
+    }
+    else if(floor((mouseX-2*upscaleSize)/16/upscaleSize) !== pickedUpSlot) {
+        temp = hotbar[pickedUpSlot];
+        hotbar[pickedUpSlot] = hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)];
+        pickedUpSlot = -1;
+        hotbar[floor((mouseX-2*upscaleSize)/16/upscaleSize)] = temp;
     }
 }
 
