@@ -1,7 +1,7 @@
 import EntityBase from './EntityBase';
 import { game } from '../Main';
 
-class Item extends EntityBase {
+class EntityItem extends EntityBase {
     constructor(
         x: number,
         y: number,
@@ -17,19 +17,19 @@ class Item extends EntityBase {
         if (
             game.pickUpAbleItems[this.itemType] &&
             (this.x + this.w / 2 - game.player.x - game.player.w / 2) *
-            (this.x + this.w / 2 - game.player.x - game.player.w / 2) +
-            (this.y + this.h / 2 - game.player.y - game.player.h / 2) *
-            (this.y + this.h / 2 - game.player.y - game.player.h / 2) <
-            50
+                (this.x + this.w / 2 - game.player.x - game.player.w / 2) +
+                (this.y + this.h / 2 - game.player.y - game.player.h / 2) *
+                    (this.y + this.h / 2 - game.player.y - game.player.h / 2) <
+                50
         ) {
             if (
                 (this.x + this.w / 2 - game.player.x - game.player.w / 2) *
-                (this.x + this.w / 2 - game.player.x - game.player.w / 2) +
-                (this.y + this.h / 2 - game.player.y - game.player.h / 2) *
-                (this.y +
-                    this.h / 2 -
-                    game.player.y -
-                    game.player.h / 2) <
+                    (this.x + this.w / 2 - game.player.x - game.player.w / 2) +
+                    (this.y + this.h / 2 - game.player.y - game.player.h / 2) *
+                        (this.y +
+                            this.h / 2 -
+                            game.player.y -
+                            game.player.h / 2) <
                 1
             ) {
                 this.deleted = true;
@@ -46,4 +46,4 @@ class Item extends EntityBase {
     }
 }
 
-export = Item;
+export = EntityItem;

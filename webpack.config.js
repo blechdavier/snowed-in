@@ -3,10 +3,10 @@ const path = require('path');
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
-    mode: "development",
+    mode: "production",
     devtool: "inline-source-map",
     entry: {
-        main: "./src/Main.ts",
+        main: "./src/main/Main.ts",
     },
     output: {
         path: path.resolve(__dirname, './build'),

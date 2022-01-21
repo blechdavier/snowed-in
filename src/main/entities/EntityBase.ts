@@ -1,7 +1,6 @@
 import { game } from '../Main';
 
 class EntityBase {
-
     x: number;
     y: number;
     w: number;
@@ -133,7 +132,7 @@ class EntityBase {
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
-                if (game.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.w,
@@ -206,7 +205,7 @@ class EntityBase {
                     j++
                 ) {
                     // if the current tile isn't air (value 0), then continue with the collision detection
-                    if (game.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                    if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.w,

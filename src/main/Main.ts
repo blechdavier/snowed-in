@@ -1,9 +1,10 @@
 import P5 from 'p5';
-import { EventEmitter } from 'events';
 
 import Player from './entities/Player';
-import Item from './entities/Item';
+import EntityItem from './entities/EntityItem';
 import World from './world/World';
+import TileResource from './assets/TileResource';
+
 
 /*
 TODO:
@@ -28,8 +29,8 @@ right click when picked up to add 1 if 0 or match
 
 */
 
+
 class Game extends P5 {
-    eventsEmitter: EventEmitter = new EventEmitter();
 
     assets: {
         cursors: P5.Image[][];
@@ -38,7 +39,7 @@ class Game extends P5 {
         TitleFont: P5.Font;
         backgroundTileSetImage: P5.Image;
         snowflakeImage: P5.Image;
-        tileSetImage: P5.Image;
+        tileSetImage: TileResource;
         itemsImage: P5.Image;
     };
 
@@ -56,13 +57,6 @@ class Game extends P5 {
     backTileLayerOffsetHeight: number = -2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
 
     upscaleSize: number = 6; // number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
-
-    worldTiles: Uint8Array = new Uint8Array(
-        this.WORLD_WIDTH * this.WORLD_HEIGHT
-    ); // number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
-    backgroundTiles: Uint8Array = new Uint8Array(
-        this.WORLD_WIDTH * this.WORLD_HEIGHT
-    ); // number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
     camX: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
     camY: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is top of world) (WORLD_HEIGHT*TILE_HEIGHT is bottom of world)
@@ -85,7 +79,7 @@ class Game extends P5 {
     player: Player;
 
     // array for all the items
-    items: Item[] = [];
+    items: EntityItem[] = [];
 
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
@@ -190,85 +184,53 @@ class Game extends P5 {
 
     canvas: P5.Renderer;
 
-    tileLayer: P5.Graphics;
-    backTileLayer: P5.Graphics;
+    world: World;
 
     constructor() {
         super(() => {}); // To create a new instance of P5 it will callback with the instance. We don't need this since we are extending the class
     }
 
     preload() {
-        // Emit the preload event
-        this.eventsEmitter.emit('preload');
-
         console.log('Loading assets');
         this.assets = {
-            tileSetImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/tilesets/middleground/indexedtileset.png'
+            tileSetImage: new TileResource(
+                32,
+                1,
+                8,
+                8,
+                this.loadImage(
+                    'assets/textures/tilesets/middleground/indexedtileset.png'
+                )
             ), // the image that holds all versions of each tile (snow, ice, etc.)
             backgroundTileSetImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/tilesets/background/backgroundsnow.png'
+                'assets/textures/tilesets/background/backgroundsnow.png'
             ), // the image that holds each background tile (snow, ice, etc.)
-            uiSlotImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/ui/uislot.png'
-            ), // the image of each UI slot
+            uiSlotImage: this.loadImage('assets/textures/ui/uislot.png'), // the image of each UI slot
             selectedUISlotImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/ui/selecteduislot.png'
+                'assets/textures/ui/selecteduislot.png'
             ), // the image of the selected UI slot
-            itemsImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/items/items.png'
-            ), // the image that holds all item images (tile of snow, winterberries, etc.)
-            TitleFont: this.loadFont(
-                'https://blechdavier.github.io/flexfriday/assets/fonts/Cave-Story.ttf'
-            ), // the font
+            itemsImage: this.loadImage('assets/textures/items/items.png'), // the image that holds all item images (tile of snow, winterberries, etc.)
+            TitleFont: this.loadFont('assets/fonts/Cave-Story.ttf'), // the font
             snowflakeImage: this.loadImage(
-                'https://blechdavier.github.io/flexfriday/assets/textures/particles/snowflakes.png'
+                'assets/textures/particles/snowflakes.png'
             ), // the image containing two snowflakes that are randomly chosen between.
 
             // load the cursor images
             cursors: [
+                [this.loadImage('assets/textures/cursors/cursor.png')],
                 [
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor.png'
-                    ),
-                ],
-                [
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_0.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_1.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_2.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_3.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_4.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_5.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_6.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_7.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_8.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_9.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_10.png'
-                    ),
-                    this.loadImage(
-                        'https://blechdavier.github.io/flexfriday/assets/textures/cursors/cursor_dig_11.png'
-                    ),
+                    this.loadImage('assets/textures/cursors/cursor_dig_0.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_1.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_2.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_3.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_4.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_5.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_6.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_7.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_8.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_9.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_10.png'),
+                    this.loadImage('assets/textures/cursors/cursor_dig_11.png'),
                 ],
             ],
         };
@@ -276,13 +238,12 @@ class Game extends P5 {
     }
 
     setup() {
-        // Emit the setup event
-        this.eventsEmitter.emit('setup');
-
         // make a canvas that fills the whole screen (a canvas is what is drawn to in p5.js, as well as lots of other JS rendering libraries)
         this.canvas = this.createCanvas(this.windowWidth, this.windowHeight);
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
+
+        this.world = new World(this.WORLD_WIDTH, this.WORLD_HEIGHT);
 
         this.player = new Player(
             16,
@@ -314,24 +275,8 @@ class Game extends P5 {
         // remove texture interpolation
         this.noSmooth();
 
-        // define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
-        this.tileLayer = this.createGraphics(
-            this.WORLD_WIDTH * this.TILE_WIDTH,
-            this.WORLD_HEIGHT * this.TILE_HEIGHT
-        );
-        this.backTileLayer = this.createGraphics(
-            this.WORLD_WIDTH * this.TILE_WIDTH,
-            this.WORLD_HEIGHT * this.TILE_HEIGHT
-        );
-
-        // calculate these variables:
-        this.backTileLayerOffsetWidth =
-            (this.TILE_WIDTH - this.BACK_TILE_WIDTH) / 2; // calculated in the setup function, this variable is the number of pixels left of a tile to draw a background tile from at the same position
-        this.backTileLayerOffsetHeight =
-            (this.TILE_HEIGHT - this.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
-
         // generate and draw the world onto the p5.Graphics objects
-        this.generateWorld();
+        this.world.generateWorld();
 
         // the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
         for (let i = 0; i < 255; i++) {
@@ -345,9 +290,6 @@ class Game extends P5 {
     }
 
     draw() {
-        // Emit the preload event
-        this.eventsEmitter.emit('preDraw');
-
         // console.time("frame");
 
         // wipe the screen with a happy little layer of light blue
@@ -364,7 +306,7 @@ class Game extends P5 {
 
         // draw the background tile layer onto the screen
         this.image(
-            this.backTileLayer,
+            this.world.backTileLayer,
             0,
             0,
             this.width,
@@ -377,7 +319,7 @@ class Game extends P5 {
 
         // draw the tile layer onto the screen
         this.image(
-            this.tileLayer,
+            this.world.tileLayer,
             0,
             0,
             this.width,
@@ -452,11 +394,9 @@ class Game extends P5 {
         this.drawCursor();
 
         // console.timeEnd("frame");
-        this.eventsEmitter.emit('postDraw');
     }
 
     windowResized() {
-        this.eventsEmitter.emit('windowResized');
 
         this.resizeCanvas(this.windowWidth, this.windowHeight);
 
@@ -477,8 +417,6 @@ class Game extends P5 {
     }
 
     keyPressed() {
-        this.eventsEmitter.emit('keyPressed');
-
         this.keys[this.keyCode] = true;
         if (this.controls.includes(this.keyCode)) {
             // hot bar slots
@@ -520,12 +458,10 @@ class Game extends P5 {
     }
 
     keyReleased() {
-        this.eventsEmitter.emit('keyReleased');
         this.keys[this.keyCode] = false;
     }
 
     mousePressed() {
-        this.eventsEmitter.emit('mousePressed');
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
 
         if (
@@ -574,12 +510,12 @@ class Game extends P5 {
         } else {
             this.dropItem(
                 this.TILE_BROKEN[
-                    this.worldTiles[
+                    this.world.worldTiles[
                         this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
                 ][0],
                 this.TILE_BROKEN[
-                    this.worldTiles[
+                    this.world.worldTiles[
                         this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
                 ][1],
@@ -588,26 +524,26 @@ class Game extends P5 {
             );
 
             // set the broken tile to air in the world data
-            this.worldTiles[
+            this.world.worldTiles[
                 this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
             ] = 0;
 
             // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-            this.tileLayer.erase();
-            this.tileLayer.noStroke();
-            this.tileLayer.rect(
+            this.world.tileLayer.erase();
+            this.world.tileLayer.noStroke();
+            this.world.tileLayer.rect(
                 (this.worldMouseX - 1) * this.TILE_WIDTH,
                 this.worldMouseY * this.TILE_HEIGHT,
                 this.TILE_WIDTH * 3,
                 this.TILE_HEIGHT
             );
-            this.tileLayer.rect(
+            this.world.tileLayer.rect(
                 this.worldMouseX * this.TILE_WIDTH,
                 (this.worldMouseY - 1) * this.TILE_HEIGHT,
                 this.TILE_WIDTH,
                 this.TILE_HEIGHT * 3
             );
-            this.tileLayer.noErase();
+            this.world.tileLayer.noErase();
 
             // redraw the neighboring tiles
             this.drawTile(this.worldMouseX + 1, this.worldMouseY);
@@ -618,7 +554,6 @@ class Game extends P5 {
     }
 
     mouseReleased(event?: object) {
-        this.eventsEmitter.emit('mouseReleased');
         if (this.pickedUpSlot !== -1) {
             if (
                 !(
@@ -675,123 +610,21 @@ class Game extends P5 {
             this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
     }
 
-    generateWorld() {
-        // this generation algorithm is by no means optimized
-        for (let i = 0; i < this.WORLD_HEIGHT; i++) {
-            // i will be the y position of tile being generated
-            for (let j = 0; j < this.WORLD_WIDTH; j++) {
-                // j is x position " "    "      "
-                if (this.belowTerrainHeight(j, i)) {
-                    if (this.belowIceHeight(j, i)) {
-                        this.worldTiles[i * this.WORLD_WIDTH + j] = 2;
-                    } else {
-                        this.worldTiles[i * this.WORLD_WIDTH + j] = 1;
-                    }
-                } else {
-                    this.worldTiles[i * this.WORLD_WIDTH + j] = 0;
-                }
-            }
-        }
-        for (let i = 0; i < this.WORLD_HEIGHT; i++) {
-            // i will be the y position of background tile being generated
-            for (let j = 0; j < this.WORLD_WIDTH; j++) {
-                // j is x position " "    "      "
-                // if this tile and its eight surrounding tiles are below the height of the terrain (at one point could be a tile of snow, ice, etc.), then add a background tile there.
-                if (
-                    this.belowTerrainHeight(j - 1, i - 1) &&
-                    this.belowTerrainHeight(j - 1, i) &&
-                    this.belowTerrainHeight(j - 1, i + 1) &&
-                    this.belowTerrainHeight(j, i - 1) &&
-                    this.belowTerrainHeight(j, i) &&
-                    this.belowTerrainHeight(j, i + 1) &&
-                    this.belowTerrainHeight(j + 1, i - 1) &&
-                    this.belowTerrainHeight(j + 1, i) &&
-                    this.belowTerrainHeight(j + 1, i + 1)
-                ) {
-                    this.backgroundTiles[i * this.WORLD_WIDTH + j] = 1;
-                } else {
-                    this.backgroundTiles[i * this.WORLD_WIDTH + j] = 0;
-                }
-            }
-        }
-        for (let i = 0; i < this.WORLD_HEIGHT; i++) {
-            // i will be the y position of tile being drawn
-            for (let j = 0; j < this.WORLD_WIDTH; j++) {
-                // j is x position " "    "      "
-                if (this.worldTiles[i * this.WORLD_WIDTH + j] !== 0) {
-                    // test if the neighboring tiles are solid
-                    const topTileBool =
-                        i === 0 ||
-                        this.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
-                    const leftTileBool =
-                        j === 0 ||
-                        this.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
-                    const bottomTileBool =
-                        i === this.WORLD_HEIGHT - 1 ||
-                        this.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
-                    const rightTileBool =
-                        j === this.WORLD_WIDTH - 1 ||
-                        this.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
-
-                    // convert 4 digit binary number to base 10
-                    const tileSetIndex =
-                        8 * +topTileBool +
-                        4 * +rightTileBool +
-                        2 * +bottomTileBool +
-                        +leftTileBool;
-
-                    // draw the correct image for the tile onto the tile layer
-                    this.tileLayer.image(
-                        this.assets.tileSetImage,
-                        j * this.TILE_WIDTH,
-                        i * this.TILE_HEIGHT,
-                        this.TILE_WIDTH,
-                        this.TILE_HEIGHT,
-                        (this.TILE_SET_POSITIONS[
-                            this.worldTiles[i * this.WORLD_WIDTH + j]
-                        ] *
-                            this.TILE_SET_SIZE +
-                            tileSetIndex) *
-                            this.TILE_WIDTH,
-                        0,
-                        this.TILE_WIDTH,
-                        this.TILE_HEIGHT
-                    );
-                }
-                if (this.backgroundTiles[i * this.WORLD_WIDTH + j] !== 0) {
-                    // draw the correct image for the background tile onto the background tile layer
-                    this.backTileLayer.image(
-                        this.assets.backgroundTileSetImage,
-                        j * this.TILE_WIDTH + this.backTileLayerOffsetWidth,
-                        i * this.TILE_HEIGHT + this.backTileLayerOffsetHeight,
-                        this.BACK_TILE_WIDTH,
-                        this.BACK_TILE_HEIGHT,
-                        this.TILE_SET_POSITIONS[
-                            this.backgroundTiles[i * this.WORLD_WIDTH + j]
-                        ] * this.BACK_TILE_WIDTH,
-                        0,
-                        this.BACK_TILE_WIDTH,
-                        this.BACK_TILE_HEIGHT
-                    );
-                }
-            }
-        }
-    }
-
     drawTile(j?: any, i?: any) {
-        if (this.worldTiles[i * this.WORLD_WIDTH + j] !== 0) {
+        if (this.world.worldTiles[i * this.WORLD_WIDTH + j] !== 0) {
             // test if the neighboring tiles are solid
             const topTileBool =
                 i === 0 ||
-                this.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
+                this.world.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
             const leftTileBool =
-                j === 0 || this.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
+                j === 0 ||
+                this.world.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
             const bottomTileBool =
                 i === this.WORLD_HEIGHT - 1 ||
-                this.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
+                this.world.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
             const rightTileBool =
                 j === this.WORLD_WIDTH - 1 ||
-                this.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
+                this.world.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
 
             // convert 4 digit binary number to base 10
             const tileSetIndex =
@@ -801,31 +634,16 @@ class Game extends P5 {
                 +leftTileBool;
 
             // draw the correct image for the tile onto the tile layer
-            this.tileLayer.image(
-                this.assets.tileSetImage,
-                j * this.TILE_WIDTH,
-                i * this.TILE_HEIGHT,
-                this.TILE_WIDTH,
-                this.TILE_HEIGHT,
-                this.TILE_SET_POSITIONS[
-                    this.worldTiles[i * this.WORLD_WIDTH + j]
-                ] *
-                    this.TILE_WIDTH *
-                    this.TILE_SET_SIZE +
-                    tileSetIndex * this.TILE_WIDTH,
-                0,
-                this.TILE_WIDTH,
-                this.TILE_HEIGHT
-            );
+            this.assets.tileSetImage
+                .getTile(tileSetIndex)
+                .render(
+                    this.world.tileLayer,
+                    j * this.TILE_WIDTH,
+                    i * this.TILE_HEIGHT,
+                    this.TILE_WIDTH,
+                    this.TILE_HEIGHT
+                );
         }
-    }
-
-    belowTerrainHeight(x?: any, y?: any) {
-        return this.noise(x / 50) * 16 + 20 < y;
-    }
-
-    belowIceHeight(x?: any, y?: any) {
-        return this.noise(x / 50) * 6 + 31 < y + 0;
     }
 
     // function keyReleased() {
@@ -1065,7 +883,7 @@ class Game extends P5 {
     dropItem(type?: any, count?: any, x?: any, y?: any) {
         for (let i = 0; i < count; i++) {
             this.items.push(
-                new Item(
+                new EntityItem(
                     x,
                     y,
                     0.5,
@@ -1100,7 +918,7 @@ class Game extends P5 {
             }
         }
         console.error(
-            'Item ' +
+            'EntityItem ' +
                 type +
                 " couldn't be picked up.  The program shouldn't have tried to pick it up in the first place."
         );
@@ -1187,46 +1005,5 @@ class Game extends P5 {
     }
 }
 const game = new Game();
+
 export { game };
-
-/*
-class SnowFlake {
-    x: any
-    y: any
-    isForeground: any
-    xVel: any
-    yVel: any
-    snowflakeIndex: any
-
-    constructor(x?: any, y?: any, isForeground?: any) {
-        this.x = x
-        this.y = y
-        this.isForeground = isForeground
-        this.xVel = this.random(-0.4, 0.4)
-        this.yVel = this.random(0.6, 0.9)
-        this.snowflakeIndex = this.floor(this.random(2))
-    }
-
-    updatePhysics() {
-        this.xVel += this.random(-0.05, 0.05)
-        this.x += this.xVel
-        this.y += this.yVel
-    }
-
-    display() {
-        this.image(
-            assets.snowflakeImage,
-            ((this.x - this.camX) / this.TILE_WIDTH) * this.upscaleSize,
-            ((this.y - this.camY) / this.TILE_HEIGHT) * this.upscaleSize,
-            3,
-            3,
-            this.snowflakeIndex * 3,
-            0,
-            3,
-            3
-        )
-    }
-}
-
-
- */
