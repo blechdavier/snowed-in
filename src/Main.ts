@@ -6,26 +6,16 @@ import Item from './entities/Item';
 import World from './world/World';
 
 /*
-//to start a game, do npm run prestart
-///TODO:
-//Blocks and world
-placing of blocks
-dirt
+TODO:
+
+sounds
+NPC's
+Dirt
 stone
 better world generation
-//Audio
-music
-sounds effects
-//People and creatures
-simple customization?
-NPC's
-//Gameplay
-pause menu
-lower slide
-
-//Polish
 font consistency
 finish item management
+pause menu
 fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
