@@ -7,25 +7,54 @@ import TileResource from './assets/TileResource';
 
 
 /*
-TODO:
+///INFORMATION
+//Starting a game
+Press Live Server to start the game
+or
+Type npm run prestart to start the game.
+//TODO
+When something in the todo section, either delete it and mark what was done in the description -
+- when pushing, or just mark it like this 
+(example: Create a nuclear explosion -- X)
+///GENERAL TODO:
 
+//Audio
 sounds
+music
 NPC's
-Dirt
-stone
-better world generation
-font consistency
+
+//Visual
+Update snow textures
+Update GUI textures
+player character
+item lore implemented
+
+//Gameplay
 finish item management
 pause menu
+Hunger, heat, etc system
+item creation
+item use
+Parent Workbench
+
+//Objects
+dirt
+stone
+workbench
+backpack (used as chest)
+
+//Polish
+better world generation
+font consistency
 fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
 
 item management behavior todo:
-
 merge
 right click stack to pick up ceil(half of it)
 right click when picked up to add 1 if 0 or match
+craftables
 
 */
 
