@@ -10,7 +10,7 @@ TODO:
 
 sounds
 NPC's
-dirt
+Dirt
 stone
 better world generation
 font consistency
