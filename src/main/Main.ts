@@ -14,7 +14,7 @@ or
 Type npm run prestart to start the game.
 //TODO
 When something in the todo section, either delete it and mark what was done in the description -
-- when pushing, or just mark it like this 
+- when pushing, or just mark it like this
 (example: Create a nuclear explosion -- X)
 ///GENERAL TODO:
 
@@ -58,7 +58,6 @@ craftables
 
 */
 
-
 class Game extends P5 {
 
     assets: {
@@ -70,7 +69,8 @@ class Game extends P5 {
         snowflakeImage: P5.Image;
         tileSetImage: TileResource;
         itemsImage: P5.Image;
-    };
+        uiFrame: P5.Image;
+    }
 
     tempcol: any;
     WORLD_WIDTH: number = 512; // width of the world in tiles
@@ -201,7 +201,7 @@ class Game extends P5 {
         50, // hot bar 2
         51, // hot bar 3
         52, // hot bar 4
-        52, // hot bar 5
+        53, // hot bar 5
         54, // hot bar 6
         55, // hot bar 7
         56, // hot bar 8
@@ -243,6 +243,9 @@ class Game extends P5 {
             snowflakeImage: this.loadImage(
                 'assets/textures/particles/snowflakes.png'
             ), // the image containing two snowflakes that are randomly chosen between.
+            uiFrame: this.loadImage(
+                'assets/textures/ui/uiFrame.png'
+            ), // texture for the frame of UI
 
             // load the cursor images
             cursors: [
@@ -299,7 +302,7 @@ class Game extends P5 {
         }
 
         // turn off the cursor image
-        this.noCursor();
+        // this.noCursor();
 
         // remove texture interpolation
         this.noSmooth();
@@ -318,6 +321,18 @@ class Game extends P5 {
         this.frameRate(Infinity);
     }
 
+
+  /*$$$$$$$\                                         $$\
+    $$  __$$\                                        $$ |
+    $$ |  $$ | $$$$$$\  $$$$$$\  $$\  $$\  $$\       $$ |      $$$$$$\   $$$$$$\   $$$$$$\  $$\
+    $$ |  $$ |$$  __$$\ \____$$\ $$ | $$ | $$ |      $$ |     $$  __$$\ $$  __$$\ $$  __$$\ \__|
+    $$ |  $$ |$$ |  \__|$$$$$$$ |$$ | $$ | $$ |      $$ |     $$ /  $$ |$$ /  $$ |$$ /  $$ |
+    $$ |  $$ |$$ |     $$  __$$ |$$ | $$ | $$ |      $$ |     $$ |  $$ |$$ |  $$ |$$ |  $$ |$$\
+    $$$$$$$  |$$ |     \$$$$$$$ |\$$$$$\$$$$  |      $$$$$$$$\\$$$$$$  |\$$$$$$  |$$$$$$$  |\__|
+    \_______/ \__|      \_______| \_____\____/       \________|\______/  \______/ $$  ____/
+                                                                                  $$ |
+                                                                                  $$ |
+                                                                                  \__|          */
     draw() {
         // console.time("frame");
 
@@ -359,27 +374,30 @@ class Game extends P5 {
             this.height / this.upscaleSize
         );
 
+        this.uiFrameRect(this.mouseX, this.mouseY, this.upscaleSize*15, this.upscaleSize*15);
+
         // render the player, all items, etc.  Basically any physicsRect or particle
         this.renderEntities();
 
         // draw the hot bar
+        this.uiFrameRect(0, 0, this.upscaleSize*(this.hotBar.length*16+12), 24*this.upscaleSize);// draw the outline box
         this.noStroke();
         this.textAlign(this.RIGHT, this.BOTTOM);
         this.textSize(5 * this.upscaleSize);
-        for (let i = 0; i < this.hotBar.length; i++) {
-            if (this.selectedSlot === i) {
+        for (let i = 0; i < this.hotBar.length; i++) {// loop through as many hotbar slots as there are and draw them
+            if (this.selectedSlot === i) {// if the current hotbar slot is selected, then draw a different image
                 this.image(
                     this.assets.selectedUISlotImage,
-                    2 * this.upscaleSize + 16 * i * this.upscaleSize,
-                    2 * this.upscaleSize,
+                    6 * this.upscaleSize + 16 * i * this.upscaleSize,
+                    4 * this.upscaleSize,
                     16 * this.upscaleSize,
                     16 * this.upscaleSize
                 );
             } else {
                 this.image(
                     this.assets.uiSlotImage,
-                    2 * this.upscaleSize + 16 * i * this.upscaleSize,
-                    2 * this.upscaleSize,
+                    6 * this.upscaleSize + 16 * i * this.upscaleSize,
+                    4 * this.upscaleSize,
                     16 * this.upscaleSize,
                     16 * this.upscaleSize
                 );
@@ -399,8 +417,8 @@ class Game extends P5 {
                 }
                 this.image(
                     this.assets.itemsImage,
-                    6 * this.upscaleSize + 16 * i * this.upscaleSize,
-                    6 * this.upscaleSize,
+                    10 * this.upscaleSize + 16 * i * this.upscaleSize,
+                    8 * this.upscaleSize,
                     8 * this.upscaleSize,
                     8 * this.upscaleSize,
                     8 * this.hotBar[i][0] - 8,
@@ -411,8 +429,8 @@ class Game extends P5 {
                 if (this.hotBar[i][1] > 1) {
                     this.text(
                         this.hotBar[i][1],
-                        16 * this.upscaleSize + 16 * i * this.upscaleSize,
-                        16 * this.upscaleSize
+                        20 * this.upscaleSize + 16 * i * this.upscaleSize,
+                        18 * this.upscaleSize
                     );
                 }
                 this.noTint();
@@ -420,7 +438,7 @@ class Game extends P5 {
         }
 
         // draw the cursor
-        this.drawCursor();
+        // this.drawCursor();
 
         // console.timeEnd("frame");
     }
@@ -765,17 +783,38 @@ class Game extends P5 {
         }
     }
 
-    /*
-       /$$$$$$$                       /$$     /$$           /$$
-      | $$__  $$                     | $$    |__/          | $$
-      | $$  \ $$ /$$$$$$   /$$$$$$  /$$$$$$   /$$  /$$$$$$$| $$  /$$$$$$   /$$$$$$$ /$$
-      | $$$$$$$/|____  $$ /$$__  $$|_  $$_/  | $$ /$$_____/| $$ /$$__  $$ /$$_____/|__/
-      | $$____/  /$$$$$$$| $$  \__/  | $$    | $$| $$      | $$| $$$$$$$$|  $$$$$$
-      | $$      /$$__  $$| $$        | $$ /$$| $$| $$      | $$| $$_____/ \____  $$ /$$
-      | $$     |  $$$$$$$| $$        |  $$$$/| $$|  $$$$$$$| $$|  $$$$$$$ /$$$$$$$/|__/
-      |__/      \_______/|__/         \___/  |__/ \_______/|__/ \_______/|_______/
 
-      */
+    uiFrameRect(
+        x: number,
+        y: number,
+        w: number,
+        h: number
+    ) {
+
+        // set the coords and dimensions to round to the nearest un-upscaled pixel
+        x = this.round(x/this.upscaleSize)*this.upscaleSize;
+        y = this.round(y/this.upscaleSize)*this.upscaleSize;
+        w = this.round(w/this.upscaleSize)*this.upscaleSize;
+        h = this.round(h/this.upscaleSize)*this.upscaleSize;
+
+        // corners
+        this.image(this.assets.uiFrame, x, y, 7*this.upscaleSize, 7*this.upscaleSize, 0, 0, 7, 7);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y, 7*this.upscaleSize, 7*this.upscaleSize, 8, 0, 7, 7);
+        this.image(this.assets.uiFrame, x, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 0, 8, 7, 7);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 8, 8, 7, 7);
+
+        // top and bottom
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 0, 1, 7);
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+h-7*this.upscaleSize, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 8, 1, 7);
+
+        // left and right
+        this.image(this.assets.uiFrame, x, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 0, 7, 7, 1);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 8, 7, 7, 1);
+
+        // center
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+7*this.upscaleSize, w-14*this.upscaleSize, h-14*this.upscaleSize, 7, 7, 1, 1);
+    }
+
 
     /*
    /$$$$$$$  /$$                           /$$
