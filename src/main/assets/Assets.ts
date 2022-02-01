@@ -1,61 +1,100 @@
-import TileResource from './TileResource';
-import { game } from '../Main';
-import * as fs from 'fs';
-import Resource from './Resource';
+import TileResource from './resources/TileResource';
+import ImageResource from './resources/ImageResource';
+import FontResource from './resources/FontResource';
+import Resource from './resources/Resource';
 import P5 from 'p5';
 
-const SelectedUISlot: Resource = new Resource(game.loadImage(
-    'assets/textures/ui/selecteduislot.png'
-))
+interface AssetGroup {
+    [name: string]:
+        | {
+              [name: string]: Resource | AssetGroup;
+          }
+        | Resource;
+}
 
-const UiSlot: Resource = new Resource(game.loadImage('assets/textures/ui/uislot.png'));
+// Ui related assets
+const UiAssets = {
+    ui_slot_selected: new ImageResource(
+        'assets/textures/ui/uislot_selected.png'
+    ),
+    ui_slot: new ImageResource('assets/textures/ui/uislot.png'),
+};
 
-const ItemsTileSet: TileResource = new TileResource(
-    32,
-    1,
-    8,
-    8,
-    game.loadImage(
-        'assets/textures/tilesets/middleground/indexedtileset.png'
-    )
-)
+// Item related assets
+const ItemsAssets = {
+    resources: {
+        ice_shard: new ImageResource(
+            'assets/textures/items/resource_ice_shards.png'
+        ),
 
-// Background snow (Not really a tile set)
-const BackgroundTileSet = new Resource(
-    game.loadImage('assets/textures/tilesets/background/backgroundsnow.png')
-)
+        snowball: new ImageResource(
+            'assets/textures/items/resource_snowball.png'
+        ),
+    },
+    consumables: {
+        snow_berries: new ImageResource(
+            'assets/textures/items/consumable_snow_berries.png'
+        ),
+    },
+    blocks: {
+        ice: new ImageResource('assets/textures/items/block_ice.png'),
+        snow: new ImageResource('assets/textures/items/block_snow.png'),
+    },
+    tools: {},
+};
 
-// the image that holds all versions of each tile (snow, ice, etc.)
-const WorldTileSet: TileResource = new TileResource(
-        32,
-        1,
-        8,
-        8,
-        game.loadImage(
-            'assets/textures/tilesets/middleground/indexedtileset.png'
-        )
-    )
+// World related assets
+const WorldAssets = {
+    background: {
+        snow: new ImageResource('assets/textures/world/background/snow.png'),
+    },
+    middleground: {
+        tileset_ice: new TileResource(
+            'assets/textures/world/middleground/tileset_ice.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_snow: new TileResource(
+            'assets/textures/world/middleground/tileset_snow.png',
+            16,
+            1,
+            8,
+            8
+        ),
+    },
+    foreground: {
+        tileset_pipe: new TileResource(
+            'assets/textures/world/foreground/tileset_pipe.png',
+            16,
+            1,
+            8,
+            8
+        ),
+    },
+};
 
-// This holds the font for the game
-const TitleFont: P5.Font = game.loadFont('assets/fonts/Cave-Story.ttf');
+// The game font
+const Fonts = {
+    title: new FontResource('assets/fonts/Cave-Story.ttf'),
+};
 
-// This holds the default custom cursor
-const DefaultCursor: Resource = new Resource(game.loadImage('assets/textures/cursors/cursor.png'));
+const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
+    assets.forEach((assetGroup) => {
+        searchGroup(assetGroup, sketch);
+    });
+};
 
-// This is the data for the cursor while it is digging
-const DiggingCursor: Resource[] = [
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_0.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_1.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_2.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_3.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_4.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_5.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_6.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_7.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_8.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_9.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_10.png')),
-        new Resource(game.loadImage('assets/textures/cursors/cursor_dig_11.png')),
-    ];
+function searchGroup(assetGroup: AssetGroup | Resource, sketch: P5) {
+    if (assetGroup instanceof Resource) {
+        console.log(`Loading asset ${assetGroup.path}`);
+        assetGroup.loadResource(sketch);
+        return;
+    }
+    Object.entries(assetGroup).forEach((asset) => {
+        searchGroup(asset[1], sketch);
+    });
+}
 
-export {};
+export { UiAssets, ItemsAssets, WorldAssets, Fonts, loadAssets };

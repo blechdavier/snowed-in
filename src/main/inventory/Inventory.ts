@@ -1,5 +1,3 @@
-class Inventory {
-
-}
+class Inventory {}
 
 export = Inventory;

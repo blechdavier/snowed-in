@@ -3,8 +3,19 @@ import P5 from 'p5';
 import Player from './entities/Player';
 import EntityItem from './entities/EntityItem';
 import World from './world/World';
-import TileResource from './assets/TileResource';
 
+import {
+    Fonts,
+    ItemsAssets,
+    loadAssets,
+    UiAssets,
+    WorldAssets,
+} from './assets/Assets';
+import { Tile, Tiles } from './world/Tiles';
+import ItemStack from './inventory/items/ItemStack';
+import { Items } from './inventory/items/Items';
+import TileResource from './assets/resources/TileResource';
+import ImageResource from './assets/resources/ImageResource';
 
 /*
 TODO:
@@ -29,21 +40,9 @@ right click when picked up to add 1 if 0 or match
 
 */
 
-
 class Game extends P5 {
-
-    assets: {
-        cursors: P5.Image[][];
-        selectedUISlotImage: P5.Image;
-        uiSlotImage: P5.Image;
-        TitleFont: P5.Font;
-        backgroundTileSetImage: P5.Image;
-        snowflakeImage: P5.Image;
-        tileSetImage: TileResource;
-        itemsImage: P5.Image;
-    };
-
     tempcol: any;
+
     WORLD_WIDTH: number = 512; // width of the world in tiles
     WORLD_HEIGHT: number = 64; // height of the world in tiles
 
@@ -51,10 +50,6 @@ class Game extends P5 {
     TILE_HEIGHT: number = 8; // height of a tile in pixels
     BACK_TILE_WIDTH: number = 12; // width of a tile in pixels
     BACK_TILE_HEIGHT: number = 12; // height of a tile in pixels
-    TILE_SET_SIZE: number = 16; // number of tiles in the tile set (do not change this as parts of the program will break)
-
-    backTileLayerOffsetWidth: number = -2; // calculated in the setup function, this variable is the number of pixels left of a tile to draw a background tile from at the same position
-    backTileLayerOffsetHeight: number = -2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
 
     upscaleSize: number = 6; // number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
@@ -83,57 +78,9 @@ class Game extends P5 {
 
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
-    TILE_SET_POSITIONS = [
-        undefined, // air
-        0, // snow
-        1, // ice
-    ];
-
-    TILE_BROKEN = [
-        // what drops when you break a tile
-        // [broken, broken_quantity]
-        [undefined, undefined],
-        [4, 4],
-        [5, 4],
-    ];
-
-    ITEM_DATA = [
-        // ["name", "description", #stackSize]
-        [undefined, undefined, Infinity],
-        ['Snowberries', 'Tasty.', 100],
-        ['Snow Tile', 'Can be placed.', 1000],
-        ['Ice Tile', 'Can be placed.', 1000],
-        [
-            'Snowball',
-            'Can be thrown or 4 can be compacted to make Snow Tile.',
-            1000,
-        ],
-        ['Ice Shards', '4 can be compacted to make Ice Tile.', 1000],
-    ];
-
-    // const FRICTION_CONSTANTS = [
-    //     0,              //air
-    //     0.3,                      //snow
-    //     0.05,                      //ice
-    // ];
-
-    hotBar = [
-        [1, 5],
-        [0, 0],
-        [1, 90],
-        [1, 100],
-        [1, 8],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-        [0, 0],
-    ];
+    hotBar: ItemStack[] = new Array(9);
     selectedSlot = 0;
     pickedUpSlot = -1;
-    pickUpAbleItems: any;
 
     worldMouseX = 0; // the mouse position in world coordinates
     worldMouseY = 0; // the mouse position in world coordinates
@@ -141,25 +88,12 @@ class Game extends P5 {
 
     keys: boolean[] = [];
 
-    // world info
-
-    isSnowing = true;
-
-    // performance
-
-    particleMultiplier = 1.0;
     // maybe add particle interpolation.
 
     // particle layers
 
     backgroundParticles: any = [];
     foregroundParticles: any = [];
-
-    // cursor stuff
-    cursorAnimFrame = 0;
-    msSinceCursorAnimFrame = 0;
-    msPerCursorAnimFrame = 100;
-    cursorIndex = 1;
 
     // the keycode for the key that does the action
     controls = [
@@ -177,9 +111,6 @@ class Game extends P5 {
         55, // hot bar 7
         56, // hot bar 8
         57, // hot bar 9
-        48, // hot bar 10
-        189, // hot bar 11
-        187, // hot bar 12
     ];
 
     canvas: P5.Renderer;
@@ -191,49 +122,9 @@ class Game extends P5 {
     }
 
     preload() {
+        this.hotBar[1] = new ItemStack(Items.snowballs, 30);
         console.log('Loading assets');
-        this.assets = {
-            tileSetImage: new TileResource(
-                32,
-                1,
-                8,
-                8,
-                this.loadImage(
-                    'assets/textures/tilesets/middleground/indexedtileset.png'
-                )
-            ), // the image that holds all versions of each tile (snow, ice, etc.)
-            backgroundTileSetImage: this.loadImage(
-                'assets/textures/tilesets/background/backgroundsnow.png'
-            ), // the image that holds each background tile (snow, ice, etc.)
-            uiSlotImage: this.loadImage('assets/textures/ui/uislot.png'), // the image of each UI slot
-            selectedUISlotImage: this.loadImage(
-                'assets/textures/ui/selecteduislot.png'
-            ), // the image of the selected UI slot
-            itemsImage: this.loadImage('assets/textures/items/items.png'), // the image that holds all item images (tile of snow, winterberries, etc.)
-            TitleFont: this.loadFont('assets/fonts/Cave-Story.ttf'), // the font
-            snowflakeImage: this.loadImage(
-                'assets/textures/particles/snowflakes.png'
-            ), // the image containing two snowflakes that are randomly chosen between.
-
-            // load the cursor images
-            cursors: [
-                [this.loadImage('assets/textures/cursors/cursor.png')],
-                [
-                    this.loadImage('assets/textures/cursors/cursor_dig_0.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_1.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_2.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_3.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_4.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_5.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_6.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_7.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_8.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_9.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_10.png'),
-                    this.loadImage('assets/textures/cursors/cursor_dig_11.png'),
-                ],
-            ],
-        };
+        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
         console.log('Asset loading completed');
     }
 
@@ -269,9 +160,6 @@ class Game extends P5 {
             this.upscaleSize += 2;
         }
 
-        // turn off the cursor image
-        this.noCursor();
-
         // remove texture interpolation
         this.noSmooth();
 
@@ -282,8 +170,6 @@ class Game extends P5 {
         for (let i = 0; i < 255; i++) {
             this.keys.push(false);
         }
-
-        this.updatePickUpAbleItems();
 
         // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
         this.frameRate(Infinity);
@@ -339,53 +225,44 @@ class Game extends P5 {
         this.textSize(5 * this.upscaleSize);
         for (let i = 0; i < this.hotBar.length; i++) {
             if (this.selectedSlot === i) {
-                this.image(
-                    this.assets.selectedUISlotImage,
+                UiAssets.ui_slot_selected.render(
+                    this,
                     2 * this.upscaleSize + 16 * i * this.upscaleSize,
                     2 * this.upscaleSize,
                     16 * this.upscaleSize,
                     16 * this.upscaleSize
                 );
             } else {
-                this.image(
-                    this.assets.uiSlotImage,
+                UiAssets.ui_slot.render(
+                    this,
                     2 * this.upscaleSize + 16 * i * this.upscaleSize,
                     2 * this.upscaleSize,
                     16 * this.upscaleSize,
                     16 * this.upscaleSize
                 );
             }
-            if (this.hotBar[i][0] !== 0) {
+
+            if (this.hotBar[i] !== undefined) {
                 this.fill(0);
                 if (this.pickedUpSlot === i) {
-                    if (this.hotBar[i][1] > 1) {
-                        this.text(
-                            this.hotBar[i][1],
-                            this.mouseX + 16 * this.upscaleSize,
-                            this.mouseY + 16 * this.upscaleSize
-                        );
-                    }
                     this.tint(255, 127);
                     this.fill(0, 127);
                 }
-                this.image(
-                    this.assets.itemsImage,
+
+                this.hotBar[i].item.texture.render(
+                    this,
                     6 * this.upscaleSize + 16 * i * this.upscaleSize,
                     6 * this.upscaleSize,
                     8 * this.upscaleSize,
-                    8 * this.upscaleSize,
-                    8 * this.hotBar[i][0] - 8,
-                    0,
-                    8,
-                    8
+                    8 * this.upscaleSize
                 );
-                if (this.hotBar[i][1] > 1) {
-                    this.text(
-                        this.hotBar[i][1],
-                        16 * this.upscaleSize + 16 * i * this.upscaleSize,
-                        16 * this.upscaleSize
-                    );
-                }
+
+                this.text(
+                    this.hotBar[i].stackSize,
+                    16 * this.upscaleSize + 16 * i * this.upscaleSize,
+                    16 * this.upscaleSize
+                );
+
                 this.noTint();
             }
         }
@@ -397,7 +274,6 @@ class Game extends P5 {
     }
 
     windowResized() {
-
         this.resizeCanvas(this.windowWidth, this.windowHeight);
 
         // go for a scale of <64 tiles wide screen
@@ -472,56 +348,57 @@ class Game extends P5 {
             this.mouseY > 2 * this.upscaleSize &&
             this.mouseY < 18 * this.upscaleSize
         ) {
+            const clickedSlot: number = this.floor(
+                (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
+            );
+
             if (this.pickedUpSlot === -1) {
-                if (
-                    this.hotBar[
-                        this.floor(
-                            (this.mouseX - 2 * this.upscaleSize) /
-                                16 /
-                                this.upscaleSize
-                        )
-                    ][0] !== 0
-                ) {
-                    this.pickedUpSlot = this.floor(
-                        (this.mouseX - 2 * this.upscaleSize) /
-                            16 /
-                            this.upscaleSize
-                    );
+                if (this.hotBar[clickedSlot] !== undefined) {
+                    this.pickedUpSlot = clickedSlot;
                 }
             } else {
-                const temp = this.hotBar[this.pickedUpSlot];
-                this.hotBar[this.pickedUpSlot] =
-                    this.hotBar[
-                        this.floor(
-                            (this.mouseX - 2 * this.upscaleSize) /
-                                16 /
-                                this.upscaleSize
-                        )
-                    ];
+                // Swap clicked slot with the picked slot
+                [this.hotBar[this.pickedUpSlot], this.hotBar[clickedSlot]] = [
+                    this.hotBar[clickedSlot],
+                    this.hotBar[this.pickedUpSlot],
+                ];
+
+                // Set the picked up slot to nothing
                 this.pickedUpSlot = -1;
-                this.hotBar[
-                    this.floor(
-                        (this.mouseX - 2 * this.upscaleSize) /
-                            16 /
-                            this.upscaleSize
-                    )
-                ] = temp;
             }
         } else {
-            this.dropItem(
-                this.TILE_BROKEN[
+            const tile: Tile =
+                Tiles[
                     this.world.worldTiles[
                         this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
-                ][0],
-                this.TILE_BROKEN[
-                    this.world.worldTiles[
-                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
-                    ]
-                ][1],
-                this.worldMouseX,
-                this.worldMouseY
-            );
+                ];
+
+            if (tile === undefined) return;
+
+            if (tile.itemDrop !== undefined) {
+                // Default drop quantity
+                let quantity: number = 1;
+
+                // Update the quantity based on
+                if (
+                    tile.itemDropMax !== undefined &&
+                    tile.itemDropMin !== undefined
+                ) {
+                    quantity = Math.round(
+                        Math.random() * (tile.itemDropMax - tile.itemDropMin) +
+                            tile.itemDropMin
+                    );
+                } else if (tile.itemDropMax !== undefined) {
+                    quantity = tile.itemDropMax;
+                }
+
+                this.dropItemStack(
+                    new ItemStack(tile.itemDrop, quantity),
+                    this.worldMouseX,
+                    this.worldMouseY
+                );
+            }
 
             // set the broken tile to air in the world data
             this.world.worldTiles[
@@ -553,21 +430,33 @@ class Game extends P5 {
         }
     }
 
-    mouseReleased(event?: object) {
+    mouseReleased() {
+        const releasedSlot: number = this.floor(
+            (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
+        );
+
         if (this.pickedUpSlot !== -1) {
             if (
-                !(
-                    this.mouseX > 2 * this.upscaleSize &&
-                    this.mouseX <
-                        2 * this.upscaleSize +
-                            16 * this.upscaleSize * this.hotBar.length &&
-                    this.mouseY > 2 * this.upscaleSize &&
-                    this.mouseY < 18 * this.upscaleSize
-                )
+                this.mouseX > 2 * this.upscaleSize &&
+                this.mouseX <
+                    2 * this.upscaleSize +
+                        16 * this.upscaleSize * this.hotBar.length &&
+                this.mouseY > 2 * this.upscaleSize &&
+                this.mouseY < 18 * this.upscaleSize
             ) {
-                this.dropItem(
-                    this.hotBar[this.pickedUpSlot][0],
-                    this.hotBar[this.pickedUpSlot][1],
+                // Make sure that the slot that the cursor was released was not the slot that was selected
+                if (releasedSlot === this.pickedUpSlot) return;
+
+                // Swap the picked up slot with the slot the mouse was released on
+                [this.hotBar[this.pickedUpSlot], this.hotBar[releasedSlot]] = [
+                    this.hotBar[releasedSlot],
+                    this.hotBar[this.pickedUpSlot],
+                ];
+
+                this.pickedUpSlot = -1;
+            } else {
+                this.dropItemStack(
+                    this.hotBar[this.pickedUpSlot],
                     (this.interpolatedCamX * this.TILE_WIDTH +
                         this.mouseX / this.upscaleSize) /
                         this.TILE_WIDTH,
@@ -575,30 +464,8 @@ class Game extends P5 {
                         this.mouseY / this.upscaleSize) /
                         this.TILE_HEIGHT
                 );
-                this.hotBar[this.pickedUpSlot] = [0, 0];
+                this.hotBar[this.pickedUpSlot] = undefined;
                 this.pickedUpSlot = -1;
-            } else if (
-                this.floor(
-                    (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
-                ) !== this.pickedUpSlot
-            ) {
-                const temp = this.hotBar[this.pickedUpSlot];
-                this.hotBar[this.pickedUpSlot] =
-                    this.hotBar[
-                        this.floor(
-                            (this.mouseX - 2 * this.upscaleSize) /
-                                16 /
-                                this.upscaleSize
-                        )
-                    ];
-                this.pickedUpSlot = -1;
-                this.hotBar[
-                    this.floor(
-                        (this.mouseX - 2 * this.upscaleSize) /
-                            16 /
-                            this.upscaleSize
-                    )
-                ] = temp;
             }
         }
     }
@@ -610,45 +477,59 @@ class Game extends P5 {
             this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
     }
 
-    drawTile(j?: any, i?: any) {
+    drawTile(j: number, i: number) {
         if (this.world.worldTiles[i * this.WORLD_WIDTH + j] !== 0) {
-            // test if the neighboring tiles are solid
-            const topTileBool =
-                i === 0 ||
-                this.world.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
-            const leftTileBool =
-                j === 0 ||
-                this.world.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
-            const bottomTileBool =
-                i === this.WORLD_HEIGHT - 1 ||
-                this.world.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
-            const rightTileBool =
-                j === this.WORLD_WIDTH - 1 ||
-                this.world.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
+            // Draw the correct image for the tile onto the tile layer
 
-            // convert 4 digit binary number to base 10
-            const tileSetIndex =
-                8 * +topTileBool +
-                4 * +rightTileBool +
-                2 * +bottomTileBool +
-                +leftTileBool;
+            const tile: Tile =
+                Tiles[this.world.worldTiles[i * this.WORLD_WIDTH + j]];
 
-            // draw the correct image for the tile onto the tile layer
-            this.assets.tileSetImage
-                .getTile(tileSetIndex)
-                .render(
+            if (tile.connected && tile.texture instanceof TileResource) {
+                // test if the neighboring tiles are solid
+                const topTileBool =
+                    i === 0 ||
+                    this.world.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
+                const leftTileBool =
+                    j === 0 ||
+                    this.world.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
+                const bottomTileBool =
+                    i === this.WORLD_HEIGHT - 1 ||
+                    this.world.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
+                const rightTileBool =
+                    j === this.WORLD_WIDTH - 1 ||
+                    this.world.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
+
+                // convert 4 digit binary number to base 10
+                const tileSetIndex =
+                    8 * +topTileBool +
+                    4 * +rightTileBool +
+                    2 * +bottomTileBool +
+                    +leftTileBool;
+
+                // Render connected tile
+                tile.texture.renderTile(
+                    tileSetIndex,
                     this.world.tileLayer,
                     j * this.TILE_WIDTH,
                     i * this.TILE_HEIGHT,
                     this.TILE_WIDTH,
                     this.TILE_HEIGHT
                 );
+            } else if (
+                !tile.connected &&
+                tile.texture instanceof ImageResource
+            ) {
+                // Render non-connected tile
+                tile.texture.render(
+                    this.world.tileLayer,
+                    j * this.TILE_WIDTH,
+                    i * this.TILE_HEIGHT,
+                    this.TILE_WIDTH,
+                    this.TILE_HEIGHT
+                );
+            }
         }
     }
-
-    // function keyReleased() {
-    //     ts++;
-    // }
 
     doTicks() {
         // increase the time since a tick has happened by deltaTime, which is a built-in p5.js value
@@ -723,6 +604,7 @@ class Game extends P5 {
         }
 
         for (const item of this.items) {
+            item.combineWithNearItems();
             item.goTowardsPlayer();
             item.applyGravityAndDrag();
             item.applyVelocityAndCollide();
@@ -735,18 +617,6 @@ class Game extends P5 {
             }
         }
     }
-
-    /*
-       /$$$$$$$                       /$$     /$$           /$$
-      | $$__  $$                     | $$    |__/          | $$
-      | $$  \ $$ /$$$$$$   /$$$$$$  /$$$$$$   /$$  /$$$$$$$| $$  /$$$$$$   /$$$$$$$ /$$
-      | $$$$$$$/|____  $$ /$$__  $$|_  $$_/  | $$ /$$_____/| $$ /$$__  $$ /$$_____/|__/
-      | $$____/  /$$$$$$$| $$  \__/  | $$    | $$| $$      | $$| $$$$$$$$|  $$$$$$
-      | $$      /$$__  $$| $$        | $$ /$$| $$| $$      | $$| $$_____/ \____  $$ /$$
-      | $$     |  $$$$$$$| $$        |  $$$$/| $$|  $$$$$$$| $$|  $$$$$$$ /$$$$$$$/|__/
-      |__/      \_______/|__/         \___/  |__/ \_______/|__/ \_______/|_______/
-
-      */
 
     /*
    /$$$$$$$  /$$                           /$$
@@ -862,8 +732,9 @@ class Game extends P5 {
 
         for (const item of this.items) {
             item.findInterpolatedCoordinates();
-            this.image(
-                this.assets.itemsImage,
+
+            item.itemStack.item.texture.render(
+                this,
                 (item.interpolatedX * this.TILE_WIDTH -
                     this.interpolatedCamX * this.TILE_WIDTH) *
                     this.upscaleSize,
@@ -871,78 +742,75 @@ class Game extends P5 {
                     this.interpolatedCamY * this.TILE_HEIGHT) *
                     this.upscaleSize,
                 item.w * this.upscaleSize * this.TILE_WIDTH,
-                item.h * this.upscaleSize * this.TILE_HEIGHT,
-                8 * item.itemType - 8,
-                0,
-                8,
-                8
+                item.h * this.upscaleSize * this.TILE_HEIGHT
+            );
+
+            // Render the item quantity label
+            this.fill(0);
+
+            this.noStroke();
+
+            this.textAlign(this.RIGHT, this.BOTTOM);
+            this.textSize(5 * this.upscaleSize);
+
+            this.text(
+                item.itemStack.stackSize,
+                (item.interpolatedX * this.TILE_WIDTH -
+                    this.interpolatedCamX * this.TILE_WIDTH) *
+                    this.upscaleSize,
+                (item.interpolatedY * this.TILE_HEIGHT -
+                    this.interpolatedCamY * this.TILE_HEIGHT) *
+                    this.upscaleSize
             );
         }
     }
 
-    dropItem(type?: any, count?: any, x?: any, y?: any) {
-        for (let i = 0; i < count; i++) {
-            this.items.push(
-                new EntityItem(
-                    x,
-                    y,
-                    0.5,
-                    0.5,
-                    this.random(-0.1, 0.1),
-                    this.random(-0.1, 0)
-                )
-            );
-            this.items[this.items.length - 1].itemType = type;
-        }
-    }
-
-    pickUpItem(type?: any) {
-        // see if there is already a stack of this item in the hot bar, if so, check if it's less than the max stack size, if so, then add it to the stack
-        for (const item of this.hotBar) {
-            if (item[0] === type && item[1] < this.ITEM_DATA[type][2]) {
-                item[1]++;
-                // if the stack is full, then the possible items to pick up have changed.
-                if (item[1] === this.ITEM_DATA[type][2]) {
-                    this.updatePickUpAbleItems();
-                }
-                return;
-            }
-        }
-        // see if there is a blank slot in the hot bar
-        for (let i = 0; i < this.hotBar.length; i++) {
-            if (this.hotBar[i][0] === 0) {
-                this.hotBar[i] = [type, 1];
-
-                this.updatePickUpAbleItems();
-                return;
-            }
-        }
-        console.error(
-            'EntityItem ' +
-                type +
-                " couldn't be picked up.  The program shouldn't have tried to pick it up in the first place."
+    dropItemStack(itemStack: ItemStack, x: number, y: number) {
+        this.items.push(
+            new EntityItem(
+                itemStack,
+                x,
+                y,
+                0.5,
+                0.5,
+                this.random(-0.1, 0.1),
+                this.random(-0.1, 0)
+            )
         );
     }
 
-    updatePickUpAbleItems() {
-        this.pickUpAbleItems = [];
-        outerLoop: for (let i = 0; i < this.ITEM_DATA.length; i++) {
-            // see if there is already a stack of this item in the hot bar, if so, check if it's less than the max stack size
-            for (const item of this.hotBar) {
-                if (item[0] === i && item[1] < this.ITEM_DATA[i][2]) {
-                    this.pickUpAbleItems.push(true);
-                    continue outerLoop;
-                }
+    pickUpItem(itemStack: ItemStack): boolean {
+        for (let i = 0; i < this.hotBar.length; i++) {
+            const item = this.hotBar[i];
+
+            // If there are no items in the current slot of the hotBar
+            if (item === undefined) {
+                this.hotBar[i] = itemStack;
+                return true;
             }
-            // see if there is a blank slot in the hot bar
-            for (const item of this.hotBar) {
-                if (item[0] === 0) {
-                    this.pickUpAbleItems.push(true);
-                    continue outerLoop;
+
+            if (
+                item.item === itemStack.item &&
+                item.stackSize < item.item.maxStackSize
+            ) {
+                const remainingSpace = item.item.maxStackSize - item.stackSize;
+
+                // Top off the stack with items if it can take more than the stack being added
+                if (remainingSpace >= itemStack.stackSize) {
+                    this.hotBar[i].stackSize =
+                        item.stackSize + itemStack.stackSize;
+                    return true;
                 }
+
+                itemStack.stackSize -= remainingSpace;
+
+                this.hotBar[i].stackSize = itemStack.item.maxStackSize;
             }
-            this.pickUpAbleItems.push(false);
         }
+        console.error(
+            `Could not pickup ${itemStack.stackSize} ${itemStack.item.name}`
+        );
+        return false;
     }
 
     mouseExited() {
@@ -969,38 +837,21 @@ class Game extends P5 {
 
     drawCursor() {
         if (this.mouseOn) {
-            // don't do anything if the mouse isn't on the screen
-            // increase the time since an animFrame has happened by deltaTime, which is a built-in p5.js value
-            this.msSinceCursorAnimFrame += this.deltaTime;
-            this.cursorAnimFrame += this.floor(
-                this.msSinceCursorAnimFrame / this.msPerCursorAnimFrame
-            );
-            this.msSinceCursorAnimFrame -=
-                this.msPerCursorAnimFrame *
-                this.floor(
-                    this.msSinceCursorAnimFrame / this.msPerCursorAnimFrame
+            if (this.pickedUpSlot > -1) {
+                this.hotBar[this.pickedUpSlot].item.texture.render(
+                    this,
+                    this.mouseX,
+                    this.mouseY,
+                    8 * this.upscaleSize,
+                    8 * this.upscaleSize
                 );
-            this.cursorAnimFrame =
-                this.cursorAnimFrame %
-                this.assets.cursors[this.cursorIndex].length;
-            this.image(
-                this.assets.cursors[this.cursorIndex][this.cursorAnimFrame],
-                this.mouseX,
-                this.mouseY
-            );
-        }
-        if (this.pickedUpSlot > -1) {
-            this.image(
-                this.assets.itemsImage,
-                this.mouseX + 6 * this.upscaleSize,
-                this.mouseY + 6 * this.upscaleSize,
-                8 * this.upscaleSize,
-                8 * this.upscaleSize,
-                8 * this.hotBar[this.pickedUpSlot][0] - 8,
-                0,
-                8,
-                8
-            );
+
+                this.text(
+                    this.hotBar[this.pickedUpSlot].stackSize,
+                    this.mouseX + 10 * this.upscaleSize,
+                    this.mouseY + 10 * this.upscaleSize
+                );
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ const path = require('path');
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
-    mode: "production",
+    mode: "development",
     devtool: "inline-source-map",
     entry: {
         main: "./src/main/Main.ts",
@@ -24,9 +24,11 @@ module.exports = {
             }
         ]
     },
-    //optimization: {
-    //    minimize: true,
-    //    minimizer: [new TerserPlugin()],
-    //},
+    /*
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+    },
 
+     */
 };

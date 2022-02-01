@@ -1,6 +1,11 @@
 import { game } from '../Main';
 import P5 from 'p5';
 import Inventory from '../inventory/Inventory';
+import { Tile, Tiles } from './Tiles';
+import ImageResource from '../assets/resources/ImageResource';
+import TileResource from '../assets/resources/TileResource';
+import { WorldAssets } from '../assets/Assets';
+import Player from '../entities/Player';
 
 class World {
     width: number; // width of the world in tiles
@@ -88,50 +93,65 @@ class World {
             for (let j = 0; j < this.width; j++) {
                 // j is x position " "    "      "
                 if (this.worldTiles[i * this.width + j] !== 0) {
-                    // test if the neighboring tiles are solid
-                    const topTileBool =
-                        i === 0 ||
-                        this.worldTiles[(i - 1) * this.width + j] !== 0;
-                    const leftTileBool =
-                        j === 0 ||
-                        this.worldTiles[i * this.width + j - 1] !== 0;
-                    const bottomTileBool =
-                        i === this.height - 1 ||
-                        this.worldTiles[(i + 1) * this.width + j] !== 0;
-                    const rightTileBool =
-                        j === this.width - 1 ||
-                        this.worldTiles[i * this.width + j + 1] !== 0;
-
-                    // convert 4 digit binary number to base 10
-                    const tileSetIndex =
-                        8 * +topTileBool +
-                        4 * +rightTileBool +
-                        2 * +bottomTileBool +
-                        +leftTileBool;
-
                     // Draw the correct image for the tile onto the tile layer
-                    game.assets.tileSetImage
-                        .getTile(tileSetIndex)
-                        .render(
+
+                    const tile: Tile =
+                        Tiles[this.worldTiles[i * game.WORLD_WIDTH + j]];
+
+                    if (
+                        tile.connected &&
+                        tile.texture instanceof TileResource
+                    ) {
+                        // test if the neighboring tiles are solid
+                        const topTileBool =
+                            i === 0 ||
+                            this.worldTiles[(i - 1) * this.width + j] !== 0;
+                        const leftTileBool =
+                            j === 0 ||
+                            this.worldTiles[i * this.width + j - 1] !== 0;
+                        const bottomTileBool =
+                            i === this.height - 1 ||
+                            this.worldTiles[(i + 1) * this.width + j] !== 0;
+                        const rightTileBool =
+                            j === this.width - 1 ||
+                            this.worldTiles[i * this.width + j + 1] !== 0;
+
+                        // convert 4 digit binary number to base 10
+                        const tileSetIndex =
+                            8 * +topTileBool +
+                            4 * +rightTileBool +
+                            2 * +bottomTileBool +
+                            +leftTileBool;
+
+                        // Render connected tile
+                        tile.texture.renderTile(
+                            tileSetIndex,
                             game.world.tileLayer,
                             j * game.TILE_WIDTH,
                             i * game.TILE_HEIGHT,
                             game.TILE_WIDTH,
                             game.TILE_HEIGHT
                         );
+                    } else if (
+                        !tile.connected &&
+                        tile.texture instanceof ImageResource
+                    ) {
+                        // Render non-connected tile
+                        tile.texture.render(
+                            game.world.tileLayer,
+                            j * game.TILE_WIDTH,
+                            i * game.TILE_HEIGHT,
+                            game.TILE_WIDTH,
+                            game.TILE_HEIGHT
+                        );
+                    }
                 }
                 if (this.backgroundTiles[i * this.width + j] !== 0) {
                     // draw the correct image for the background tile onto the background tile layer
-                    this.backTileLayer.image(
-                        game.assets.backgroundTileSetImage,
+                    WorldAssets.background.snow.render(
+                        this.backTileLayer,
                         j * game.TILE_WIDTH + this.backTileLayerOffsetWidth,
                         i * game.TILE_HEIGHT + this.backTileLayerOffsetHeight,
-                        game.BACK_TILE_WIDTH,
-                        game.BACK_TILE_HEIGHT,
-                        game.TILE_SET_POSITIONS[
-                            this.backgroundTiles[i * this.width + j]
-                        ] * game.BACK_TILE_WIDTH,
-                        0,
                         game.BACK_TILE_WIDTH,
                         game.BACK_TILE_HEIGHT
                     );
@@ -145,7 +165,7 @@ class World {
     }
 
     belowIceHeight(x: number, y: number) {
-        return game.noise(x / 50) * 6 + 31 < y;
+        return game.noise(x / 50) * 6 + 31 < y + game.noise(x / 2, y / 2) * 0;
     }
 }
 
