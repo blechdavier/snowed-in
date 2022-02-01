@@ -69,6 +69,7 @@ craftables
 
 */
 
+
 class Game extends P5 {
     tempcol: any;
 
@@ -658,7 +659,6 @@ class Game extends P5 {
         }
     }
 
-
     uiFrameRect(
         x: number,
         y: number,
@@ -673,21 +673,21 @@ class Game extends P5 {
         h = this.round(h/this.upscaleSize)*this.upscaleSize;
 
         // corners
-        this.image(this.assets.uiFrame, x, y, 7*this.upscaleSize, 7*this.upscaleSize, 0, 0, 7, 7);
-        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y, 7*this.upscaleSize, 7*this.upscaleSize, 8, 0, 7, 7);
-        this.image(this.assets.uiFrame, x, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 0, 8, 7, 7);
-        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 8, 8, 7, 7);
+        UiAssets.ui_frame.renderPartial(this, x, y, 7*this.upscaleSize, 7*this.upscaleSize, 0, 0, 7, 7);
+        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y, 7*this.upscaleSize, 7*this.upscaleSize, 8, 0, 7, 7);
+        UiAssets.ui_frame.renderPartial(this, x, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 0, 8, 7, 7);
+        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 8, 8, 7, 7);
 
         // top and bottom
-        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 0, 1, 7);
-        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+h-7*this.upscaleSize, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 8, 1, 7);
+        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 0, 1, 7);
+        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y+h-7*this.upscaleSize, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 8, 1, 7);
 
         // left and right
-        this.image(this.assets.uiFrame, x, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 0, 7, 7, 1);
-        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 8, 7, 7, 1);
+        UiAssets.ui_frame.renderPartial(this, x, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 0, 7, 7, 1);
+        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 8, 7, 7, 1);
 
         // center
-        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+7*this.upscaleSize, w-14*this.upscaleSize, h-14*this.upscaleSize, 7, 7, 1, 1);
+        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y+7*this.upscaleSize, w-14*this.upscaleSize, h-14*this.upscaleSize, 7, 7, 1, 1);
     }
 
 

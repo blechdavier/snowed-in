@@ -184,7 +184,7 @@ class Game extends p5_1.default {
             itemsImage: this.loadImage('assets/textures/items/items.png'),
             TitleFont: this.loadFont('assets/fonts/Cave-Story.ttf'),
             snowflakeImage: this.loadImage('assets/textures/particles/snowflakes.png'),
-            uiFrame: this.loadImage('assets/textures/ui/uiFrame.png'),
+            uiFrame: this.loadImage('assets/textures/ui/uiframe.png'),
             // load the cursor images
             cursors: [
                 [this.loadImage('assets/textures/cursors/cursor.png')],
@@ -391,7 +391,8 @@ class Game extends p5_1.default {
             this.drawTile(this.worldMouseX, this.worldMouseY - 1);
         }
     }
-    mouseReleased(event) {
+
+    mouseReleased() {
         if (this.pickedUpSlot !== -1) {
             if (!(this.mouseX > 2 * this.upscaleSize &&
                 this.mouseX <
