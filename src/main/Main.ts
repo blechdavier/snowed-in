@@ -18,25 +18,54 @@ import TileResource from './assets/resources/TileResource';
 import ImageResource from './assets/resources/ImageResource';
 
 /*
-TODO:
+///INFORMATION
+//Starting a game
+Press Live Server to start the game
+or
+Type npm run prestart to start the game.
+//TODO
+When something in the todo section, either delete it and mark what was done in the description -
+- when pushing, or just mark it like this
+(example: Create a nuclear explosion -- X)
+///GENERAL TODO:
 
+//Audio
 sounds
+music
 NPC's
-Dirt
-stone
-better world generation
-font consistency
+
+//Visual
+Update snow textures
+Update GUI textures
+player character
+item lore implemented
+
+//Gameplay
 finish item management
 pause menu
+Hunger, heat, etc system
+item creation
+item use
+Parent Workbench
+
+//Objects
+dirt
+stone
+workbench
+backpack (used as chest)
+
+//Polish
+better world generation
+font consistency
 fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
 
 item management behavior todo:
-
 merge
 right click stack to pick up ceil(half of it)
 right click when picked up to add 1 if 0 or match
+craftables
 
 */
 
@@ -95,6 +124,12 @@ class Game extends P5 {
     backgroundParticles: any = [];
     foregroundParticles: any = [];
 
+    // cursor stuff
+    cursorAnimFrame = 0;
+    msSinceCursorAnimFrame = 0;
+    msPerCursorAnimFrame = 100;
+    cursorIndex = 1;
+
     // the keycode for the key that does the action
     controls = [
         68, // right
@@ -111,6 +146,9 @@ class Game extends P5 {
         55, // hot bar 7
         56, // hot bar 8
         57, // hot bar 9
+        48, // hot bar 10
+        189, // hot bar 11
+        187, // hot bar 12
     ];
 
     canvas: P5.Renderer;
@@ -159,6 +197,9 @@ class Game extends P5 {
         ) {
             this.upscaleSize += 2;
         }
+
+        // turn off the cursor image
+        this.noCursor();
 
         // remove texture interpolation
         this.noSmooth();
@@ -604,7 +645,6 @@ class Game extends P5 {
         }
 
         for (const item of this.items) {
-            item.combineWithNearItems();
             item.goTowardsPlayer();
             item.applyGravityAndDrag();
             item.applyVelocityAndCollide();
@@ -617,6 +657,39 @@ class Game extends P5 {
             }
         }
     }
+
+
+    uiFrameRect(
+        x: number,
+        y: number,
+        w: number,
+        h: number
+    ) {
+
+        // set the coords and dimensions to round to the nearest un-upscaled pixel
+        x = this.round(x/this.upscaleSize)*this.upscaleSize;
+        y = this.round(y/this.upscaleSize)*this.upscaleSize;
+        w = this.round(w/this.upscaleSize)*this.upscaleSize;
+        h = this.round(h/this.upscaleSize)*this.upscaleSize;
+
+        // corners
+        this.image(this.assets.uiFrame, x, y, 7*this.upscaleSize, 7*this.upscaleSize, 0, 0, 7, 7);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y, 7*this.upscaleSize, 7*this.upscaleSize, 8, 0, 7, 7);
+        this.image(this.assets.uiFrame, x, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 0, 8, 7, 7);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 8, 8, 7, 7);
+
+        // top and bottom
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 0, 1, 7);
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+h-7*this.upscaleSize, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 8, 1, 7);
+
+        // left and right
+        this.image(this.assets.uiFrame, x, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 0, 7, 7, 1);
+        this.image(this.assets.uiFrame, x+w-7*this.upscaleSize, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 8, 7, 7, 1);
+
+        // center
+        this.image(this.assets.uiFrame, x+7*this.upscaleSize, y+7*this.upscaleSize, w-14*this.upscaleSize, h-14*this.upscaleSize, 7, 7, 1, 1);
+    }
+
 
     /*
    /$$$$$$$  /$$                           /$$
