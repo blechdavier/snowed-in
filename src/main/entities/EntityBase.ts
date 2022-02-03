@@ -149,16 +149,6 @@ class EntityBase {
                         this.closestCollision[2] > this.collisionData[2]
                     ) {
                         this.closestCollision = this.collisionData;
-                        game.tempcol = [
-                            i - this.w,
-                            j - this.h,
-                            this.w + 1,
-                            this.h + 1,
-                            this.x,
-                            this.y,
-                            this.xVel,
-                            this.yVel,
-                        ];
                     }
                 }
             }
@@ -222,16 +212,6 @@ class EntityBase {
                             this.closestCollision[2] > this.collisionData[2]
                         ) {
                             this.closestCollision = this.collisionData;
-                            game.tempcol = [
-                                i - this.w,
-                                j - this.h,
-                                this.w + 1,
-                                this.h + 1,
-                                this.x,
-                                this.y,
-                                this.slideX,
-                                this.slideY,
-                            ];
                         }
                     }
                 }

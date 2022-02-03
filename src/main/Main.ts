@@ -71,7 +71,6 @@ craftables
 
 
 class Game extends P5 {
-    tempcol: any;
 
     WORLD_WIDTH: number = 512; // width of the world in tiles
     WORLD_HEIGHT: number = 64; // height of the world in tiles
@@ -198,9 +197,6 @@ class Game extends P5 {
         ) {
             this.upscaleSize += 2;
         }
-
-        // turn off the cursor image
-        this.noCursor();
 
         // remove texture interpolation
         this.noSmooth();
@@ -647,6 +643,7 @@ class Game extends P5 {
 
         for (const item of this.items) {
             item.goTowardsPlayer();
+            item.combineWithNearItems();
             item.applyGravityAndDrag();
             item.applyVelocityAndCollide();
         }

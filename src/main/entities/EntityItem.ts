@@ -36,7 +36,8 @@ class EntityItem extends EntityBase {
                 closestDistance > distance &&
                 item.itemStack.item === this.itemStack.item &&
                 item.itemStack.stackSize < item.itemStack.item.maxStackSize &&
-                this.itemStack.stackSize < this.itemStack.item.maxStackSize
+                this.itemStack.stackSize < this.itemStack.item.maxStackSize &&
+                this.itemStack.stackSize <= item.itemStack.stackSize
             ) {
                 closestItem = item;
                 closestDistance = distance;
@@ -51,17 +52,17 @@ class EntityItem extends EntityBase {
                         closestItem.itemStack.stackSize >=
                     this.itemStack.item.maxStackSize
                 ) {
-                    closestItem.itemStack.stackSize =
-                        closestItem.itemStack.stackSize -
-                        (this.itemStack.item.maxStackSize -
-                            this.itemStack.stackSize);
-                    this.itemStack.stackSize = this.itemStack.item.maxStackSize;
+                    this.itemStack.stackSize =
+                        this.itemStack.stackSize -
+                        (closestItem.itemStack.item.maxStackSize -
+                            closestItem.itemStack.stackSize);
+                    closestItem.itemStack.stackSize = closestItem.itemStack.item.maxStackSize;
                     return;
                 }
 
                 // Otherwise, add the amount of the other stack to the current stack and delete the other stack
-                this.itemStack.stackSize += closestItem.itemStack.stackSize;
-                closestItem.deleted = true;
+                closestItem.itemStack.stackSize += this.itemStack.stackSize;
+                this.deleted = true;
                 return;
             }
 
@@ -78,7 +79,7 @@ class EntityItem extends EntityBase {
                 (this.x + this.w / 2 - game.player.x - game.player.w / 2) +
                 (this.y + this.h / 2 - game.player.y - game.player.h / 2) *
                     (this.y + this.h / 2 - game.player.y - game.player.h / 2) <
-            50
+            20
         ) {
             if (
                 (this.x + this.w / 2 - game.player.x - game.player.w / 2) *
@@ -88,7 +89,7 @@ class EntityItem extends EntityBase {
                             this.h / 2 -
                             game.player.y -
                             game.player.h / 2) <
-                1
+                3
             ) {
                 this.deleted = game.pickUpItem(this.itemStack);
             } else {
