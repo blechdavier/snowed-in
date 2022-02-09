@@ -313,7 +313,6 @@ class Game extends p5 {
         this.currentUi.render(this, this.upscaleSize)
 
         // console.timeEnd("frame");
-        console.log(this.upscaleSize)
     }
 
     windowResized() {

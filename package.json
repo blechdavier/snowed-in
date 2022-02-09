@@ -5,8 +5,7 @@
   "scripts": {
     "build": "webpack -c ./webpage/webpack.config.js",
     "postbuild": "tslint -c tslint.json -p webpage/tsconfig.json --fix",
-    "start": "ts-node-dev --respawn -P server/tsconfig.json server/src/Main.ts ",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node-dev --respawn -P server/tsconfig.json server/src/Main.ts "
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +15,7 @@
     "@types/ws": "^8.2.2",
     "p5": "^1.4.0",
     "prettier": "^2.5.1",
+    "socket.io-client": "^4.4.1",
     "terser-webpack-plugin": "^5.3.0",
     "ts-loader": "^9.2.6",
     "ts-node-dev": "^1.1.8",
@@ -27,6 +27,7 @@
   "dependencies": {
     "events": "^3.3.0",
     "express": "^4.17.2",
+    "socket.io": "^4.4.1",
     "ts-node": "^10.4.0",
     "ws": "^8.4.2"
   }

@@ -1,26 +1,41 @@
-import { WebSocketServer } from 'ws';
+import crypto from 'crypto';
+import { ClientSocket, io } from '../Main';
+import { Socket } from 'socket.io';
 
-export = (server: WebSocketServer) => {
-    server.on('connection', (ws) => {
+export class GameServer {
+    id: string;
+    name: string;
+    maxPlayers: number;
+    listed: boolean;
 
-        let isAlive = true;
+    // Permissions
+    hostId: string;
 
-        const interval = setInterval(() => {
-            // If the client has not responded to the last ping
-            if(isAlive === false) ws.terminate();
+    constructor(
+        name: string,
+        maxPlayers: number,
+        listed: boolean,
+        id: string,
+        hostId: string
+    ) {
+        this.name = name;
+        this.maxPlayers = maxPlayers;
+        this.listed = listed;
+        this.id = id;
+        this.hostId = hostId;
+    }
 
-            // Set the alive state to false
-            isAlive = false;
-            // Ping the client
-            ws.ping()
-        }, 1000);
+    join(socket: Socket & ClientSocket, name: string) {
+        io.to(this.id)
+            .allSockets()
+            .then((sockets) => {
+                if (sockets.size >= this.maxPlayers) {
+                    // Cache the name
+                    socket.names[this.id] = name;
 
-        ws.on('ping', () => {
-            isAlive = true;
-        })
-
-        ws.on('close', (code: number, reason: Buffer) => {
-            clearInterval(interval)
-        })
-    })
+                    // Join the room
+                    socket.join(this.id);
+                }
+            });
+    }
 }

@@ -1,7 +1,12 @@
-interface OutBoundPacket {
+export interface OutBoundPacket {
     type: string
 }
 
-interface OutBoundServerConnect extends OutBoundPacket {
-    
+enum PacketType {
+    Connect = ""
+}
+
+export interface OutBoundServerConnect extends OutBoundPacket {
+    clientName: string
+    serverId: number
 }

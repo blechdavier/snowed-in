@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { OutBoundPacket } from './OutBoundPackets';
 
 class WebSocketClient extends EventEmitter {
 
@@ -8,6 +9,7 @@ class WebSocketClient extends EventEmitter {
 
     constructor(url: string, beatInterval: number) {
         super()
+        console.log("e")
         this.connection = new WebSocket(url);
         this._beatInterval = beatInterval;
 
@@ -26,12 +28,20 @@ class WebSocketClient extends EventEmitter {
         }
 
         this.connection.onopen = () => {
+            console.log(this.connection.readyState)
             this.emit("open")
         }
 
         this.connection.onclose = (event) => {
             this.emit("close", event)
         }
+    }
+
+    sendPacket(packet: OutBoundPacket) {
+        // Make sure that the connection is open
+        if(this.connection.readyState !== this.connection.OPEN) return
+
+        this.connection.send(JSON.stringify(packet))
     }
 }
 
