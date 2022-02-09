@@ -2,8 +2,9 @@ import Express from 'express'
 import http from 'http';
 import StaticDispatcher from './StaticDispatcher';
 import { Server, Socket } from 'socket.io';
-import { GameServer } from './websocket/GameServer';
+import { GameServer } from './game/GameServer';
 import crypto from 'crypto';
+import { ServerEvents } from '../../api/SocketEvents';
 
 const app = Express();
 
@@ -24,9 +25,11 @@ export type ClientSocket = {
 
     // Server names
     names: {[serverId: string]: string}
-}
+} & ServerEvents
 
 io.on("connection", (socket : Socket & ClientSocket) => {
+
+    console.log("connection")
 
     socket.on("serverBrowser", () => {
         // If the client is in game or already in the browser
@@ -35,22 +38,24 @@ io.on("connection", (socket : Socket & ClientSocket) => {
         socket.location = Location.ServerBrowser
     })
 
-    socket.on("create", (name: string, maxPlayers: number, listed: boolean) => {
+    socket.on("create", async (name: string, clientName: string, maxPlayers: number, listed: boolean) => {
         // Generate server id
         const serverId = crypto.randomBytes(16).toString("hex");
 
-        servers[serverId] = new GameServer(name, maxPlayers, listed, serverId, socket.id)
+        servers[serverId] = new GameServer(name, maxPlayers, listed, serverId, clientName)
 
         // Add the current socket to the room
-        socket.join(serverId)
+        await servers[serverId].join(socket, name)
     })
 
-    socket.on("join", (serverId: string, name: string) => {
+    socket.on("join", async (serverId: string, name: string) => {
         // Make sure that the serverId is valid
         if(servers[serverId] === undefined) return
 
+        // Invalid name or serverId
+        if(!/^[A-z0-9\-_]{3,20}$/.test(name) || !/^[a-f0-9]{32}$/.test(serverId)) return;
 
-        servers[serverId].join(socket, name)
+        await servers[serverId].join(socket, name)
     })
 
 });

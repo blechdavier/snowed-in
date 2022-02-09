@@ -18,6 +18,8 @@ import ImageResource from './assets/resources/ImageResource';
 import WebSocketClient from './websocket/WebSocketClient';
 import Renderable from './interfaces/Renderable';
 import ScreenMenu from './ui/screens/ScreenMenu';
+import { io, Socket } from 'socket.io-client';
+import { ClientEvents } from '../../api/SocketEvents';
 
 /*
 ///INFORMATION
@@ -153,9 +155,9 @@ class Game extends p5 {
 
     currentUi: Renderable
 
-    connection: WebSocketClient
+    connection: Socket & ClientEvents
 
-    constructor(connection: WebSocketClient) {
+    constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection
         this.currentUi = new ScreenMenu()
@@ -173,7 +175,11 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.world = new World(this.WORLD_WIDTH, this.WORLD_HEIGHT);
+        this.connection.on("loadWorld", ({ width, height, tiles, backgroundTiles }) => {
+            this.world = new World(width, height, tiles, backgroundTiles)
+        })
+
+        this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
 
         // Create a new player
         this.player = new Player(
@@ -204,7 +210,7 @@ class Game extends p5 {
         this.noSmooth();
 
         // generate and draw the world onto the p5.Graphics objects
-        this.world.generateWorld();
+        // this.world.loadWorld();
 
         // the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
         for (let i = 0; i < 255; i++) {
@@ -216,6 +222,7 @@ class Game extends p5 {
     }
 
     draw() {
+        return
         // console.time("frame");
 
         // wipe the screen with a happy little layer of light blue

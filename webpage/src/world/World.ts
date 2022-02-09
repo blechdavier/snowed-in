@@ -23,16 +23,14 @@ class World implements Tickable {
 
     inventory: Inventory;
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, tiles: Uint8Array, backgroundTiles: Uint8Array) {
+        // Initialize the world with the tiles and dimensions from the server
         this.width = width;
         this.height = height;
-
-        // initialize the world tile set storage array
-        this.worldTiles = new Uint8Array(this.width * this.height);
-        this.backgroundTiles = new Uint8Array(this.width * this.height);
+        this.worldTiles = tiles
+        this.backgroundTiles = backgroundTiles
 
         // define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
-        console.log()
         this.tileLayer = game.createGraphics(
             this.width * game.TILE_WIDTH,
             this.height * game.TILE_HEIGHT
@@ -51,45 +49,7 @@ class World implements Tickable {
         this.inventory = new Inventory();
     }
 
-    generateWorld() {
-        // this generation algorithm is by no means optimized
-        for (let i = 0; i < this.height; i++) {
-            // i will be the y position of tile being generated
-            for (let j = 0; j < this.width; j++) {
-                // j is x position " "    "      "
-                if (this.belowTerrainHeight(j, i)) {
-                    if (this.belowIceHeight(j, i)) {
-                        this.worldTiles[i * this.width + j] = 2;
-                    } else {
-                        this.worldTiles[i * this.width + j] = 1;
-                    }
-                } else {
-                    this.worldTiles[i * this.width + j] = 0;
-                }
-            }
-        }
-        for (let i = 0; i < this.height; i++) {
-            // i will be the y position of background tile being generated
-            for (let j = 0; j < this.width; j++) {
-                // j is x position " "    "      "
-                // if this tile and its eight surrounding tiles are below the height of the terrain (at one point could be a tile of snow, ice, etc.), then add a background tile there.
-                if (
-                    this.belowTerrainHeight(j - 1, i - 1) &&
-                    this.belowTerrainHeight(j - 1, i) &&
-                    this.belowTerrainHeight(j - 1, i + 1) &&
-                    this.belowTerrainHeight(j, i - 1) &&
-                    this.belowTerrainHeight(j, i) &&
-                    this.belowTerrainHeight(j, i + 1) &&
-                    this.belowTerrainHeight(j + 1, i - 1) &&
-                    this.belowTerrainHeight(j + 1, i) &&
-                    this.belowTerrainHeight(j + 1, i + 1)
-                ) {
-                    this.backgroundTiles[i * this.width + j] = 1;
-                } else {
-                    this.backgroundTiles[i * this.width + j] = 0;
-                }
-            }
-        }
+    loadWorld() {
         for (let i = 0; i < this.height; i++) {
             // i will be the y position of tile being drawn
             for (let j = 0; j < this.width; j++) {
@@ -161,15 +121,6 @@ class World implements Tickable {
             }
         }
     }
-
-    belowTerrainHeight(x: number, y: number) {
-        return game.noise(x / 50) * 16 + 20 < y;
-    }
-
-    belowIceHeight(x: number, y: number) {
-        return game.noise(x / 50) * 6 + 31 < y + game.noise(x / 2, y / 2) * 0;
-    }
-
 
     tick(game: Game): void {
     }
