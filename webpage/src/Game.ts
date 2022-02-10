@@ -196,7 +196,12 @@ class Game extends p5 {
         })
 
         // Update the other players in the world
-        this.connection.on('tick-player', (players: {name: string, x: number, y: number, xv: number, yv: number}[]) => {
+        this.connection.on('tick-player', (players: {[name: string]: {
+                x: number;
+                y: number;
+                xv: number;
+                yv: number;
+            }} ) => {
             // If the world is not set
             if(this.world === undefined) return
 
@@ -208,15 +213,8 @@ class Game extends p5 {
             this.world.tick(this)
         }, 1000 / this.playerTickRate)
 
-           this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
-         // this.connection.emit('join', "4a30a1de3724df72d25b5c00afecad06", "player2")
-
-        function getCookie(name: string) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
+        // this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
+        this.connection.emit('join', "1f6b82e05071c22daf56f603679a3dd3", "player2")
 
         // go for a scale of <64 tiles wide screen
         this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
@@ -307,7 +305,7 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        this.currentUi.render(this, this.upscaleSize)
+        // this.currentUi.render(this, this.upscaleSize)
 
         // console.timeEnd("frame");
     }
@@ -637,13 +635,6 @@ class Game extends p5 {
                 this.height / this.upscaleSize / this.TILE_HEIGHT;
         }
 
-        for (const item of this.backgroundParticles) {
-            item.updatePhysics();
-        }
-        for (const item of this.foregroundParticles) {
-            item.updatePhysics();
-        }
-
         for (const item of this.items) {
             item.goTowardsPlayer();
             item.combineWithNearItems();
@@ -804,37 +795,6 @@ class Game extends p5 {
             this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
         );
 
-
-        for (const player of this.world.players) {
-            this.rect(
-                (player.x * this.TILE_WIDTH -
-                    this.interpolatedCamX * this.TILE_WIDTH) *
-                this.upscaleSize,
-                (player.y * this.TILE_HEIGHT -
-                    this.interpolatedCamY * this.TILE_HEIGHT) *
-                this.upscaleSize,
-                this.world.player.w * this.upscaleSize * this.TILE_WIDTH,
-                this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
-            );
-
-            // Render the item quantity label
-            this.fill(0);
-
-            this.noStroke();
-
-            this.textAlign(this.RIGHT, this.BOTTOM);
-            this.textSize(5 * this.upscaleSize);
-
-            this.text(
-                player.name,
-                (player.x * this.TILE_WIDTH -
-                    this.interpolatedCamX * this.TILE_WIDTH) *
-                this.upscaleSize,
-                (player.y * this.TILE_HEIGHT -
-                    this.interpolatedCamY * this.TILE_HEIGHT) *
-                this.upscaleSize
-            );
-        }
 
         for (const item of this.items) {
             item.findInterpolatedCoordinates();

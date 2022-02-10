@@ -5,17 +5,18 @@ export type ServerEvents = {
         height: number,
         tiles: number[],
         backgroundTiles: number[],
-        spawnPosition: {x: number, y: number}
+        spawnPosition: { x: number; y: number }
     ): void;
     emit(
         event: 'tick-player',
         players: {
-            name: string;
-            x: number;
-            y: number;
-            xv: number;
-            yv: number;
-        }[]
+            [name: string]: {
+                x: number;
+                y: number;
+                xv: number;
+                yv: number;
+            };
+        }
     ): void;
     emit(event: 'init', data: { playerTickRate: number }): void;
     emit(
@@ -39,20 +40,19 @@ export type ClientEvents = {
             height: number,
             tiles: number[],
             backgroundTiles: number[],
-            spawnPosition: {x: number, y: number}
+            spawnPosition: { x: number; y: number }
         ) => void
     ): void;
     on(
         event: 'tick-player',
-        callback: (
-            players: {
-                name: string;
+        callback: (players: {
+            [name: string]: {
                 x: number;
                 y: number;
                 xv: number;
                 yv: number;
-            }[]
-        ) => void
+            };
+        }) => void
     ): void;
     on(
         event: 'init',

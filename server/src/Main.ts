@@ -27,7 +27,7 @@ export type ClientSocket = {
 
 io.on("connection", (socket : Socket & ClientSocket) => {
 
-    socket.emit("init", { playerTickRate: 100 })
+    socket.emit("init", { playerTickRate: 66 })
 
     socket.on("create", async (name: string, clientName: string, maxPlayers: number, listed: boolean) => {
         // Generate server id

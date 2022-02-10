@@ -1,27 +1,37 @@
 import { Permissions } from './GameServer';
 
 export class Player {
+    name: string;
+    socketId: string;
 
-    name: string
-    socketId: string
-
-    permissions: Permissions
+    permissions: Permissions;
 
     // Position
-    x: number
-    y: number
-    xVel = 0
-    yVel = 0
+    x: number;
+    y: number;
+    xVel = 0;
+    yVel = 0;
 
-    constructor(name: string, socketId: string, x: number, y: number, permissions: Permissions) {
-        this.name = name
+    constructor(
+        name: string,
+        socketId: string,
+        x: number,
+        y: number,
+        permissions: Permissions
+    ) {
+        this.name = name;
         this.x = x;
         this.y = y;
-        this.socketId = socketId
-        this.permissions = permissions
+        this.socketId = socketId;
+        this.permissions = permissions;
     }
 
     getPlayer() {
-        return {name: this.name, x: this.x, y: this.y, xv: this.xVel, yv: this.yVel}
+        return {
+            x: +this.x.toFixed(2),
+            y: +this.y.toFixed(2),
+            xv: +this.xVel.toFixed(4),
+            yv: +this.yVel.toFixed(4),
+        };
     }
 }

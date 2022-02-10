@@ -40,21 +40,21 @@ export class GameServer {
         this.hostName = clientName
 
         // Server ticks per second
-        let tps = 100
+        let tps = 66
         setInterval(async () => {
             let start = process.hrtime.bigint()
             const sockets = await io.to(this.id).fetchSockets()
 
             sockets.forEach((socket: RemoteSocket<DefaultEventsMap, any> & ClientSocket) => {
-                const playersArray = Object.entries(this.players).filter(([ , player]) => {
-
-                })
-                const worldPlayers = Object.entries(this.players).map(([, player]) => {
-                    return player.socketId !== socket.id ? player.getPlayer() : undefined
+                const worldPlayers: {[name: string]: ReturnType<Player['getPlayer']>} = {}
+                Object.entries(this.players).forEach(([, player]) => {
+                    if(player.socketId !== socket.id)
+                        worldPlayers[player.name] = player.getPlayer()
                 })
                 socket.emit("tick-player", worldPlayers)
             })
-            console.log(`time: ${Number(process.hrtime.bigint() - start) / 1000000}`)
+
+            console.log(`time: ${Number(process.hrtime.bigint() - start) / 1000000}ms`)
         }, 1000 / tps)
 
         console.log(`Created game server with name: ${name} by ${clientName}`)

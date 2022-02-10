@@ -10,6 +10,7 @@ import Game from '../Game';
 import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
 import Player from './entities/Player';
+import OtherPlayer from './entities/OtherPlayer';
 
 class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -27,7 +28,13 @@ class World implements Tickable, Renderable {
     inventory: Inventory;
 
     player: Player
-    players: {name: string, x: number, y: number, xv: number, yv: number}[] = []
+    players: {[name: string]:OtherPlayer} = {}
+    playersData: {[name: string]: {
+        x: number;
+        y: number;
+        xv: number;
+        yv: number;
+    }} = {}
 
     constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], player: Player) {
         // Initialize the world with the tiles and dimensions from the server
@@ -88,10 +95,65 @@ class World implements Tickable, Renderable {
             game.width / upscaleSize,
             game.height / upscaleSize
         );
+
+        this.renderPlayers(target, upscaleSize)
     }
 
-    updatePlayers(players: {name: string, x: number, y: number, xv: number, yv: number}[]) {
-        this.players = players;
+    renderPlayers(target: p5, upscaleSize: number) {
+        for (const player of Object.entries(this.players)) {
+            const coordinates = player[1].getInterpolatedCoordinates()
+            target.rect(
+                (coordinates.x * game.TILE_WIDTH -
+                    game.interpolatedCamX * game.TILE_WIDTH) *
+                upscaleSize,
+                (coordinates.y * game.TILE_HEIGHT -
+                    game.interpolatedCamY * game.TILE_HEIGHT) *
+                upscaleSize,
+                this.player.w * upscaleSize * game.TILE_WIDTH,
+                this.player.h * upscaleSize * game.TILE_HEIGHT
+            );
+
+            // Render the item quantity label
+            target.fill(0);
+
+            target.noStroke();
+
+            target.textAlign(target.CENTER, target.TOP);
+            target.textSize(5 * upscaleSize);
+
+            target.text(
+                player[0],
+                ((coordinates.x * game.TILE_WIDTH + this.player.w / 2) -
+                    game.interpolatedCamX * game.TILE_WIDTH) *
+                upscaleSize,
+                (coordinates.y * game.TILE_HEIGHT -
+                    game.interpolatedCamY * game.TILE_HEIGHT) *
+                upscaleSize
+            );
+        }
+    }
+
+    updatePlayers(players: {[name: string]: {
+            x: number;
+            y: number;
+            xv: number;
+            yv: number;
+        }}) {
+        this.playersData = players
+        Object.entries(this.players).forEach(([name,]) => {
+            // Delete the removed players
+            if(players[name] === undefined)
+                delete this.players[name]
+        })
+        Object.entries(players).forEach(([name, data]) => {
+            // Add a new physics object for each player
+            if(this.players[name] === undefined) {
+                this.players[name] = new OtherPlayer(data.x, data.y, this.player.w, this.player.h, data.xv, data.yv)
+                return
+            }
+            // Set the data
+            this.players[name].updatePos(data.x, data.y)
+        })
     }
 
     loadWorld() {
