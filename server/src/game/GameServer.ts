@@ -1,7 +1,8 @@
 import { ClientSocket, io } from '../Main';
-import { Socket } from 'socket.io';
+import { RemoteSocket, Socket } from 'socket.io';
 import { Player } from './Player';
 import { World } from './World';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 export type Permissions = {
     isAdmin: boolean
@@ -41,15 +42,22 @@ export class GameServer {
         // Server ticks per second
         let tps = 100
         setInterval(async () => {
+            let start = process.hrtime.bigint()
             const sockets = await io.to(this.id).fetchSockets()
 
-            sockets.forEach((socket) => {
-                const worldPlayers = Object.entries(this.players).map(([name, player]) => {
+            sockets.forEach((socket: RemoteSocket<DefaultEventsMap, any> & ClientSocket) => {
+                const playersArray = Object.entries(this.players).filter(([ , player]) => {
+
+                })
+                const worldPlayers = Object.entries(this.players).map(([, player]) => {
                     return player.socketId !== socket.id ? player.getPlayer() : undefined
                 })
-                socket.emit("playerTick", worldPlayers)
+                socket.emit("tick-player", worldPlayers)
             })
+            console.log(`time: ${Number(process.hrtime.bigint() - start) / 1000000}`)
         }, 1000 / tps)
+
+        console.log(`Created game server with name: ${name} by ${clientName}`)
     }
 
     async join(socket: Socket & ClientSocket, name: string) {
@@ -70,7 +78,13 @@ export class GameServer {
         })
 
         // Send the world to the client
-        socket.emit("loadWorld", {width: this.world.width, height: this.world.height, tiles: this.world.tiles, backgroundTiles: this.world.backgroundTiles})
-        socket.emit("players")
+        socket.emit("load-world", this.world.width, this.world.height, this.world.tiles, this.world.backgroundTiles, this.world.spawnPosition)
+
+        socket.on("player-update", (x: number, y: number, xVel: number, yVel: number) => {
+            this.players[name].x = x
+            this.players[name].y =y
+            this.players[name].xVel = xVel
+            this.players[name].yVel = yVel
+        })
     }
 }

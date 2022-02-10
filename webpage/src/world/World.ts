@@ -7,8 +7,11 @@ import TileResource from '../assets/resources/TileResource';
 import { WorldAssets } from '../assets/Assets';
 import Tickable from '../interfaces/Tickable';
 import Game from '../Game';
+import Renderable from '../interfaces/Renderable';
+import p5 from 'p5';
+import Player from './entities/Player';
 
-class World implements Tickable {
+class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
     height: number; // height of the world in tiles
 
@@ -18,17 +21,21 @@ class World implements Tickable {
     backTileLayerOffsetWidth: number; // what is this exactly xavier...
     backTileLayerOffsetHeight: number; // what is this exactly xavier...
 
-    worldTiles: Uint8Array; // number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
-    backgroundTiles: Uint8Array; // number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+    worldTiles: number[]; // number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+    backgroundTiles: number[]; // number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
     inventory: Inventory;
 
-    constructor(width: number, height: number, tiles: Uint8Array, backgroundTiles: Uint8Array) {
+    player: Player
+    players: {name: string, x: number, y: number, xv: number, yv: number}[] = []
+
+    constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], player: Player) {
         // Initialize the world with the tiles and dimensions from the server
         this.width = width;
         this.height = height;
         this.worldTiles = tiles
         this.backgroundTiles = backgroundTiles
+        this.player = player
 
         // define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
         this.tileLayer = game.createGraphics(
@@ -47,6 +54,44 @@ class World implements Tickable {
             (game.TILE_HEIGHT - game.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
 
         this.inventory = new Inventory();
+
+        this.loadWorld();
+    }
+
+    tick(game: Game) {
+        game.connection.emit("player-update", this.player.x, this.player.y, this.player.xVel, this.player.yVel)
+    }
+
+    render(target: p5, upscaleSize: number) {
+        // draw the background tile layer onto the screen
+        target.image(
+            this.backTileLayer,
+            0,
+            0,
+            game.width,
+            game.height,
+            game.interpolatedCamX * game.TILE_WIDTH,
+            game.interpolatedCamY * game.TILE_WIDTH,
+            game.width / upscaleSize,
+            game.height / upscaleSize
+        );
+
+        // draw the tile layer onto the screen
+        target.image(
+            this.tileLayer,
+            0,
+            0,
+            game.width,
+            game.height,
+            game.interpolatedCamX * game.TILE_WIDTH,
+            game.interpolatedCamY * game.TILE_WIDTH,
+            game.width / upscaleSize,
+            game.height / upscaleSize
+        );
+    }
+
+    updatePlayers(players: {name: string, x: number, y: number, xv: number, yv: number}[]) {
+        this.players = players;
     }
 
     loadWorld() {
@@ -56,7 +101,6 @@ class World implements Tickable {
                 // j is x position " "    "      "
                 if (this.worldTiles[i * this.width + j] !== 0) {
                     // Draw the correct image for the tile onto the tile layer
-
                     const tile: Tile =
                         Tiles[this.worldTiles[i * game.WORLD_WIDTH + j]];
 
@@ -88,7 +132,7 @@ class World implements Tickable {
                         // Render connected tile
                         tile.texture.renderTile(
                             tileSetIndex,
-                            game.world.tileLayer,
+                            this.tileLayer,
                             j * game.TILE_WIDTH,
                             i * game.TILE_HEIGHT,
                             game.TILE_WIDTH,
@@ -100,7 +144,7 @@ class World implements Tickable {
                     ) {
                         // Render non-connected tile
                         tile.texture.render(
-                            game.world.tileLayer,
+                            this.tileLayer,
                             j * game.TILE_WIDTH,
                             i * game.TILE_HEIGHT,
                             game.TILE_WIDTH,
@@ -120,9 +164,7 @@ class World implements Tickable {
                 }
             }
         }
-    }
-
-    tick(game: Game): void {
+        console.log("Loading complete")
     }
 }
 export = World;

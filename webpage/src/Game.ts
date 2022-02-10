@@ -103,9 +103,6 @@ class Game extends p5 {
     GRAVITY_SPEED: number = 0.04; // in units per second tick, positive means downward gravity, negative means upward gravity
     DRAG_COEFFICIENT: number = 0.21; // arbitrary number, 0 means no drag
 
-    // player instance holder
-    player: Player;
-
     // array for all the items
     items: EntityItem[] = [];
 
@@ -157,10 +154,16 @@ class Game extends p5 {
 
     connection: Socket & ClientEvents
 
+    playerTickRate: number
+
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection
         this.currentUi = new ScreenMenu()
+        this.connection.on("init", ({playerTickRate}) => {
+            console.log(`Tick rate set to: ${playerTickRate}`)
+            this.playerTickRate = playerTickRate
+        })
     }
 
     preload() {
@@ -175,36 +178,48 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.connection.on("loadWorld", ({ width, height, tiles, backgroundTiles }) => {
-            this.world = new World(width, height, tiles, backgroundTiles)
+        // Load the world and set the player
+        this.connection.on("load-world", (width, height, tiles, backgroundTiles, spawnPosition) => {
+            this.world = new World(width, height, tiles, backgroundTiles, new Player(spawnPosition.x, spawnPosition.y,
+                12 / this.TILE_WIDTH,
+                20 / this.TILE_HEIGHT,
+                0,
+                0))
         })
 
-        this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
+        // Update the player
+        this.connection.on("set-player", (x, y, yVel, xVel) => {
+            this.world.player.x = x
+            this.world.player.y = y
+            this.world.player.yVel = yVel
+            this.world.player.xVel = xVel
+        })
 
-        // Create a new player
-        this.player = new Player(
-            16,
-            4,
-            12 / this.TILE_WIDTH,
-            20 / this.TILE_HEIGHT,
-            0,
-            0
-        );
+        // Update the other players in the world
+        this.connection.on('tick-player', (players: {name: string, x: number, y: number, xv: number, yv: number}[]) => {
+            // If the world is not set
+            if(this.world === undefined) return
+
+            this.world.updatePlayers(players)
+        })
+
+        setInterval(() => {
+            if(this.world === undefined) return
+            this.world.tick(this)
+        }, 1000 / this.playerTickRate)
+
+           this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
+         // this.connection.emit('join', "4a30a1de3724df72d25b5c00afecad06", "player2")
+
+        function getCookie(name: string) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
 
         // go for a scale of <64 tiles wide screen
-        this.upscaleSize =
-            this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
-
-        // if the world is too zoomed out, then zoom it in.
-        while (
-            this.WORLD_WIDTH * this.TILE_WIDTH - this.width / this.upscaleSize <
-                0 ||
-            this.WORLD_HEIGHT * this.TILE_HEIGHT -
-                this.height / this.upscaleSize <
-                0
-        ) {
-            this.upscaleSize += 2;
-        }
+        this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
 
         // remove texture interpolation
         this.noSmooth();
@@ -222,7 +237,6 @@ class Game extends p5 {
     }
 
     draw() {
-        return
         // console.time("frame");
 
         // wipe the screen with a happy little layer of light blue
@@ -237,31 +251,7 @@ class Game extends p5 {
         // update the camera's interpolation
         this.moveCamera();
 
-        // draw the background tile layer onto the screen
-        this.image(
-            this.world.backTileLayer,
-            0,
-            0,
-            this.width,
-            this.height,
-            this.interpolatedCamX * this.TILE_WIDTH,
-            this.interpolatedCamY * this.TILE_WIDTH,
-            this.width / this.upscaleSize,
-            this.height / this.upscaleSize
-        );
-
-        // draw the tile layer onto the screen
-        this.image(
-            this.world.tileLayer,
-            0,
-            0,
-            this.width,
-            this.height,
-            this.interpolatedCamX * this.TILE_WIDTH,
-            this.interpolatedCamY * this.TILE_WIDTH,
-            this.width / this.upscaleSize,
-            this.height / this.upscaleSize
-        );
+        if(this.world !== undefined) this.world.render(this, this.upscaleSize)
 
         // render the player, all items, etc.  Basically any physicsRect or particle
         this.renderEntities();
@@ -593,7 +583,7 @@ class Game extends p5 {
             ticksThisFrame !== this.forgivenessCount
         ) {
             // console.time("tick");
-            this.doTick();
+            if(this.world !== undefined) this.doTick();
             // console.timeEnd("tick");
             this.msSinceTick -= this.msPerTick;
             ticksThisFrame++;
@@ -608,22 +598,22 @@ class Game extends p5 {
     }
 
     doTick() {
-        this.player.keyboardInput();
-        this.player.applyGravityAndDrag();
-        this.player.applyVelocityAndCollide();
+        this.world.player.keyboardInput();
+        this.world.player.applyGravityAndDrag();
+        this.world.player.applyVelocityAndCollide();
 
         this.pCamX = this.camX;
         this.pCamY = this.camY;
         const desiredCamX =
-            this.player.x +
-            this.player.w / 2 -
+            this.world.player.x +
+            this.world.player.w / 2 -
             this.width / 2 / this.TILE_WIDTH / this.upscaleSize +
-            this.player.xVel * 40;
+            this.world.player.xVel * 40;
         const desiredCamY =
-            this.player.y +
-            this.player.h / 2 -
+            this.world.player.y +
+            this.world.player.h / 2 -
             this.height / 2 / this.TILE_HEIGHT / this.upscaleSize +
-            this.player.yVel * 20;
+            this.world.player.yVel * 20;
         this.camX = (desiredCamX + this.camX * 24) / 25;
         this.camY = (desiredCamY + this.camY * 24) / 25;
 
@@ -801,17 +791,50 @@ class Game extends p5 {
         // draw player
         this.fill(255, 0, 0);
         this.noStroke();
-        this.player.findInterpolatedCoordinates();
+        if(this.world === undefined) return;
+        this.world.player.findInterpolatedCoordinates();
         this.rect(
-            (this.player.interpolatedX * this.TILE_WIDTH -
+            (this.world.player.interpolatedX * this.TILE_WIDTH -
                 this.interpolatedCamX * this.TILE_WIDTH) *
                 this.upscaleSize,
-            (this.player.interpolatedY * this.TILE_HEIGHT -
+            (this.world.player.interpolatedY * this.TILE_HEIGHT -
                 this.interpolatedCamY * this.TILE_HEIGHT) *
                 this.upscaleSize,
-            this.player.w * this.upscaleSize * this.TILE_WIDTH,
-            this.player.h * this.upscaleSize * this.TILE_HEIGHT
+            this.world.player.w * this.upscaleSize * this.TILE_WIDTH,
+            this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
         );
+
+
+        for (const player of this.world.players) {
+            this.rect(
+                (player.x * this.TILE_WIDTH -
+                    this.interpolatedCamX * this.TILE_WIDTH) *
+                this.upscaleSize,
+                (player.y * this.TILE_HEIGHT -
+                    this.interpolatedCamY * this.TILE_HEIGHT) *
+                this.upscaleSize,
+                this.world.player.w * this.upscaleSize * this.TILE_WIDTH,
+                this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
+            );
+
+            // Render the item quantity label
+            this.fill(0);
+
+            this.noStroke();
+
+            this.textAlign(this.RIGHT, this.BOTTOM);
+            this.textSize(5 * this.upscaleSize);
+
+            this.text(
+                player.name,
+                (player.x * this.TILE_WIDTH -
+                    this.interpolatedCamX * this.TILE_WIDTH) *
+                this.upscaleSize,
+                (player.y * this.TILE_HEIGHT -
+                    this.interpolatedCamY * this.TILE_HEIGHT) *
+                this.upscaleSize
+            );
+        }
 
         for (const item of this.items) {
             item.findInterpolatedCoordinates();

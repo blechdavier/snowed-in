@@ -17,10 +17,11 @@ export class Player {
         this.name = name
         this.x = x;
         this.y = y;
+        this.socketId = socketId
         this.permissions = permissions
     }
 
     getPlayer() {
-        return {x: this.x, y: this.y, xv: this.xVel, yv: this.yVel}
+        return {name: this.name, x: this.x, y: this.y, xv: this.xVel, yv: this.yVel}
     }
 }

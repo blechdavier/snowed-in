@@ -5,6 +5,9 @@ import { Server, Socket } from 'socket.io';
 import { GameServer } from './game/GameServer';
 import crypto from 'crypto';
 import { ServerEvents } from '../../api/SocketEvents';
+import clipboard from 'clipboardy';
+
+import('clipboardy')
 
 const app = Express();
 
@@ -14,29 +17,17 @@ export const io = new Server(httpServer, {});
 
 enum Location {
     None,
-    ServerBrowser,
     Game,
 }
 
 const servers: {[name: string]: GameServer} = {}
 
 export type ClientSocket = {
-    location: Location
-
-    // Server names
-    names: {[serverId: string]: string}
 } & ServerEvents
 
 io.on("connection", (socket : Socket & ClientSocket) => {
 
-    console.log("connection")
-
-    socket.on("serverBrowser", () => {
-        // If the client is in game or already in the browser
-        if(socket.location !== Location.None) return
-
-        socket.location = Location.ServerBrowser
-    })
+    socket.emit("init", { playerTickRate: 100 })
 
     socket.on("create", async (name: string, clientName: string, maxPlayers: number, listed: boolean) => {
         // Generate server id
@@ -45,11 +36,14 @@ io.on("connection", (socket : Socket & ClientSocket) => {
         servers[serverId] = new GameServer(name, maxPlayers, listed, serverId, clientName)
 
         // Add the current socket to the room
+        console.log(servers)
+        await clipboard.write(serverId)
         await servers[serverId].join(socket, name)
     })
 
     socket.on("join", async (serverId: string, name: string) => {
         // Make sure that the serverId is valid
+        console.log("Joining server " + serverId)
         if(servers[serverId] === undefined) return
 
         // Invalid name or serverId
