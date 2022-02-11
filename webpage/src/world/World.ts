@@ -32,8 +32,6 @@ class World implements Tickable, Renderable {
     playersData: {[name: string]: {
         x: number;
         y: number;
-        xv: number;
-        yv: number;
     }} = {}
 
     constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], player: Player) {
@@ -66,7 +64,7 @@ class World implements Tickable, Renderable {
     }
 
     tick(game: Game) {
-        game.connection.emit("player-update", this.player.x, this.player.y, this.player.xVel, this.player.yVel)
+        game.connection.emit("player-update", this.player.x, this.player.y)
     }
 
     render(target: p5, upscaleSize: number) {
@@ -101,12 +99,16 @@ class World implements Tickable, Renderable {
 
     renderPlayers(target: p5, upscaleSize: number) {
         for (const player of Object.entries(this.players)) {
-            const coordinates = player[1].getInterpolatedCoordinates()
+
+            player[1].getInterpolatedCoordinates()
+
+            target.fill(0, 255, 0);
+
             target.rect(
-                (coordinates.x * game.TILE_WIDTH -
+                (player[1].x * game.TILE_WIDTH -
                     game.interpolatedCamX * game.TILE_WIDTH) *
                 upscaleSize,
-                (coordinates.y * game.TILE_HEIGHT -
+                (player[1].y * game.TILE_HEIGHT -
                     game.interpolatedCamY * game.TILE_HEIGHT) *
                 upscaleSize,
                 this.player.w * upscaleSize * game.TILE_WIDTH,
@@ -118,16 +120,16 @@ class World implements Tickable, Renderable {
 
             target.noStroke();
 
-            target.textAlign(target.CENTER, target.TOP);
             target.textSize(5 * upscaleSize);
+            target.textAlign(target.CENTER, target.TOP);
 
             target.text(
                 player[0],
-                ((coordinates.x * game.TILE_WIDTH + this.player.w / 2) -
-                    game.interpolatedCamX * game.TILE_WIDTH) *
+                (((player[1].x * game.TILE_WIDTH) -
+                    game.interpolatedCamX * game.TILE_WIDTH) + (this.player.w * game.TILE_WIDTH) / 2) *
                 upscaleSize,
-                (coordinates.y * game.TILE_HEIGHT -
-                    game.interpolatedCamY * game.TILE_HEIGHT) *
+                (((player[1].y * game.TILE_HEIGHT) -
+                    game.interpolatedCamY * game.TILE_HEIGHT) - (this.player.h * game.TILE_WIDTH) / 2.5) *
                 upscaleSize
             );
         }
@@ -136,8 +138,6 @@ class World implements Tickable, Renderable {
     updatePlayers(players: {[name: string]: {
             x: number;
             y: number;
-            xv: number;
-            yv: number;
         }}) {
         this.playersData = players
         Object.entries(this.players).forEach(([name,]) => {
@@ -148,7 +148,7 @@ class World implements Tickable, Renderable {
         Object.entries(players).forEach(([name, data]) => {
             // Add a new physics object for each player
             if(this.players[name] === undefined) {
-                this.players[name] = new OtherPlayer(data.x, data.y, this.player.w, this.player.h, data.xv, data.yv)
+                this.players[name] = new OtherPlayer(data.x, data.y, this.player.w, this.player.h)
                 return
             }
             // Set the data

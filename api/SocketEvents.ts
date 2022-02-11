@@ -12,9 +12,7 @@ export type ServerEvents = {
         players: {
             [name: string]: {
                 x: number;
-                y: number;
-                xv: number;
-                yv: number;
+                y: number
             };
         }
     ): void;
@@ -28,7 +26,7 @@ export type ServerEvents = {
     ): void;
     on(
         event: 'player-update',
-        callback: (x: number, y: number, yVel: number, xVel: number) => void
+        callback: (x: number, y: number) => void
     ): void;
 };
 
@@ -49,8 +47,6 @@ export type ClientEvents = {
             [name: string]: {
                 x: number;
                 y: number;
-                xv: number;
-                yv: number;
             };
         }) => void
     ): void;
@@ -66,7 +62,5 @@ export type ClientEvents = {
         event: 'player-update',
         x: number,
         y: number,
-        yVel: number,
-        xVel: number
     ): void;
 };

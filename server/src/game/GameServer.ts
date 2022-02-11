@@ -80,11 +80,9 @@ export class GameServer {
         // Send the world to the client
         socket.emit("load-world", this.world.width, this.world.height, this.world.tiles, this.world.backgroundTiles, this.world.spawnPosition)
 
-        socket.on("player-update", (x: number, y: number, xVel: number, yVel: number) => {
+        socket.on("player-update", (x: number, y: number) => {
             this.players[name].x = x
             this.players[name].y =y
-            this.players[name].xVel = xVel
-            this.players[name].yVel = yVel
         })
     }
 }

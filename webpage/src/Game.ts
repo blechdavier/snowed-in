@@ -15,10 +15,9 @@ import { Tile, Tiles } from './world/Tiles';
 import ItemStack from './world/inventory/items/ItemStack';
 import TileResource from './assets/resources/TileResource';
 import ImageResource from './assets/resources/ImageResource';
-import WebSocketClient from './websocket/WebSocketClient';
 import Renderable from './interfaces/Renderable';
 import ScreenMenu from './ui/screens/ScreenMenu';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { ClientEvents } from '../../api/SocketEvents';
 
 /*
@@ -118,13 +117,6 @@ class Game extends p5 {
 
     keys: boolean[] = [];
 
-    // maybe add particle interpolation.
-
-    // particle layers
-
-    backgroundParticles: any = [];
-    foregroundParticles: any = [];
-
     // the keycode for the key that does the action
     controls = [
         68, // right
@@ -141,9 +133,6 @@ class Game extends p5 {
         55, // hot bar 7
         56, // hot bar 8
         57, // hot bar 9
-        48, // hot bar 10
-        189, // hot bar 11
-        187, // hot bar 12
     ];
 
     canvas: p5.Renderer;
@@ -199,8 +188,6 @@ class Game extends p5 {
         this.connection.on('tick-player', (players: {[name: string]: {
                 x: number;
                 y: number;
-                xv: number;
-                yv: number;
             }} ) => {
             // If the world is not set
             if(this.world === undefined) return
@@ -213,8 +200,8 @@ class Game extends p5 {
             this.world.tick(this)
         }, 1000 / this.playerTickRate)
 
-        // this.connection.emit("create", "Numericly's Server", "Numericly", 10, false)
-        this.connection.emit('join', "1f6b82e05071c22daf56f603679a3dd3", "player2")
+        // this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
+        this.connection.emit('join', "56db71851df952e72ad7fb611e3cde84", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
         this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;

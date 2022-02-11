@@ -9,8 +9,6 @@ export class Player {
     // Position
     x: number;
     y: number;
-    xVel = 0;
-    yVel = 0;
 
     constructor(
         name: string,
@@ -30,8 +28,6 @@ export class Player {
         return {
             x: +this.x.toFixed(2),
             y: +this.y.toFixed(2),
-            xv: +this.xVel.toFixed(4),
-            yv: +this.yVel.toFixed(4),
         };
     }
 }
