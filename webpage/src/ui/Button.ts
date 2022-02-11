@@ -4,16 +4,22 @@ import { UiAssets } from '../assets/Assets';
 
 class Button implements Renderable {
 
+    txt: string
+    description: string
     x: number
     y: number
     w: number
     h: number
 
     constructor(
+        txt: string,
+        description: string,
         x: number,
         y: number,
         w: number,
         h: number) {
+        this.txt = txt
+        this.description = description
         this.x = x
         this.y = y
         this.w = w
