@@ -18,7 +18,9 @@ const UiAssets = {
         'assets/textures/ui/uislot_selected.png'
     ),
     ui_slot: new ImageResource('assets/textures/ui/uislot.png'),
-    ui_frame: new ImageResource('assets/textures/ui/uiframe.png')
+    ui_frame: new ImageResource('assets/textures/ui/uiframe.png'),
+    button_unselected: new ImageResource('assets/textures/ui/button0.png'),
+    button_selected: new ImageResource('assets/textures/ui/button1.png')
 };
 
 // Item related assets

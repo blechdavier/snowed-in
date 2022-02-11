@@ -28,21 +28,21 @@ class Button implements Renderable {
         const h = Math.round(this.h/upscaleSize)*upscaleSize;
 
         // corners
-        UiAssets.ui_frame.renderPartial(target, x, y, 7*upscaleSize, 7*upscaleSize, 0, 0, 7, 7);
-        UiAssets.ui_frame.renderPartial(target, x+w-7*upscaleSize, y, 7*upscaleSize, 7*upscaleSize, 8, 0, 7, 7);
-        UiAssets.ui_frame.renderPartial(target, x, y+h-7*upscaleSize, 7*upscaleSize, 7*upscaleSize, 0, 8, 7, 7);
-        UiAssets.ui_frame.renderPartial(target, x+w-7*upscaleSize, y+h-7*upscaleSize, 7*upscaleSize, 7*upscaleSize, 8, 8, 7, 7);
+        UiAssets.button_unselected.renderPartial(target, x, y, 7*upscaleSize, 7*upscaleSize, 0, 0, 7, 7);
+        UiAssets.button_unselected.renderPartial(target, x+w-7*upscaleSize, y, 7*upscaleSize, 7*upscaleSize, 8, 0, 7, 7);
+        UiAssets.button_unselected.renderPartial(target, x, y+h-7*upscaleSize, 7*upscaleSize, 7*upscaleSize, 0, 8, 7, 7);
+        UiAssets.button_unselected.renderPartial(target, x+w-7*upscaleSize, y+h-7*upscaleSize, 7*upscaleSize, 7*upscaleSize, 8, 8, 7, 7);
 
         // top and bottom
-        UiAssets.ui_frame.renderPartial(target, x+7*upscaleSize, y, w-14*upscaleSize, 7*upscaleSize, 7, 0, 1, 7);
-        UiAssets.ui_frame.renderPartial(target, x+7*upscaleSize, y+h-7*upscaleSize, w-14*upscaleSize, 7*upscaleSize, 7, 8, 1, 7);
+        UiAssets.button_unselected.renderPartial(target, x+7*upscaleSize, y, w-14*upscaleSize, 7*upscaleSize, 7, 0, 1, 7);
+        UiAssets.button_unselected.renderPartial(target, x+7*upscaleSize, y+h-7*upscaleSize, w-14*upscaleSize, 7*upscaleSize, 7, 8, 1, 7);
 
         // left and right
-        UiAssets.ui_frame.renderPartial(target, x, y+7*upscaleSize, 7*upscaleSize, h-14*upscaleSize, 0, 7, 7, 1);
-        UiAssets.ui_frame.renderPartial(target, x+w-7*upscaleSize, y+7*upscaleSize, 7*upscaleSize, h-14*upscaleSize, 8, 7, 7, 1);
+        UiAssets.button_unselected.renderPartial(target, x, y+7*upscaleSize, 7*upscaleSize, h-14*upscaleSize, 0, 7, 7, 1);
+        UiAssets.button_unselected.renderPartial(target, x+w-7*upscaleSize, y+7*upscaleSize, 7*upscaleSize, h-14*upscaleSize, 8, 7, 7, 1);
 
         // center
-        UiAssets.ui_frame.renderPartial(target, x+7*upscaleSize, y+7*upscaleSize, w-14*upscaleSize, h-14*upscaleSize, 7, 7, 1, 1);
+        UiAssets.button_unselected.renderPartial(target, x+7*upscaleSize, y+7*upscaleSize, w-14*upscaleSize, h-14*upscaleSize, 7, 7, 1, 1);
 
     }
 }
