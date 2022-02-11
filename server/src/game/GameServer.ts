@@ -3,6 +3,7 @@ import { RemoteSocket, Socket } from 'socket.io';
 import { Player } from './Player';
 import { World } from './World';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { BroadcastOperator } from 'socket.io/dist/broadcast-operator';
 
 export type Permissions = {
     isAdmin: boolean
@@ -23,6 +24,8 @@ export class GameServer {
     // World
     world: World
 
+    room: BroadcastOperator<DefaultEventsMap, any>;
+
     constructor(
         name: string,
         maxPlayers: number,
@@ -34,16 +37,17 @@ export class GameServer {
         this.maxPlayers = maxPlayers;
         this.listed = listed;
         this.id = id;
+        this.room = io.to(id)
+        this.hostName = clientName
 
+        // Generate world
         this.world = new World(512, 64);
 
-        this.hostName = clientName
 
         // Server ticks per second
         let tps = 66
         setInterval(async () => {
-            let start = process.hrtime.bigint()
-            const sockets = await io.to(this.id).fetchSockets()
+            const sockets = await this.room.fetchSockets()
 
             sockets.forEach((socket: RemoteSocket<DefaultEventsMap, any> & ClientSocket) => {
                 const worldPlayers: {[name: string]: ReturnType<Player['getPlayer']>} = {}
@@ -53,15 +57,13 @@ export class GameServer {
                 })
                 socket.emit("tick-player", worldPlayers)
             })
-
-            console.log(`time: ${Number(process.hrtime.bigint() - start) / 1000000}ms`)
         }, 1000 / tps)
 
         console.log(`Created game server with name: ${name} by ${clientName}`)
     }
 
     async join(socket: Socket & ClientSocket, name: string) {
-        const sockets = await io.to(this.id).allSockets();
+        const sockets = await this.room.allSockets();
 
         // If the server is full
         if (sockets.size >= this.maxPlayers) return
@@ -82,7 +84,12 @@ export class GameServer {
 
         socket.on("player-update", (x: number, y: number) => {
             this.players[name].x = x
-            this.players[name].y =y
+            this.players[name].y = y
+        })
+
+        socket.on('disconnect', (reason: string) => {
+            console.log(`Player ${name} disconnect from ${this.name} reason: ${reason}`)
+            delete this.players[name]
         })
     }
 }

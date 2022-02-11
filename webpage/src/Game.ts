@@ -201,7 +201,7 @@ class Game extends p5 {
         }, 1000 / this.playerTickRate)
 
         // this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
-        this.connection.emit('join', "56db71851df952e72ad7fb611e3cde84", "player" + Math.floor(Math.random() * 1000))
+        this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
         this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
