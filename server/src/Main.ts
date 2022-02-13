@@ -43,12 +43,10 @@ io.on("connection", (socket : Socket & ClientSocket) => {
         // Make sure that the serverId is valid
         if(servers[serverId] === undefined) return
 
-
         await servers[serverId].join(socket, name)
     })
 
 });
-
 
 async function main() {
     console.log("Listening on port 8080")

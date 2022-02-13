@@ -10,6 +10,8 @@ export class Player {
     x: number;
     y: number;
 
+    breakingTile: { start: number, tileIndex: number}
+
     constructor(
         name: string,
         socketId: string,

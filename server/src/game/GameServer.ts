@@ -24,6 +24,8 @@ export class GameServer {
     // World
     world: World
 
+    worldUpdates: {tileIndex: number, tile: number}[] = []
+
     room: BroadcastOperator<DefaultEventsMap, any>;
 
     constructor(
@@ -57,6 +59,12 @@ export class GameServer {
                 })
                 socket.emit("tick-player", worldPlayers)
             })
+
+            if(this.worldUpdates.length > 0) {
+                console.log(this.worldUpdates)
+                this.room.emit('world-update', this.worldUpdates);
+                this.worldUpdates = []
+            }
         }, 1000 / tps)
 
         console.log(`Created game server with name: ${name} by ${clientName}`)
@@ -87,6 +95,22 @@ export class GameServer {
             this.players[name].y = y
         })
 
+        socket.on('world-break-start', (tileIndex) => {
+            this.players[name].breakingTile = {tileIndex, start: Date.now()}
+        })
+
+        socket.on('world-break-cancel', () => {
+            this.players[name].breakingTile = undefined
+        })
+
+        socket.on('world-break-finish', () => {
+            const brokenTile = this.players[name].breakingTile
+
+            this.world.tiles[brokenTile.tileIndex] = 0
+            this.worldUpdates.push({tileIndex: brokenTile.tileIndex, tile: this.world.tiles[brokenTile.tileIndex]})
+        })
+
+        // Handle disconnect
         socket.on('disconnect', (reason: string) => {
             console.log(`Player ${name} disconnect from ${this.name} reason: ${reason}`)
             delete this.players[name]

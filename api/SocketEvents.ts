@@ -1,4 +1,5 @@
 export type ServerEvents = {
+    emit(event: 'init', data: { playerTickRate: number }): void;
     emit(
         event: 'load-world',
         width: number,
@@ -12,11 +13,10 @@ export type ServerEvents = {
         players: {
             [name: string]: {
                 x: number;
-                y: number
+                y: number;
             };
         }
     ): void;
-    emit(event: 'init', data: { playerTickRate: number }): void;
     emit(
         event: 'set-player',
         x: number,
@@ -24,10 +24,18 @@ export type ServerEvents = {
         yVel: number,
         xVel: number
     ): void;
-    on(
-        event: 'player-update',
-        callback: (x: number, y: number) => void
+    emit(
+        event: 'world-update',
+        updatedTiles: {
+            tileIndex: number;
+            tile: number;
+        }[]
     ): void;
+
+    on(event: 'player-update', callback: (x: number, y: number) => void): void;
+    on(event: 'world-break-start', callback: (tileIndex: number) => void): void;
+    on(event: 'world-break-cancel', callback: () => void): void;
+    on(event: 'world-break-finish', callback: () => void): void;
 };
 
 export type ClientEvents = {
@@ -58,9 +66,19 @@ export type ClientEvents = {
         event: 'set-player',
         callback: (x: number, y: number, yVel: number, xVel: number) => void
     ): void;
-    emit(
-        event: 'player-update',
-        x: number,
-        y: number,
+    on(
+        event: 'world-update',
+        callback: (
+            updatedTiles: {
+                tileIndex: number;
+                tile: number;
+            }[]
+        ) => void
     ): void;
+
+    emit(event: 'player-update', x: number, y: number): void;
+    emit(event: 'player-update', x: number, y: number): void;
+    emit(event: 'world-break-start', tileIndex: number): void;
+    emit(event: 'world-break-cancel'): void;
+    emit(event: 'world-break-finish'): void;
 };

@@ -176,6 +176,37 @@ class Game extends p5 {
                 0))
         })
 
+        this.connection.on("world-update", (updatedTiles: {tileIndex: number, tile: number}[]) => {
+            updatedTiles.forEach((tile) => {
+                // set the broken tile to air in the world data
+                this.world.worldTiles[tile.tileIndex] = tile.tile;
+
+                // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
+                this.world.tileLayer.erase();
+                this.world.tileLayer.noStroke();
+                this.world.tileLayer.rect(
+                    (tile.tileIndex + this.world.width) * this.TILE_WIDTH,
+                    this.worldMouseY * this.TILE_HEIGHT,
+                    this.TILE_WIDTH * 3,
+                    this.TILE_HEIGHT
+                );
+                this.world.tileLayer.rect(
+                    this.worldMouseX * this.TILE_WIDTH,
+                    (this.worldMouseY - 1) * this.TILE_HEIGHT,
+                    this.TILE_WIDTH,
+                    this.TILE_HEIGHT * 3
+                );
+                this.world.tileLayer.noErase();
+
+                // redraw the neighboring tiles
+                console.log(this.world.worldTiles[tile.tileIndex + this.world.width])
+                    this.drawTile(tile.tileIndex + this.world.width);
+                    this.drawTile(tile.tileIndex - 1);
+                    this.drawTile(tile.tileIndex - this.world.width);
+                    this.drawTile(tile.tileIndex + 1);
+            })
+        })
+
         // Update the player
         this.connection.on("set-player", (x, y, yVel, xVel) => {
             this.world.player.x = x
@@ -200,8 +231,8 @@ class Game extends p5 {
             this.world.tick(this)
         }, 1000 / this.playerTickRate)
 
-        // this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
-        this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
+        this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
+        // this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
         this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
@@ -390,10 +421,16 @@ class Game extends p5 {
                 this.pickedUpSlot = -1;
             }
         } else {
+            // If the tile is air
+            if(this.world.worldTiles[this.world.width * this.worldMouseY + this.worldMouseX] === 0) return;
+
+            this.connection.emit('world-break-start', (this.world.width * this.worldMouseY + this.worldMouseX))
+            this.connection.emit('world-break-finish')
+            /*
             const tile: Tile =
                 Tiles[
                     this.world.worldTiles[
-                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
+                        this.world.width * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
@@ -423,33 +460,9 @@ class Game extends p5 {
                 );
             }
 
-            // set the broken tile to air in the world data
-            this.world.worldTiles[
-                this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
-            ] = 0;
 
-            // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-            this.world.tileLayer.erase();
-            this.world.tileLayer.noStroke();
-            this.world.tileLayer.rect(
-                (this.worldMouseX - 1) * this.TILE_WIDTH,
-                this.worldMouseY * this.TILE_HEIGHT,
-                this.TILE_WIDTH * 3,
-                this.TILE_HEIGHT
-            );
-            this.world.tileLayer.rect(
-                this.worldMouseX * this.TILE_WIDTH,
-                (this.worldMouseY - 1) * this.TILE_HEIGHT,
-                this.TILE_WIDTH,
-                this.TILE_HEIGHT * 3
-            );
-            this.world.tileLayer.noErase();
 
-            // redraw the neighboring tiles
-            this.drawTile(this.worldMouseX + 1, this.worldMouseY);
-            this.drawTile(this.worldMouseX - 1, this.worldMouseY);
-            this.drawTile(this.worldMouseX, this.worldMouseY + 1);
-            this.drawTile(this.worldMouseX, this.worldMouseY - 1);
+             */
         }
     }
 
@@ -500,30 +513,34 @@ class Game extends p5 {
             this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
     }
 
-    drawTile(j: number, i: number) {
-        if (this.world.worldTiles[i * this.WORLD_WIDTH + j] !== 0) {
+    drawTile(tileIndex: number) {
+        if (this.world.worldTiles[tileIndex] !== 0) {
             // Draw the correct image for the tile onto the tile layer
 
             const tile: Tile =
-                Tiles[this.world.worldTiles[i * this.WORLD_WIDTH + j]];
+                Tiles[this.world.worldTiles[tileIndex]];
 
+            console.log(tile)
             // if the tile is off-screen
-            if(tile === undefined) return
+            if(tile === undefined) {
+                console.log("off scren")
+                return
+            }
 
             if (tile.connected && tile.texture instanceof TileResource) {
                 // test if the neighboring tiles are solid
-                const topTileBool =
-                    i === 0 ||
-                    this.world.worldTiles[(i - 1) * this.WORLD_WIDTH + j] !== 0;
+                // console.log(Math.floor((tileIndex - this.world.width) / this.world.width))
+                const topTileBool = Math.floor((tileIndex - this.world.width) / this.world.width) <= 0 ||
+                    this.world.worldTiles[tileIndex - this.world.width] !== 0;
                 const leftTileBool =
-                    j === 0 ||
-                    this.world.worldTiles[i * this.WORLD_WIDTH + j - 1] !== 0;
+                    tileIndex % this.world.width === 0 ||
+                    this.world.worldTiles[tileIndex - 1] !== 0;
                 const bottomTileBool =
-                    i === this.WORLD_HEIGHT - 1 ||
-                    this.world.worldTiles[(i + 1) * this.WORLD_WIDTH + j] !== 0;
+                    Math.floor((tileIndex - this.world.width) / this.world.width) >= this.world.height - 1 ||
+                    this.world.worldTiles[tileIndex + this.world.width] !== 0;
                 const rightTileBool =
-                    j === this.WORLD_WIDTH - 1 ||
-                    this.world.worldTiles[i * this.WORLD_WIDTH + j + 1] !== 0;
+                    tileIndex % this.world.width === this.world.width - 1 ||
+                    this.world.worldTiles[tileIndex + 1] !== 0;
 
                 // convert 4 digit binary number to base 10
                 const tileSetIndex =
@@ -532,12 +549,18 @@ class Game extends p5 {
                     2 * +bottomTileBool +
                     +leftTileBool;
 
+                console.log(tileSetIndex)
+                console.log(tileIndex % this.world.width,)
+                console.log(Math.floor(tileIndex/this.world.width),)
+                console.log(this.worldMouseX)
+                console.log(this.worldMouseY)
+
                 // Render connected tile
                 tile.texture.renderTile(
                     tileSetIndex,
                     this.world.tileLayer,
-                    j * this.TILE_WIDTH,
-                    i * this.TILE_HEIGHT,
+                    tileIndex % this.world.width,
+                    Math.floor(tileIndex/this.world.width),
                     this.TILE_WIDTH,
                     this.TILE_HEIGHT
                 );
@@ -548,12 +571,14 @@ class Game extends p5 {
                 // Render non-connected tile
                 tile.texture.render(
                     this.world.tileLayer,
-                    j * this.TILE_WIDTH,
-                    i * this.TILE_HEIGHT,
+                    tileIndex % this.world.width,
+                    Math.floor(tileIndex/this.world.width),
                     this.TILE_WIDTH,
                     this.TILE_HEIGHT
                 );
             }
+        } else {
+            console.log("air")
         }
     }
 
