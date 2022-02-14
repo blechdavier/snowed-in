@@ -11,6 +11,7 @@ import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
 import Player from './entities/Player';
 import OtherPlayer from './entities/OtherPlayer';
+import { ServerEntity } from './entities/ServerEntity';
 
 class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -28,7 +29,7 @@ class World implements Tickable, Renderable {
     inventory: Inventory;
 
     player: Player
-    players: {[name: string]:OtherPlayer} = {}
+    players: {[name: string]:ServerEntity} = {}
     playersData: {[name: string]: {
         x: number;
         y: number;
@@ -148,11 +149,11 @@ class World implements Tickable, Renderable {
         Object.entries(players).forEach(([name, data]) => {
             // Add a new physics object for each player
             if(this.players[name] === undefined) {
-                this.players[name] = new OtherPlayer(data.x, data.y, this.player.w, this.player.h)
+                this.players[name] = new ServerEntity()
                 return
             }
             // Set the data
-            this.players[name].updatePos(data.x, data.y)
+            this.players[name].updatePosition(data.x, data.y)
         })
     }
 

@@ -60,7 +60,7 @@ export type ClientEvents = {
     ): void;
     on(
         event: 'init',
-        callback: (data: { playerTickRate: number }) => void
+        callback: (data: { playerTickRate: number, token?: string }) => void
     ): void;
     on(
         event: 'set-player',

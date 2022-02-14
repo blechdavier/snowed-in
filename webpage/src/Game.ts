@@ -73,9 +73,7 @@ craftables
 
 */
 
-
 class Game extends p5 {
-
     WORLD_WIDTH: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
     WORLD_HEIGHT: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
@@ -140,19 +138,23 @@ class Game extends p5 {
 
     world: World;
 
-    currentUi: UiScreen
+    currentUi: UiScreen;
 
-    connection: Socket & ClientEvents
+    connection: Socket & ClientEvents;
 
-    playerTickRate: number
+    playerTickRate: number;
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
-        this.connection = connection
-        this.connection.on("init", ({playerTickRate}) => {
-            console.log(`Tick rate set to: ${playerTickRate}`)
-            this.playerTickRate = playerTickRate
-        })
+        this.connection = connection;
+        this.connection.on('init', ({ playerTickRate, token }) => {
+            console.log(`Tick rate set to: ${playerTickRate}`);
+            this.playerTickRate = playerTickRate;
+            if(token) {
+                window.localStorage.setItem("token", token);
+                (this.connection.auth as { token: string}).token = token
+            }
+        });
     }
 
     preload() {
@@ -167,74 +169,100 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.currentUi = new MainMenu()
+        this.currentUi = new MainMenu();
 
         // Load the world and set the player
-        this.connection.on("load-world", (width, height, tiles, backgroundTiles, spawnPosition) => {
-            this.world = new World(width, height, tiles, backgroundTiles, new Player(spawnPosition.x, spawnPosition.y,
-                12 / this.TILE_WIDTH,
-                20 / this.TILE_HEIGHT,
-                0,
-                0))
-        })
-
-        this.connection.on("world-update", (updatedTiles: {tileIndex: number, tile: number}[]) => {
-            updatedTiles.forEach((tile) => {
-                // set the broken tile to air in the world data
-                this.world.worldTiles[tile.tileIndex] = tile.tile;
-
-                // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-                this.world.tileLayer.erase();
-                this.world.tileLayer.noStroke();
-                this.world.tileLayer.rect(
-                    (tile.tileIndex + this.world.width) * this.TILE_WIDTH,
-                    this.worldMouseY * this.TILE_HEIGHT,
-                    this.TILE_WIDTH * 3,
-                    this.TILE_HEIGHT
+        this.connection.on(
+            'load-world',
+            (width, height, tiles, backgroundTiles, spawnPosition) => {
+                this.world = new World(
+                    width,
+                    height,
+                    tiles,
+                    backgroundTiles,
+                    new Player(
+                        spawnPosition.x,
+                        spawnPosition.y,
+                        12 / this.TILE_WIDTH,
+                        20 / this.TILE_HEIGHT,
+                        0,
+                        0
+                    )
                 );
-                this.world.tileLayer.rect(
-                    this.worldMouseX * this.TILE_WIDTH,
-                    (this.worldMouseY - 1) * this.TILE_HEIGHT,
-                    this.TILE_WIDTH,
-                    this.TILE_HEIGHT * 3
-                );
-                this.world.tileLayer.noErase();
+            }
+        );
 
-                // redraw the neighboring tiles
-                console.log(this.world.worldTiles[tile.tileIndex + this.world.width])
+        this.connection.on(
+            'world-update',
+            (updatedTiles: { tileIndex: number; tile: number }[]) => {
+                updatedTiles.forEach((tile) => {
+                    // set the broken tile to air in the world data
+                    this.world.worldTiles[tile.tileIndex] = tile.tile;
+
+                    // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
+                    this.world.tileLayer.erase();
+                    this.world.tileLayer.noStroke();
+                    this.world.tileLayer.rect(
+                        (tile.tileIndex % this.world.width - 1) * this.TILE_WIDTH,
+                        Math.floor(tile.tileIndex / this.world.width) * this.TILE_HEIGHT,
+                        this.TILE_WIDTH * 3,
+                        this.TILE_HEIGHT
+                    );
+                    this.world.tileLayer.rect(
+                        (tile.tileIndex % this.world.width) * this.TILE_WIDTH,
+                        (Math.floor(tile.tileIndex / this.world.width) - 1) * this.TILE_HEIGHT,
+                        this.TILE_WIDTH,
+                        this.TILE_HEIGHT * 3
+                    );
+                    this.world.tileLayer.noErase();
+
+                    // redraw the neighboring tiles
+                    this.drawTile(tile.tileIndex);
                     this.drawTile(tile.tileIndex + this.world.width);
                     this.drawTile(tile.tileIndex - 1);
                     this.drawTile(tile.tileIndex - this.world.width);
                     this.drawTile(tile.tileIndex + 1);
-            })
-        })
+                });
+            }
+        );
 
         // Update the player
-        this.connection.on("set-player", (x, y, yVel, xVel) => {
-            this.world.player.x = x
-            this.world.player.y = y
-            this.world.player.yVel = yVel
-            this.world.player.xVel = xVel
-        })
+        this.connection.on('set-player', (x, y, yVel, xVel) => {
+            this.world.player.x = x;
+            this.world.player.y = y;
+            this.world.player.yVel = yVel;
+            this.world.player.xVel = xVel;
+        });
 
         // Update the other players in the world
-        this.connection.on('tick-player', (players: {[name: string]: {
-                x: number;
-                y: number;
-            }} ) => {
-            // If the world is not set
-            if(this.world === undefined) return
+        this.connection.on(
+            'tick-player',
+            (players: {
+                [name: string]: {
+                    x: number;
+                    y: number;
+                };
+            }) => {
+                // If the world is not set
+                if (this.world === undefined) return;
 
-            this.world.updatePlayers(players)
-        })
+                this.world.updatePlayers(players);
+            }
+        );
 
         setInterval(() => {
-            if(this.world === undefined) return
-            this.world.tick(this)
-        }, 1000 / this.playerTickRate)
+            if (this.world === undefined) return;
+            this.world.tick(this);
+        }, 1000 / this.playerTickRate);
 
-        // this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
-        this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
+        // this.connection.emit(
+        //     'create',
+        //     "Numericly's Server",
+        //     'Numericly',
+        //     10,
+        //     false
+        // );
+        this.connection.emit('join', "fc4a4144b3292cdc9c73ef594f73c040", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
         this.windowResized();
@@ -269,7 +297,7 @@ class Game extends p5 {
         // update the camera's interpolation
         this.moveCamera();
 
-        if(this.world !== undefined) this.world.render(this, this.upscaleSize)
+        if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
         // render the player, all items, etc.  Basically any physicsRect or particle
         this.renderEntities();
@@ -325,7 +353,7 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        this.currentUi.render(this, this.upscaleSize)
+        // this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -334,7 +362,10 @@ class Game extends p5 {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
 
         // go for a scale of <48 tiles screen
-        this.upscaleSize = Math.min(this.ceil(this.windowWidth / 48 / this.TILE_WIDTH), this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT));
+        this.upscaleSize = Math.min(
+            this.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
+            this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
+        );
 
         this.currentUi.windowUpdate();
 
@@ -428,10 +459,18 @@ class Game extends p5 {
             }
         } else {
             // If the tile is air
-            if(this.world.worldTiles[this.world.width * this.worldMouseY + this.worldMouseX] === 0) return;
+            if (
+                this.world.worldTiles[
+                    this.world.width * this.worldMouseY + this.worldMouseX
+                ] === 0
+            )
+                return;
 
-            this.connection.emit('world-break-start', (this.world.width * this.worldMouseY + this.worldMouseX))
-            this.connection.emit('world-break-finish')
+            this.connection.emit(
+                'world-break-start',
+                this.world.width * this.worldMouseY + this.worldMouseX
+            );
+            this.connection.emit('world-break-finish');
             /*
             const tile: Tile =
                 Tiles[
@@ -523,26 +562,29 @@ class Game extends p5 {
         if (this.world.worldTiles[tileIndex] !== 0) {
             // Draw the correct image for the tile onto the tile layer
 
-            const tile: Tile =
-                Tiles[this.world.worldTiles[tileIndex]];
+            const tile: Tile = Tiles[this.world.worldTiles[tileIndex]];
 
-            console.log(tile)
             // if the tile is off-screen
-            if(tile === undefined) {
-                console.log("off scren")
-                return
+            if (tile === undefined) {
+                return;
             }
 
             if (tile.connected && tile.texture instanceof TileResource) {
                 // test if the neighboring tiles are solid
                 // console.log(Math.floor((tileIndex - this.world.width) / this.world.width))
-                const topTileBool = Math.floor((tileIndex - this.world.width) / this.world.width) <= 0 ||
+                const topTileBool =
+                    Math.floor(
+                        (tileIndex - this.world.width) / this.world.width
+                    ) <= 0 ||
                     this.world.worldTiles[tileIndex - this.world.width] !== 0;
                 const leftTileBool =
                     tileIndex % this.world.width === 0 ||
                     this.world.worldTiles[tileIndex - 1] !== 0;
                 const bottomTileBool =
-                    Math.floor((tileIndex - this.world.width) / this.world.width) >= this.world.height - 1 ||
+                    Math.floor(
+                        (tileIndex - this.world.width) / this.world.width
+                    ) >=
+                        this.world.height - 1 ||
                     this.world.worldTiles[tileIndex + this.world.width] !== 0;
                 const rightTileBool =
                     tileIndex % this.world.width === this.world.width - 1 ||
@@ -555,18 +597,12 @@ class Game extends p5 {
                     2 * +bottomTileBool +
                     +leftTileBool;
 
-                console.log(tileSetIndex)
-                console.log(tileIndex % this.world.width,)
-                console.log(Math.floor(tileIndex/this.world.width),)
-                console.log(this.worldMouseX)
-                console.log(this.worldMouseY)
-
                 // Render connected tile
                 tile.texture.renderTile(
                     tileSetIndex,
                     this.world.tileLayer,
-                    tileIndex % this.world.width,
-                    Math.floor(tileIndex/this.world.width),
+                    (tileIndex % this.world.width) * this.TILE_WIDTH,
+                    Math.floor(tileIndex / this.world.width) * this.TILE_HEIGHT,
                     this.TILE_WIDTH,
                     this.TILE_HEIGHT
                 );
@@ -578,13 +614,11 @@ class Game extends p5 {
                 tile.texture.render(
                     this.world.tileLayer,
                     tileIndex % this.world.width,
-                    Math.floor(tileIndex/this.world.width),
+                    Math.floor(tileIndex / this.world.width),
                     this.TILE_WIDTH,
                     this.TILE_HEIGHT
                 );
             }
-        } else {
-            console.log("air")
         }
     }
 
@@ -599,7 +633,7 @@ class Game extends p5 {
             ticksThisFrame !== this.forgivenessCount
         ) {
             // console.time("tick");
-            if(this.world !== undefined) this.doTick();
+            if (this.world !== undefined) this.doTick();
             // console.timeEnd("tick");
             this.msSinceTick -= this.msPerTick;
             ticksThisFrame++;
@@ -668,39 +702,122 @@ class Game extends p5 {
         }
     }
 
-    uiFrameRect(
-        x: number,
-        y: number,
-        w: number,
-        h: number
-    ) {
-
+    uiFrameRect(x: number, y: number, w: number, h: number) {
         // set the coords and dimensions to round to the nearest un-upscaled pixel
-        x = this.round(x/this.upscaleSize)*this.upscaleSize;
-        y = this.round(y/this.upscaleSize)*this.upscaleSize;
-        w = this.round(w/this.upscaleSize)*this.upscaleSize;
-        h = this.round(h/this.upscaleSize)*this.upscaleSize;
+        x = this.round(x / this.upscaleSize) * this.upscaleSize;
+        y = this.round(y / this.upscaleSize) * this.upscaleSize;
+        w = this.round(w / this.upscaleSize) * this.upscaleSize;
+        h = this.round(h / this.upscaleSize) * this.upscaleSize;
 
         // corners
-        UiAssets.ui_frame.renderPartial(this, x, y, 7*this.upscaleSize, 7*this.upscaleSize, 0, 0, 7, 7);
-        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y, 7*this.upscaleSize, 7*this.upscaleSize, 8, 0, 7, 7);
-        UiAssets.ui_frame.renderPartial(this, x, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 0, 8, 7, 7);
-        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y+h-7*this.upscaleSize, 7*this.upscaleSize, 7*this.upscaleSize, 8, 8, 7, 7);
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            0,
+            0,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            8,
+            0,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y + h - 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            0,
+            8,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y + h - 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            8,
+            8,
+            7,
+            7
+        );
 
         // top and bottom
-        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 0, 1, 7);
-        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y+h-7*this.upscaleSize, w-14*this.upscaleSize, 7*this.upscaleSize, 7, 8, 1, 7);
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y,
+            w - 14 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7,
+            0,
+            1,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y + h - 7 * this.upscaleSize,
+            w - 14 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7,
+            8,
+            1,
+            7
+        );
 
         // left and right
-        UiAssets.ui_frame.renderPartial(this, x, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 0, 7, 7, 1);
-        UiAssets.ui_frame.renderPartial(this, x+w-7*this.upscaleSize, y+7*this.upscaleSize, 7*this.upscaleSize, h-14*this.upscaleSize, 8, 7, 7, 1);
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y + 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            0,
+            7,
+            7,
+            1
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y + 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            8,
+            7,
+            7,
+            1
+        );
 
         // center
-        UiAssets.ui_frame.renderPartial(this, x+7*this.upscaleSize, y+7*this.upscaleSize, w-14*this.upscaleSize, h-14*this.upscaleSize, 7, 7, 1, 1);
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y + 7 * this.upscaleSize,
+            w - 14 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            7,
+            7,
+            1,
+            1
+        );
     }
 
-
-/*
+    /*
    /$$$$$$$  /$$                           /$$
   | $$__  $$| $$                          |__/
   | $$  \ $$| $$$$$$$  /$$   /$$  /$$$$$$$ /$$  /$$$$$$$  /$$$$$$$ /$$
@@ -800,7 +917,7 @@ class Game extends p5 {
         // draw player
         this.fill(255, 0, 0);
         this.noStroke();
-        if(this.world === undefined) return;
+        if (this.world === undefined) return;
         this.world.player.findInterpolatedCoordinates();
         this.rect(
             (this.world.player.interpolatedX * this.TILE_WIDTH -
@@ -812,7 +929,6 @@ class Game extends p5 {
             this.world.player.w * this.upscaleSize * this.TILE_WIDTH,
             this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
         );
-
 
         for (const item of this.items) {
             item.findInterpolatedCoordinates();

@@ -1,8 +1,11 @@
 import { Permissions } from './GameServer';
 
 export class Player {
+    id: string
     name: string;
-    socketId: string;
+
+    connected = false;
+    socketId: string
 
     permissions: Permissions;
 
@@ -14,7 +17,7 @@ export class Player {
 
     constructor(
         name: string,
-        socketId: string,
+        id: string,
         x: number,
         y: number,
         permissions: Permissions
@@ -22,8 +25,19 @@ export class Player {
         this.name = name;
         this.x = x;
         this.y = y;
-        this.socketId = socketId;
+        this.id = id;
         this.permissions = permissions;
+    }
+
+    connect(socketId: string, name: string) {
+        this.name = name
+        this.socketId = socketId
+        this.connected = true
+    }
+
+    disconnect() {
+        this.socketId = undefined
+        this.connected = false
     }
 
     getPlayer() {

@@ -18,8 +18,8 @@ export class GameServer {
     listed: boolean;
 
     // Players
-    hostName: string
-    players: {[playerName: string]: Player} = {}
+    hostId: string
+    players: {[playerId: string]: Player} = {}
 
     // World
     world: World
@@ -33,14 +33,14 @@ export class GameServer {
         maxPlayers: number,
         listed: boolean,
         id: string,
-        clientName: string
+        hostId: string
     ) {
         this.name = name;
         this.maxPlayers = maxPlayers;
         this.listed = listed;
         this.id = id;
         this.room = io.to(id)
-        this.hostName = clientName
+        this.hostId = hostId
 
         // Generate world
         this.world = new World(512, 64);
@@ -54,7 +54,7 @@ export class GameServer {
             sockets.forEach((socket: RemoteSocket<DefaultEventsMap, any> & ClientSocket) => {
                 const worldPlayers: {[name: string]: ReturnType<Player['getPlayer']>} = {}
                 Object.entries(this.players).forEach(([, player]) => {
-                    if(player.socketId !== socket.id)
+                    if(player.connected && player.socketId !== socket.id)
                         worldPlayers[player.name] = player.getPlayer()
                 })
                 socket.emit("tick-player", worldPlayers)
@@ -67,8 +67,9 @@ export class GameServer {
             }
         }, 1000 / tps)
 
-        console.log(`Created game server with name: ${name} by ${clientName}`)
+        console.log(`Created game server with name: ${name} by ${hostId}`)
         console.log(id)
+
     }
 
     async join(socket: Socket & ClientSocket, name: string) {
@@ -77,35 +78,44 @@ export class GameServer {
         // If the server is full
         if (sockets.size >= this.maxPlayers) return
 
-        if (this.players[name] !== undefined) return
+        if (this.players[socket.userId] !== undefined) {
+            console.log(`Player already exists!`)
+            if(this.players[socket.userId].connected) return
+
+            this.players[socket.userId].connect(socket.id, name)
+        } else {
+            console.log(`Connecting as new player!`)
+            this.players[socket.userId] = new Player(name, socket.userId, this.world.spawnPosition.x, this.world.spawnPosition.y, {
+                isAdmin: true,
+                canBreak: true,
+                canPlace: true
+            })
+            this.players[socket.userId].connect(socket.id, name)
+        }
+
+        console.log(this.players)
 
         // Join the room
         socket.join(this.id);
 
-        this.players[name] = new Player(name, socket.id, this.world.spawnPosition.x, this.world.spawnPosition.y, {
-            isAdmin: true,
-            canBreak: true,
-            canPlace: true
-        })
-
         // Send the world to the client
-        socket.emit("load-world", this.world.width, this.world.height, this.world.tiles, this.world.backgroundTiles, this.world.spawnPosition)
+        socket.emit("load-world", this.world.width, this.world.height, this.world.tiles, this.world.backgroundTiles, this.players[socket.userId].getPlayer())
 
         socket.on("player-update", (x: number, y: number) => {
-            this.players[name].x = x
-            this.players[name].y = y
+            this.players[socket.userId].x = x
+            this.players[socket.userId].y = y
         })
 
         socket.on('world-break-start', (tileIndex) => {
-            this.players[name].breakingTile = {tileIndex, start: Date.now()}
+            this.players[socket.userId].breakingTile = {tileIndex, start: Date.now()}
         })
 
         socket.on('world-break-cancel', () => {
-            this.players[name].breakingTile = undefined
+            this.players[socket.userId].breakingTile = undefined
         })
 
         socket.on('world-break-finish', () => {
-            const brokenTile = this.players[name].breakingTile
+            const brokenTile = this.players[socket.userId].breakingTile
 
             this.world.tiles[brokenTile.tileIndex] = 0
             this.worldUpdates.push({tileIndex: brokenTile.tileIndex, tile: this.world.tiles[brokenTile.tileIndex]})
@@ -114,7 +124,7 @@ export class GameServer {
         // Handle disconnect
         socket.on('disconnect', (reason: string) => {
             console.log(`Player ${name} disconnect from ${this.name} reason: ${reason}`)
-            delete this.players[name]
+            this.players[socket.userId].disconnect()
         })
     }
 }
