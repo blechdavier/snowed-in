@@ -19,14 +19,14 @@ class OtherPlayer extends EntityBase {
             this.x +
             ((this.currentPosition.x - this.x) /
                 (this.currentPositionTime +
-                    (1000 / game.playerTickRate) * 1.5 -
+                    (1000 / game.playerTickRate) * 1.3 -
                     this.currentPositionTime)) *
                 (Date.now() - this.currentPositionTime);
         this.y =
             this.y +
             ((this.currentPosition.y - this.y) /
                 (this.currentPositionTime +
-                    (1000 / game.playerTickRate) * 1.5 -
+                    (1000 / game.playerTickRate) * 1.3 -
                     this.currentPositionTime)) *
                 (Date.now() - this.currentPositionTime);
     }

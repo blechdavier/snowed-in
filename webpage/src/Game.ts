@@ -16,9 +16,10 @@ import ItemStack from './world/inventory/items/ItemStack';
 import TileResource from './assets/resources/TileResource';
 import ImageResource from './assets/resources/ImageResource';
 import Renderable from './interfaces/Renderable';
-import ScreenMenu from './ui/screens/ScreenMenu';
+import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
 import { ClientEvents } from '../../api/SocketEvents';
+import UiScreen from './ui/UiScreen';
 
 /*
 ///INFORMATION
@@ -75,8 +76,8 @@ craftables
 
 class Game extends p5 {
 
-    WORLD_WIDTH: number = 512; // width of the world in tiles
-    WORLD_HEIGHT: number = 64; // height of the world in tiles
+    WORLD_WIDTH: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    WORLD_HEIGHT: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
     TILE_WIDTH: number = 8; // width of a tile in pixels
     TILE_HEIGHT: number = 8; // height of a tile in pixels
@@ -139,7 +140,7 @@ class Game extends p5 {
 
     world: World;
 
-    currentUi: Renderable
+    currentUi: UiScreen
 
     connection: Socket & ClientEvents
 
@@ -148,7 +149,6 @@ class Game extends p5 {
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection
-        this.currentUi = new ScreenMenu()
         this.connection.on("init", ({playerTickRate}) => {
             console.log(`Tick rate set to: ${playerTickRate}`)
             this.playerTickRate = playerTickRate
@@ -166,6 +166,8 @@ class Game extends p5 {
         this.canvas = this.createCanvas(this.windowWidth, this.windowHeight);
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
+
+        this.currentUi = new MainMenu()
 
         // Load the world and set the player
         this.connection.on("load-world", (width, height, tiles, backgroundTiles, spawnPosition) => {
@@ -231,11 +233,11 @@ class Game extends p5 {
             this.world.tick(this)
         }, 1000 / this.playerTickRate)
 
-        this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
-        // this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
+        // this.connection.emit("create", "Numericly", "Numericly's Server", 10, false)
+        this.connection.emit('join', "fee7703db2c49015a0e6c85b94bf423e", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
-        this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
+        this.windowResized();
 
         // remove texture interpolation
         this.noSmooth();
@@ -323,7 +325,7 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        // this.currentUi.render(this, this.upscaleSize)
+        this.currentUi.render(this, this.upscaleSize)
 
         // console.timeEnd("frame");
     }
@@ -331,19 +333,23 @@ class Game extends p5 {
     windowResized() {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
 
-        // go for a scale of <64 tiles wide screen
-        this.upscaleSize = this.ceil(this.windowWidth / 64 / this.TILE_WIDTH / 2) * 2;
+        // go for a scale of <48 tiles screen
+        this.upscaleSize = Math.min(this.ceil(this.windowWidth / 48 / this.TILE_WIDTH), this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT));
 
-        // if the world is too zoomed out, then zoom it in.
-        while (
-            this.WORLD_WIDTH * this.TILE_WIDTH - this.width / this.upscaleSize <
-                0 ||
-            this.WORLD_HEIGHT * this.TILE_HEIGHT -
-                this.height / this.upscaleSize <
-                0
-        ) {
-            this.upscaleSize += 2;
-        }
+        this.currentUi.windowUpdate();
+
+        // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
+
+        // // if the world is too zoomed out, then zoom it in.
+        // while (
+        //     this.WORLD_WIDTH * this.TILE_WIDTH - this.width / this.upscaleSize <
+        //         0 ||
+        //     this.WORLD_HEIGHT * this.TILE_HEIGHT -
+        //         this.height / this.upscaleSize <
+        //         0
+        // ) {
+        //     this.upscaleSize += 2;
+        // }
     }
 
     keyPressed() {
@@ -430,7 +436,7 @@ class Game extends p5 {
             const tile: Tile =
                 Tiles[
                     this.world.worldTiles[
-                        this.world.width * this.worldMouseY + this.worldMouseX
+                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
@@ -694,7 +700,7 @@ class Game extends p5 {
     }
 
 
-    /*
+/*
    /$$$$$$$  /$$                           /$$
   | $$__  $$| $$                          |__/
   | $$  \ $$| $$$$$$$  /$$   /$$  /$$$$$$$ /$$  /$$$$$$$  /$$$$$$$ /$$

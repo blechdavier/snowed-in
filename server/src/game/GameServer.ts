@@ -68,6 +68,7 @@ export class GameServer {
         }, 1000 / tps)
 
         console.log(`Created game server with name: ${name} by ${clientName}`)
+        console.log(id)
     }
 
     async join(socket: Socket & ClientSocket, name: string) {
