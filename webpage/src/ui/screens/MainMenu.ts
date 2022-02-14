@@ -8,6 +8,7 @@ import { isFunctionExpression } from 'typescript';
 export class MainMenu extends UiScreen {
 
     frame: UiFrame;
+
     buttons: Button[];
 
     constructor() {
@@ -22,7 +23,8 @@ export class MainMenu extends UiScreen {
         this.windowUpdate();
     }
 
-    buttonPressed(): void {
+    mousePressed(): void {
+
     }
 
     render(target: p5, upscaleSize: number): void {
@@ -43,29 +45,13 @@ export class MainMenu extends UiScreen {
         this.frame.w = 256*game.upscaleSize;
         this.frame.h = 192*game.upscaleSize;
 
-        // set the position of the resume game game button
-        this.buttons[0].x = game.width/2-192/2*game.upscaleSize;
-        this.buttons[0].y = game.height/2;
-        this.buttons[0].w = 192*game.upscaleSize;
-        this.buttons[0].h = 16*game.upscaleSize;
-
-        // set the position of the new game button
-        this.buttons[1].x = game.width/2-192/2*game.upscaleSize;
-        this.buttons[1].y = game.height/2+20*game.upscaleSize;
-        this.buttons[1].w = 192*game.upscaleSize;
-        this.buttons[1].h = 16*game.upscaleSize;
-
-        // set the position of the join game button
-        this.buttons[2].x = game.width/2-192/2*game.upscaleSize;
-        this.buttons[2].y = game.height/2+40*game.upscaleSize;
-        this.buttons[2].w = 192*game.upscaleSize;
-        this.buttons[2].h = 16*game.upscaleSize;
-
-        // set the position of the options button
-        this.buttons[3].x = game.width/2-192/2*game.upscaleSize;
-        this.buttons[3].y = game.height/2+60*game.upscaleSize;
-        this.buttons[3].w = 192*game.upscaleSize;
-        this.buttons[3].h = 16*game.upscaleSize;
+        // set the positions of all the buttons
+        for(let i = 0; i<4; i++) {
+            this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
+            this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
+            this.buttons[i].w = 192*game.upscaleSize;
+            this.buttons[i].h = 16*game.upscaleSize;
+        }
     }
 
 }

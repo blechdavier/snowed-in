@@ -428,8 +428,16 @@ class Game extends p5 {
         this.keys[this.keyCode] = false;
     }
 
+    mouseMoved() {
+        for(const i of this.currentUi.buttons) {
+            i.updateMouseOver(this.mouseX, this.mouseY);
+        }
+    }
+
     mousePressed() {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
+        if(this.currentUi !== undefined)
+            this.currentUi.mousePressed()
 
         if (
             this.mouseX > 2 * this.upscaleSize &&
