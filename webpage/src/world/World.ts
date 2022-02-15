@@ -12,6 +12,8 @@ import p5 from 'p5';
 import Player from './entities/Player';
 import OtherPlayer from './entities/OtherPlayer';
 import { ServerEntity } from './entities/ServerEntity';
+import e, { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
+import { Entity, Snapshot, State } from '@geckos.io/snapshot-interpolation/lib/types';
 
 class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -29,11 +31,9 @@ class World implements Tickable, Renderable {
     inventory: Inventory;
 
     player: Player
-    players: {[name: string]:ServerEntity} = {}
-    playersData: {[name: string]: {
-        x: number;
-        y: number;
-    }} = {}
+    players: {[name: string]: ServerEntity} = {}
+
+    snapshotInterpolation: SnapshotInterpolation
 
     constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], player: Player) {
         // Initialize the world with the tiles and dimensions from the server
@@ -42,6 +42,9 @@ class World implements Tickable, Renderable {
         this.worldTiles = tiles
         this.backgroundTiles = backgroundTiles
         this.player = player
+
+        this.snapshotInterpolation = new SnapshotInterpolation()
+        this.snapshotInterpolation.interpolationBuffer.set( (1000 / game.playerTickRate) * 3)
 
         // define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
         this.tileLayer = game.createGraphics(
@@ -98,18 +101,26 @@ class World implements Tickable, Renderable {
         this.renderPlayers(target, upscaleSize)
     }
 
+    updatePlayers(snapshot: Snapshot) {
+        this.snapshotInterpolation.snapshot.add(snapshot);
+    }
+
     renderPlayers(target: p5, upscaleSize: number) {
-        for (const player of Object.entries(this.players)) {
 
-            player[1].getInterpolatedCoordinates()
+        const calculatedSnapshot = this.snapshotInterpolation.calcInterpolation('x y')
+        if(!calculatedSnapshot) return
 
+        const state = calculatedSnapshot.state
+        if(!state) return;
+
+        for (const entity of state as (Entity & {x: number, y: number})[]) {
             target.fill(0, 255, 0);
 
             target.rect(
-                (player[1].x * game.TILE_WIDTH -
+                (entity.x * game.TILE_WIDTH -
                     game.interpolatedCamX * game.TILE_WIDTH) *
                 upscaleSize,
-                (player[1].y * game.TILE_HEIGHT -
+                (entity.y * game.TILE_HEIGHT -
                     game.interpolatedCamY * game.TILE_HEIGHT) *
                 upscaleSize,
                 this.player.w * upscaleSize * game.TILE_WIDTH,
@@ -125,36 +136,15 @@ class World implements Tickable, Renderable {
             target.textAlign(target.CENTER, target.TOP);
 
             target.text(
-                player[0],
-                (((player[1].x * game.TILE_WIDTH) -
+                entity.id,
+                (((entity.x * game.TILE_WIDTH) -
                     game.interpolatedCamX * game.TILE_WIDTH) + (this.player.w * game.TILE_WIDTH) / 2) *
                 upscaleSize,
-                (((player[1].y * game.TILE_HEIGHT) -
+                (((entity.y * game.TILE_HEIGHT) -
                     game.interpolatedCamY * game.TILE_HEIGHT) - (this.player.h * game.TILE_WIDTH) / 2.5) *
                 upscaleSize
             );
         }
-    }
-
-    updatePlayers(players: {[name: string]: {
-            x: number;
-            y: number;
-        }}) {
-        this.playersData = players
-        Object.entries(this.players).forEach(([name,]) => {
-            // Delete the removed players
-            if(players[name] === undefined)
-                delete this.players[name]
-        })
-        Object.entries(players).forEach(([name, data]) => {
-            // Add a new physics object for each player
-            if(this.players[name] === undefined) {
-                this.players[name] = new ServerEntity()
-                return
-            }
-            // Set the data
-            this.players[name].updatePosition(data.x, data.y)
-        })
     }
 
     loadWorld() {

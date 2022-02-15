@@ -4,14 +4,13 @@ import { Player } from './Player';
 import { World } from './World';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { BroadcastOperator } from 'socket.io/dist/broadcast-operator';
-
-export type Permissions = {
-    isAdmin: boolean
-    canBreak: boolean
-    canPlace: boolean
-}
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+import { State } from '@geckos.io/snapshot-interpolation/lib/types';
 
 export class GameServer {
+
+    entityId: string = '0'
+
     id: string;
     name: string;
     maxPlayers: number;
@@ -20,6 +19,7 @@ export class GameServer {
     // Players
     hostId: string
     players: {[playerId: string]: Player} = {}
+    snapshotInterpolation: SnapshotInterpolation
 
     // World
     world: World
@@ -42,9 +42,10 @@ export class GameServer {
         this.room = io.to(id)
         this.hostId = hostId
 
+        this.snapshotInterpolation = new SnapshotInterpolation()
+
         // Generate world
         this.world = new World(512, 64);
-
 
         // Server ticks per second
         let tps = 66
@@ -52,12 +53,13 @@ export class GameServer {
             const sockets = await this.room.fetchSockets()
 
             sockets.forEach((socket: RemoteSocket<DefaultEventsMap, any> & ClientSocket) => {
-                const worldPlayers: {[name: string]: ReturnType<Player['getPlayer']>} = {}
+                const worldPlayers: State = []
                 Object.entries(this.players).forEach(([, player]) => {
                     if(player.connected && player.socketId !== socket.id)
-                        worldPlayers[player.name] = player.getPlayer()
+                        worldPlayers.push({ id: player.name, x: player.getPlayer().x, y: player.getPlayer().y  })
                 })
-                socket.emit("tick-player", worldPlayers)
+                const snapshot = this.snapshotInterpolation.snapshot.create(worldPlayers)
+                socket.emit("tick", snapshot)
             })
 
             if(this.worldUpdates.length > 0) {
@@ -66,9 +68,6 @@ export class GameServer {
                 this.worldUpdates = []
             }
         }, 1000 / tps)
-
-        console.log(`Created game server with name: ${name} by ${hostId}`)
-        console.log(id)
 
     }
 
@@ -85,15 +84,9 @@ export class GameServer {
             this.players[socket.userId].connect(socket.id, name)
         } else {
             console.log(`Connecting as new player!`)
-            this.players[socket.userId] = new Player(name, socket.userId, this.world.spawnPosition.x, this.world.spawnPosition.y, {
-                isAdmin: true,
-                canBreak: true,
-                canPlace: true
-            })
+            this.players[socket.userId] = new Player(name, socket.userId, this.world.spawnPosition.x, this.world.spawnPosition.y)
             this.players[socket.userId].connect(socket.id, name)
         }
-
-        console.log(this.players)
 
         // Join the room
         socket.join(this.id);
@@ -101,25 +94,34 @@ export class GameServer {
         // Send the world to the client
         socket.emit("load-world", this.world.width, this.world.height, this.world.tiles, this.world.backgroundTiles, this.players[socket.userId].getPlayer())
 
-        socket.on("player-update", (x: number, y: number) => {
-            this.players[socket.userId].x = x
-            this.players[socket.userId].y = y
-        })
+        // Update player
+        {
+            socket.on('player-update', (x: number, y: number) => {
+                this.players[socket.userId].x = x;
+                this.players[socket.userId].y = y;
+            });
+        }
 
-        socket.on('world-break-start', (tileIndex) => {
-            this.players[socket.userId].breakingTile = {tileIndex, start: Date.now()}
-        })
+        // World interact
+        {
+            socket.on('world-break-start', (tileIndex) => {
+                this.players[socket.userId].breakingTile = { tileIndex, start: Date.now() }
+            })
 
-        socket.on('world-break-cancel', () => {
-            this.players[socket.userId].breakingTile = undefined
-        })
+            socket.on('world-break-cancel', () => {
+                this.players[socket.userId].breakingTile = undefined
+            })
 
-        socket.on('world-break-finish', () => {
-            const brokenTile = this.players[socket.userId].breakingTile
+            socket.on('world-break-finish', () => {
+                const brokenTile = this.players[socket.userId].breakingTile
 
-            this.world.tiles[brokenTile.tileIndex] = 0
-            this.worldUpdates.push({tileIndex: brokenTile.tileIndex, tile: this.world.tiles[brokenTile.tileIndex]})
-        })
+                this.world.tiles[brokenTile.tileIndex] = 0
+                this.worldUpdates.push({
+                    tileIndex: brokenTile.tileIndex,
+                    tile: this.world.tiles[brokenTile.tileIndex]
+                })
+            })
+        }
 
         // Handle disconnect
         socket.on('disconnect', (reason: string) => {

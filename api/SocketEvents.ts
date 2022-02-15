@@ -1,3 +1,5 @@
+import { Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
+
 export type ServerEvents = {
     emit(event: 'init', data: { playerTickRate: number }): void;
     emit(
@@ -10,12 +12,7 @@ export type ServerEvents = {
     ): void;
     emit(
         event: 'tick-player',
-        players: {
-            [name: string]: {
-                x: number;
-                y: number;
-            };
-        }
+        snapshot: Snapshot
     ): void;
     emit(
         event: 'set-player',
@@ -51,16 +48,11 @@ export type ClientEvents = {
     ): void;
     on(
         event: 'tick-player',
-        callback: (players: {
-            [name: string]: {
-                x: number;
-                y: number;
-            };
-        }) => void
+        callback: (snapshot: Snapshot) => void
     ): void;
     on(
         event: 'init',
-        callback: (data: { playerTickRate: number, token?: string }) => void
+        callback: (data: { playerTickRate: number; token?: string }) => void
     ): void;
     on(
         event: 'set-player',

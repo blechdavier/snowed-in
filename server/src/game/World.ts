@@ -18,25 +18,28 @@ export class World {
         this.backgroundTiles = new Array(this.width * this.height);
 
         // Generate the world
-        // Create a new pearlin noise map with an optional seed
+        // Create a new perlin noise map with an optional seed
+        let start = process.hrtime.bigint()
         const noise = new SimplexNoise(seed);
 
         // this generation algorithm is by no means optimized
-        for (let i = 0; i < height; i++) {
-            // i will be the y position of tile being generated
-            for (let j = 0; j < width; j++) {
-                // j is x position " "    "      "
-                if (this.belowTerrainHeight(j, i, noise)) {
-                    if (this.belowIceHeight(j, i, noise)) {
-                        this.tiles[i * width + j] = 2;
+        for (let y = 0; y < height; y++) {
+            // y will be the y position of tile being generated
+            for (let x = 0; x < width; x++) {
+                // x is x position
+                if (this.belowTerrainHeight(x, y, noise)) {
+                    if (this.belowIceHeight(x, y, noise)) {
+                        this.tiles[y * width + x] = 2;
                     } else {
-                        this.tiles[i * width + j] = 1;
+                        this.tiles[y * width + x] = 1;
                     }
                 } else {
-                    this.tiles[i * width + j] = 0;
+                    this.tiles[y * width + x] = 0;
                 }
             }
         }
+        console.log(`World generation took: ${Number(process.hrtime.bigint() - start) / 1000000}ms`)
+        start = process.hrtime.bigint()
         for (let i = 0; i < height; i++) {
             // i will be the y position of background tile being generated
             for (let j = 0; j < width; j++) {
@@ -59,22 +62,16 @@ export class World {
                 }
             }
         }
-
+        console.log(`Background tile generation took: ${Number(process.hrtime.bigint() - start) / 1000000}ms`)
         // Set the spawn position
-        this.spawnPosition = {
-            x: Math.round(this.width / 2),
-            y: Math.round(this.height / 2),
-        };
+        this.spawnPosition = { x: this.width / 2, y: this.height / 2 };
     }
 
     belowTerrainHeight(x: number, y: number, noise: SimplexNoise) {
-        return noise.noise2D(x / 50, 0) * 16 + 20 < y;
+        return (noise.noise2D(x / 50, 0) / 2) * 16 + 20 < y;
     }
 
     belowIceHeight(x: number, y: number, noise: SimplexNoise) {
-        return (
-            noise.noise2D(x / 50, 0) * 6 + 31 <
-            y + noise.noise2D(x / 2, y / 2) * 0
-        );
+        return (noise.noise2D(x / 50, 0) / 2) * 6 + 31 < y;
     }
 }

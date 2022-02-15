@@ -20,6 +20,7 @@ import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
 import { ClientEvents } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
+import { State } from '@geckos.io/snapshot-interpolation/lib/types';
 
 /*
 ///INFORMATION
@@ -150,9 +151,9 @@ class Game extends p5 {
         this.connection.on('init', ({ playerTickRate, token }) => {
             console.log(`Tick rate set to: ${playerTickRate}`);
             this.playerTickRate = playerTickRate;
-            if(token) {
-                window.localStorage.setItem("token", token);
-                (this.connection.auth as { token: string}).token = token
+            if (token) {
+                window.localStorage.setItem('token', token);
+                (this.connection.auth as { token: string }).token = token;
             }
         });
     }
@@ -203,14 +204,17 @@ class Game extends p5 {
                     this.world.tileLayer.erase();
                     this.world.tileLayer.noStroke();
                     this.world.tileLayer.rect(
-                        (tile.tileIndex % this.world.width - 1) * this.TILE_WIDTH,
-                        Math.floor(tile.tileIndex / this.world.width) * this.TILE_HEIGHT,
+                        ((tile.tileIndex % this.world.width) - 1) *
+                            this.TILE_WIDTH,
+                        Math.floor(tile.tileIndex / this.world.width) *
+                            this.TILE_HEIGHT,
                         this.TILE_WIDTH * 3,
                         this.TILE_HEIGHT
                     );
                     this.world.tileLayer.rect(
                         (tile.tileIndex % this.world.width) * this.TILE_WIDTH,
-                        (Math.floor(tile.tileIndex / this.world.width) - 1) * this.TILE_HEIGHT,
+                        (Math.floor(tile.tileIndex / this.world.width) - 1) *
+                            this.TILE_HEIGHT,
                         this.TILE_WIDTH,
                         this.TILE_HEIGHT * 3
                     );
@@ -237,16 +241,16 @@ class Game extends p5 {
         // Update the other players in the world
         this.connection.on(
             'tick-player',
-            (players: {
-                [name: string]: {
-                    x: number;
-                    y: number;
-                };
+            (snapshot: {
+                id: string;
+                time: number;
+                state: { id: string; x: string; y: string }[];
             }) => {
                 // If the world is not set
                 if (this.world === undefined) return;
 
-                this.world.updatePlayers(players);
+                // this.world.snapshotInterpolation.snapshot.add(snapshot);
+                this.world.updatePlayers(snapshot)
             }
         );
 
@@ -255,23 +259,24 @@ class Game extends p5 {
             this.world.tick(this);
         }, 1000 / this.playerTickRate);
 
+        this.connection.emit(
+            'create',
+            "Numericly's Server",
+            'Numericly',
+            10,
+            false
+        );
         // this.connection.emit(
-        //     'create',
-        //     "Numericly's Server",
-        //     'Numericly',
-        //     10,
-        //     false
+        //     'join',
+        //     '9898d837d6aa9147ab28bc565ec45149',
+        //     'player' + Math.floor(Math.random() * 1000)
         // );
-        this.connection.emit('join', "fc4a4144b3292cdc9c73ef594f73c040", "player" + Math.floor(Math.random() * 1000))
 
         // go for a scale of <64 tiles wide screen
         this.windowResized();
 
         // remove texture interpolation
         this.noSmooth();
-
-        // generate and draw the world onto the p5.Graphics objects
-        // this.world.loadWorld();
 
         // the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
         for (let i = 0; i < 255; i++) {

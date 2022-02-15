@@ -5,7 +5,8 @@ import { Server, Socket } from 'socket.io';
 import { GameServer } from './game/GameServer';
 import crypto from 'crypto';
 import { ServerEvents } from '../../api/SocketEvents';
-import { JsonWebTokenError, JwtPayload, sign, TokenExpiredError, verify } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
+import { md } from 'node-forge'
 
 const app = Express();
 
@@ -28,13 +29,32 @@ const secretKey = "TfFj0HdGrklwqjo651PCHhKfifNpwMMZBo19hYxwx8R6PJ5tIFScOKrvzygas
 
 io.on("connection", (socket : Socket & ClientSocket) => {
     try {
+        // Get the user token from the client
         const token = verify(socket.handshake.auth.token, secretKey);
 
-        socket.userId = (token as {userId: string}).userId
+        // Sha256 hash to token for security
+        const sha256md = md.sha256.create()
+        sha256md.update((token as {userToken: string}).userToken)
+
+        // Set the sockets userId to the hashed token
+        socket.userId = sha256md.digest().toHex()
 
         socket.emit("init", { playerTickRate: 66 })
     } catch (e) {
-        const token = sign({userId: crypto.randomBytes(16).toString("hex")}, secretKey)
+
+        // Generate new user token
+        const userToken = crypto.randomBytes(16).toString("hex")
+
+        // Sign a jwt with the user token
+        const token = sign({userToken: userToken}, secretKey)
+
+        // Sha256 hash to token for security
+        const sha256md = md.sha256.create()
+        sha256md.update(userToken)
+
+        // Set the sockets userId to the hashed token
+        socket.userId = sha256md.digest().toHex()
+
         socket.emit("init", { playerTickRate: 66, token: token })
     }
 

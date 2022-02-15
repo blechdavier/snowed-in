@@ -1,4 +1,3 @@
-import { Permissions } from './GameServer';
 
 export class Player {
     id: string
@@ -6,8 +5,6 @@ export class Player {
 
     connected = false;
     socketId: string
-
-    permissions: Permissions;
 
     // Position
     x: number;
@@ -20,13 +17,11 @@ export class Player {
         id: string,
         x: number,
         y: number,
-        permissions: Permissions
     ) {
         this.name = name;
         this.x = x;
         this.y = y;
         this.id = id;
-        this.permissions = permissions;
     }
 
     connect(socketId: string, name: string) {
@@ -42,8 +37,9 @@ export class Player {
 
     getPlayer() {
         return {
-            x: +this.x.toFixed(2),
-            y: +this.y.toFixed(2),
+            id: this.name,
+            x: +this.x.toFixed(2).toString(),
+            y: +this.y.toFixed(2).toString(),
         };
     }
 }
