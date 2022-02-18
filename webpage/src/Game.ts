@@ -104,6 +104,9 @@ class Game extends p5 {
     // array for all the items
     items: EntityItem[] = [];
 
+    // mouseDown replaces mouseIsPressed because it wasn't working for some reason
+    mouseDown: boolean;
+
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
     hotBar: ItemStack[] = new Array(9);
@@ -127,7 +130,7 @@ class Game extends p5 {
         50, // hot bar 2
         51, // hot bar 3
         52, // hot bar 4
-        52, // hot bar 5
+        53, // hot bar 5
         54, // hot bar 6
         55, // hot bar 7
         56, // hot bar 8
@@ -353,7 +356,7 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        // this.currentUi.render(this, this.upscaleSize);
+        this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -428,98 +431,113 @@ class Game extends p5 {
         this.keys[this.keyCode] = false;
     }
 
+    // when it's dragged, it means it's moved
+    mouseDragged() {
+        this.mouseMoved();
+    }
+
     mouseMoved() {
         for(const i of this.currentUi.buttons) {
             i.updateMouseOver(this.mouseX, this.mouseY);
         }
-    }
-
-    mousePressed() {
-        // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-        if(this.currentUi !== undefined)
-            this.currentUi.mousePressed()
-
-        if (
-            this.mouseX > 2 * this.upscaleSize &&
-            this.mouseX <
-                2 * this.upscaleSize +
-                    16 * this.upscaleSize * this.hotBar.length &&
-            this.mouseY > 2 * this.upscaleSize &&
-            this.mouseY < 18 * this.upscaleSize
-        ) {
-            const clickedSlot: number = this.floor(
-                (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
-            );
-
-            if (this.pickedUpSlot === -1) {
-                if (this.hotBar[clickedSlot] !== undefined) {
-                    this.pickedUpSlot = clickedSlot;
-                }
-            } else {
-                // Swap clicked slot with the picked slot
-                [this.hotBar[this.pickedUpSlot], this.hotBar[clickedSlot]] = [
-                    this.hotBar[clickedSlot],
-                    this.hotBar[this.pickedUpSlot],
-                ];
-
-                // Set the picked up slot to nothing
-                this.pickedUpSlot = -1;
+        console.log(this.mouseIsPressed);
+        if(this.mouseDown) {
+            console.log("eeeeee");
+            for(const i of this.currentUi.sliders) {
+                i.updateSliderPosition(this.mouseX, this.mouseY);
             }
-        } else {
-            // If the tile is air
-            if (
-                this.world.worldTiles[
-                    this.world.width * this.worldMouseY + this.worldMouseX
-                ] === 0
-            )
-                return;
-
-            this.connection.emit(
-                'world-break-start',
-                this.world.width * this.worldMouseY + this.worldMouseX
-            );
-            this.connection.emit('world-break-finish');
-            /*
-            const tile: Tile =
-                Tiles[
-                    this.world.worldTiles[
-                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
-                    ]
-                ];
-
-            if (tile === undefined) return;
-
-            if (tile.itemDrop !== undefined) {
-                // Default drop quantity
-                let quantity: number = 1;
-
-                // Update the quantity based on
-                if (
-                    tile.itemDropMax !== undefined &&
-                    tile.itemDropMin !== undefined
-                ) {
-                    quantity = Math.round(
-                        Math.random() * (tile.itemDropMax - tile.itemDropMin) +
-                            tile.itemDropMin
-                    );
-                } else if (tile.itemDropMax !== undefined) {
-                    quantity = tile.itemDropMax;
-                }
-
-                this.dropItemStack(
-                    new ItemStack(tile.itemDrop, quantity),
-                    this.worldMouseX,
-                    this.worldMouseY
-                );
-            }
-
-
-
-             */
         }
     }
 
+    mousePressed() {
+        this.mouseDown = true;
+        // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
+        if(this.currentUi !== undefined) {
+            this.currentUi.mousePressed();
+            return;
+        }
+            if (
+                this.mouseX > 2 * this.upscaleSize &&
+                this.mouseX <
+                    2 * this.upscaleSize +
+                        16 * this.upscaleSize * this.hotBar.length &&
+                this.mouseY > 2 * this.upscaleSize &&
+                this.mouseY < 18 * this.upscaleSize
+            ) {
+                const clickedSlot: number = this.floor(
+                    (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
+                );
+
+                if (this.pickedUpSlot === -1) {
+                    if (this.hotBar[clickedSlot] !== undefined) {
+                        this.pickedUpSlot = clickedSlot;
+                    }
+                } else {
+                    // Swap clicked slot with the picked slot
+                    [this.hotBar[this.pickedUpSlot], this.hotBar[clickedSlot]] = [
+                        this.hotBar[clickedSlot],
+                        this.hotBar[this.pickedUpSlot],
+                    ];
+
+                    // Set the picked up slot to nothing
+                    this.pickedUpSlot = -1;
+                }
+            } else {
+                // If the tile is air
+                if (
+                    this.world.worldTiles[
+                        this.world.width * this.worldMouseY + this.worldMouseX
+                    ] === 0
+                )
+                    return;
+
+                this.connection.emit(
+                    'world-break-start',
+                    this.world.width * this.worldMouseY + this.worldMouseX
+                );
+                this.connection.emit('world-break-finish');
+                /*
+                const tile: Tile =
+                    Tiles[
+                        this.world.worldTiles[
+                            this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
+                        ]
+                    ];
+
+                if (tile === undefined) return;
+
+                if (tile.itemDrop !== undefined) {
+                    // Default drop quantity
+                    let quantity: number = 1;
+
+                    // Update the quantity based on
+                    if (
+                        tile.itemDropMax !== undefined &&
+                        tile.itemDropMin !== undefined
+                    ) {
+                        quantity = Math.round(
+                            Math.random() * (tile.itemDropMax - tile.itemDropMin) +
+                                tile.itemDropMin
+                        );
+                    } else if (tile.itemDropMax !== undefined) {
+                        quantity = tile.itemDropMax;
+                    }
+
+                    this.dropItemStack(
+                        new ItemStack(tile.itemDrop, quantity),
+                        this.worldMouseX,
+                        this.worldMouseY
+                    );
+                }
+
+
+
+                */
+            }
+    }
+
     mouseReleased() {
+        this.mouseDown = false;
         const releasedSlot: number = this.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );

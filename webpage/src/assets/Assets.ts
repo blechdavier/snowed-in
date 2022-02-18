@@ -20,7 +20,9 @@ const UiAssets = {
     ui_slot: new ImageResource('assets/textures/ui/uislot.png'),
     ui_frame: new ImageResource('assets/textures/ui/uiframe.png'),
     button_unselected: new ImageResource('assets/textures/ui/button0.png'),
-    button_selected: new ImageResource('assets/textures/ui/button1.png')
+    button_selected: new ImageResource('assets/textures/ui/button1.png'),
+    slider_bar: new ImageResource('assets/textures/ui/sliderBar.png'),
+    slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png')
 };
 
 // Item related assets

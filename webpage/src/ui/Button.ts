@@ -7,6 +7,7 @@ class Button implements Renderable {
 
     txt: string
     description: string
+    onPressed: Function
     x: number
     y: number
     w: number
@@ -20,9 +21,11 @@ class Button implements Renderable {
         x: number,
         y: number,
         w: number,
-        h: number) {
+        h: number,
+        onPressed: Function) {
         this.txt = txt
         this.description = description
+        this.onPressed = onPressed
         this.x = x
         this.y = y
         this.w = w
@@ -60,12 +63,10 @@ class Button implements Renderable {
         // if the mouse position is inside the button, return true
         if(mouseX>this.x && mouseX<this.x+this.w && mouseY>this.y && mouseY<this.y+this.h){
             this.mouseIsOver = true;
-            // for testing, this won't =behave like this later
             this.image = UiAssets.button_selected;
         }
         else {
             this.mouseIsOver = false;
-            // for testing, this won't =behave like this later
             this.image = UiAssets.button_unselected;
         }
     }
