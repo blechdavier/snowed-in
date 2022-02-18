@@ -31,8 +31,8 @@ export class MainMenu extends UiScreen {
         this.frame.render(target, upscaleSize);
 
         // loop through the buttons array and render each one.
-        for(let i = 0; i<this.buttons.length; i++) {
-            this.buttons[i].render(target, upscaleSize);
+        for (const item of this.buttons) {
+            item.render(target, upscaleSize);
         }
     }
 

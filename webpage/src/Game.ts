@@ -1,6 +1,6 @@
 import p5 from 'p5';
 
-import Player from './world/entities/Player';
+import PlayerLocal from './world/entities/PlayerLocal';
 import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
 
@@ -18,7 +18,7 @@ import ImageResource from './assets/resources/ImageResource';
 import Renderable from './interfaces/Renderable';
 import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
-import { ClientEvents } from '../../api/SocketEvents';
+import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
 import { State } from '@geckos.io/snapshot-interpolation/lib/types';
 
@@ -175,20 +175,13 @@ class Game extends p5 {
         // Load the world and set the player
         this.connection.on(
             'load-world',
-            (width, height, tiles, backgroundTiles, spawnPosition) => {
+            (width, height, tiles, backgroundTiles, entityId) => {
                 this.world = new World(
                     width,
                     height,
                     tiles,
                     backgroundTiles,
-                    new Player(
-                        spawnPosition.x,
-                        spawnPosition.y,
-                        12 / this.TILE_WIDTH,
-                        20 / this.TILE_HEIGHT,
-                        0,
-                        0
-                    )
+                    entityId
                 );
             }
         );
@@ -238,9 +231,15 @@ class Game extends p5 {
             this.world.player.xVel = xVel;
         });
 
+        this.connection.on('entities-update', (entities: (
+            | { id: string; type: EntityType; data: object }
+            )[]) => {
+            this.world.updateEntities(entities)
+        })
+
         // Update the other players in the world
         this.connection.on(
-            'tick-player',
+            'entity-snapshot',
             (snapshot: {
                 id: string;
                 time: number;
@@ -259,18 +258,18 @@ class Game extends p5 {
             this.world.tick(this);
         }, 1000 / this.playerTickRate);
 
-        this.connection.emit(
-            'create',
-            "Numericly's Server",
-            'Numericly',
-            10,
-            false
-        );
         // this.connection.emit(
-        //     'join',
-        //     '9898d837d6aa9147ab28bc565ec45149',
-        //     'player' + Math.floor(Math.random() * 1000)
+        //     'create',
+        //     "Numericly's Server",
+        //     'Numericly',
+        //     10,
+        //     false
         // );
+        this.connection.emit(
+            'join',
+            'e4022d403dcc6d19d6a68ba3abfd0a60',
+            'player' + Math.floor(Math.random() * 1000)
+        );
 
         // go for a scale of <64 tiles wide screen
         this.windowResized();
@@ -653,6 +652,8 @@ class Game extends p5 {
     }
 
     doTick() {
+        if(this.world.player === undefined)
+            return
         this.world.player.keyboardInput();
         this.world.player.applyGravityAndDrag();
         this.world.player.applyVelocityAndCollide();
@@ -661,12 +662,12 @@ class Game extends p5 {
         this.pCamY = this.camY;
         const desiredCamX =
             this.world.player.x +
-            this.world.player.w / 2 -
+            this.world.player.width / 2 -
             this.width / 2 / this.TILE_WIDTH / this.upscaleSize +
             this.world.player.xVel * 40;
         const desiredCamY =
             this.world.player.y +
-            this.world.player.h / 2 -
+            this.world.player.height / 2 -
             this.height / 2 / this.TILE_HEIGHT / this.upscaleSize +
             this.world.player.yVel * 20;
         this.camX = (desiredCamX + this.camX * 24) / 25;
@@ -922,18 +923,16 @@ class Game extends p5 {
         // draw player
         this.fill(255, 0, 0);
         this.noStroke();
-        if (this.world === undefined) return;
-        this.world.player.findInterpolatedCoordinates();
-        this.rect(
-            (this.world.player.interpolatedX * this.TILE_WIDTH -
-                this.interpolatedCamX * this.TILE_WIDTH) *
-                this.upscaleSize,
-            (this.world.player.interpolatedY * this.TILE_HEIGHT -
-                this.interpolatedCamY * this.TILE_HEIGHT) *
-                this.upscaleSize,
-            this.world.player.w * this.upscaleSize * this.TILE_WIDTH,
-            this.world.player.h * this.upscaleSize * this.TILE_HEIGHT
-        );
+        // this.rect(
+        //     (this.world.player.interpolatedX * this.TILE_WIDTH -
+        //         this.interpolatedCamX * this.TILE_WIDTH) *
+        //         this.upscaleSize,
+        //     (this.world.player.interpolatedY * this.TILE_HEIGHT -
+        //         this.interpolatedCamY * this.TILE_HEIGHT) *
+        //         this.upscaleSize,
+        //     this.world.player.width * this.upscaleSize * this.TILE_WIDTH,
+        //     this.world.player.height * this.upscaleSize * this.TILE_HEIGHT
+        // );
 
         for (const item of this.items) {
             item.findInterpolatedCoordinates();

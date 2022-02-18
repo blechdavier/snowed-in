@@ -1,5 +1,10 @@
 import { Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
 
+export enum EntityType {
+    Player = "player",
+    Item = "item"
+}
+
 export type ServerEvents = {
     emit(event: 'init', data: { playerTickRate: number }): void;
     emit(
@@ -8,11 +13,15 @@ export type ServerEvents = {
         height: number,
         tiles: number[],
         backgroundTiles: number[],
-        spawnPosition: { x: number; y: number }
+        entityId: string,
     ): void;
     emit(
-        event: 'tick-player',
+        event: 'entity-snapshot',
         snapshot: Snapshot
+    ): void;
+    emit(
+        event: 'entities-update',
+        updates: ({ id: string, type: EntityType, data: object}|{ id: string, type: undefined})[]
     ): void;
     emit(
         event: 'set-player',
@@ -43,11 +52,11 @@ export type ClientEvents = {
             height: number,
             tiles: number[],
             backgroundTiles: number[],
-            spawnPosition: { x: number; y: number }
+            entityId: string,
         ) => void
     ): void;
     on(
-        event: 'tick-player',
+        event: 'entity-snapshot',
         callback: (snapshot: Snapshot) => void
     ): void;
     on(

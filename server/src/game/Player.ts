@@ -1,9 +1,10 @@
+import { Entity } from './Entity';
+import { EntityType } from '../../../api/SocketEvents';
 
-export class Player {
-    id: string
+export class Player extends Entity {
+    userId: string
     name: string;
 
-    connected = false;
     socketId: string
 
     // Position
@@ -14,32 +15,19 @@ export class Player {
 
     constructor(
         name: string,
-        id: string,
+        userId: string,
+        entityId: number,
         x: number,
         y: number,
     ) {
+        super(EntityType.Player, entityId)
+        this.userId = userId;
         this.name = name;
         this.x = x;
         this.y = y;
-        this.id = id;
     }
 
-    connect(socketId: string, name: string) {
-        this.name = name
-        this.socketId = socketId
-        this.connected = true
-    }
-
-    disconnect() {
-        this.socketId = undefined
-        this.connected = false
-    }
-
-    getPlayer() {
-        return {
-            id: this.name,
-            x: +this.x.toFixed(2).toString(),
-            y: +this.y.toFixed(2).toString(),
-        };
+    getData(): object {
+        return {name: this.name, x: this.x, y: this.y}
     }
 }

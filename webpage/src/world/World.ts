@@ -1,6 +1,5 @@
 import game from "../Main"
 import P5 from 'p5';
-import Inventory from './inventory/Inventory';
 import { Tile, Tiles } from './Tiles';
 import ImageResource from '../assets/resources/ImageResource';
 import TileResource from '../assets/resources/TileResource';
@@ -9,11 +8,12 @@ import Tickable from '../interfaces/Tickable';
 import Game from '../Game';
 import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
-import Player from './entities/Player';
-import OtherPlayer from './entities/OtherPlayer';
+import PlayerLocal from './entities/PlayerLocal';
 import { ServerEntity } from './entities/ServerEntity';
-import e, { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
-import { Entity, Snapshot, State } from '@geckos.io/snapshot-interpolation/lib/types';
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
+import { Entity, Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
+import { EntityType } from '../../../api/SocketEvents';
+import { PlayerEntityData, PlayerEntity } from './entities/PlayerEntity';
 
 class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -28,20 +28,21 @@ class World implements Tickable, Renderable {
     worldTiles: number[]; // number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
     backgroundTiles: number[]; // number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
-    inventory: Inventory;
+    playerId: string
+    player: PlayerLocal
 
-    player: Player
-    players: {[name: string]: ServerEntity} = {}
+    entities: {[name: string]: ServerEntity} = {}
 
     snapshotInterpolation: SnapshotInterpolation
 
-    constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], player: Player) {
+    constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], playerId: string) {
         // Initialize the world with the tiles and dimensions from the server
         this.width = width;
         this.height = height;
         this.worldTiles = tiles
         this.backgroundTiles = backgroundTiles
-        this.player = player
+
+        this.playerId = playerId
 
         this.snapshotInterpolation = new SnapshotInterpolation()
         this.snapshotInterpolation.interpolationBuffer.set( (1000 / game.playerTickRate) * 3)
@@ -62,13 +63,12 @@ class World implements Tickable, Renderable {
         this.backTileLayerOffsetHeight =
             (game.TILE_HEIGHT - game.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
 
-        this.inventory = new Inventory();
-
         this.loadWorld();
     }
 
     tick(game: Game) {
-        game.connection.emit("player-update", this.player.x, this.player.y)
+        if(this.player !== undefined)
+            game.connection.emit("player-update", this.player.x, this.player.y)
     }
 
     render(target: p5, upscaleSize: number) {
@@ -105,45 +105,80 @@ class World implements Tickable, Renderable {
         this.snapshotInterpolation.snapshot.add(snapshot);
     }
 
+    updateEntities(entities: (
+        | { id: string; type: EntityType; data: object }
+        )[]) {
+        entities.forEach((entity: { id: string; type: EntityType; data: object }
+        ) => {
+            console.log(typeof this.playerId)
+            console.log(typeof entity.id)
+            console.log(entity.id === this.playerId)
+            // If the type is undefined meaning that this entity should be deleted
+            if(entity.type === undefined) {
+                if(entity.id === this.playerId) {
+                    this.player = undefined
+                    return;
+                }
+                delete this.entities[entity.id];
+                return
+            }
+
+            // If the entity that is being updated is the local player
+            if(entity.id === this.playerId) {
+                if(this.player !== undefined) {
+                    this.player.updateData(entity.data as PlayerEntityData)
+                    return;
+                }
+                this.player = new PlayerLocal(entity.id, entity.data as PlayerEntityData)
+                return;
+            }
+
+            // If the entity already exists update it
+            if(this.entities[entity.id] !== undefined) {
+                this.entities[entity.id].updateData(entity.data);
+                return;
+            }
+
+            // Set the entity to the player
+            switch (entity.type) {
+                case EntityType.Player:
+                    this.entities[entity.id] = new PlayerEntity(entity.id, entity.data as PlayerEntityData)
+            }
+        })
+    }
+
     renderPlayers(target: p5, upscaleSize: number) {
 
-        const calculatedSnapshot = this.snapshotInterpolation.calcInterpolation('x y')
-        if(!calculatedSnapshot) return
+        // Calculate the interpolated position of all updated entities
+        const positionStates: { [id: string]: { x: number, y: number } } = {}
+        try {
+            const calculatedSnapshot = this.snapshotInterpolation.calcInterpolation('x y')
+            if (!calculatedSnapshot) return
 
-        const state = calculatedSnapshot.state
-        if(!state) return;
+            const state = calculatedSnapshot.state
+            if (!state) return;
 
-        for (const entity of state as (Entity & {x: number, y: number})[]) {
-            target.fill(0, 255, 0);
+            // The new positions of entities as object
+            state.forEach(({ id, x, y }: Entity & { x: number, y: number }) => {
+                positionStates[id] = { x, y }
+            })
+        } catch (e) {}
 
-            target.rect(
-                (entity.x * game.TILE_WIDTH -
-                    game.interpolatedCamX * game.TILE_WIDTH) *
-                upscaleSize,
-                (entity.y * game.TILE_HEIGHT -
-                    game.interpolatedCamY * game.TILE_HEIGHT) *
-                upscaleSize,
-                this.player.w * upscaleSize * game.TILE_WIDTH,
-                this.player.h * upscaleSize * game.TILE_HEIGHT
-            );
+        // Render each entity in random order :skull:
+        Object.entries(this.entities).forEach((entity: [string, ServerEntity]) => {
+            const updatedPosition = positionStates[entity[0]]
+            if(updatedPosition !== undefined) {
+                entity[1].x = updatedPosition.x
+                entity[1].y = updatedPosition.y
+            }
 
-            // Render the item quantity label
-            target.fill(0);
+            entity[1].render(target, upscaleSize)
+        })
 
-            target.noStroke();
-
-            target.textSize(5 * upscaleSize);
-            target.textAlign(target.CENTER, target.TOP);
-
-            target.text(
-                entity.id,
-                (((entity.x * game.TILE_WIDTH) -
-                    game.interpolatedCamX * game.TILE_WIDTH) + (this.player.w * game.TILE_WIDTH) / 2) *
-                upscaleSize,
-                (((entity.y * game.TILE_HEIGHT) -
-                    game.interpolatedCamY * game.TILE_HEIGHT) - (this.player.h * game.TILE_WIDTH) / 2.5) *
-                upscaleSize
-            );
+        // Render the player on top :thumbsup:
+        if(this.player !== undefined) {
+            this.player.findInterpolatedCoordinates()
+            this.player.render(target, upscaleSize)
         }
     }
 

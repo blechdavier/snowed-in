@@ -28,6 +28,7 @@
   "dependencies": {
     "@geckos.io/snapshot-interpolation": "^1.1.0",
     "@types/node-forge": "^1.0.0",
+    "chalk": "4.1.2",
     "events": "^3.3.0",
     "express": "^4.17.2",
     "jsonwebtoken": "^8.5.1",
