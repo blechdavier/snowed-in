@@ -1,62 +1,77 @@
 import game from '../../Main';
+import { ServerEntity } from './ServerEntity';
+import { PlayerEntityData } from './PlayerEntity';
+import p5 from 'p5';
 
-class Player {
+class PlayerLocal extends ServerEntity {
 
-    x: number;
-    y: number;
-    w: number;
-    h: number;
+    width: number = 12 / game.TILE_WIDTH;
+    height: number = 20 / game.TILE_HEIGHT;
+    name: string
+
     xVel: number;
     yVel: number;
-    mass: number;
-    controllable: boolean;
-    grounded: boolean;
-    collisionData: any;
-    closestCollision: any;
     interpolatedX: number;
     interpolatedY: number;
+    slideX: number;
+    slideY: number;
+
     pX: number;
     pY: number;
     pXVel: number;
     pYVel: number;
-    type: any;
-    itemType: any;
-    deleted: boolean;
-    slideX: number;
-    slideY: number;
+
+    grounded: boolean;
+
+    collisionData: any;
+    closestCollision: [number, number, number]
+
+    mass: number = this.width * this.height
 
     constructor(
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        xVel: number,
-        yVel: number
+        entityId: string,
+        data: PlayerEntityData
     ) {
+        super(entityId)
+        console.log(this)
 
-        // generic
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-        this.xVel = xVel;
-        this.yVel = yVel;
-        this.mass = w * h;
+        this.name = data.name
+        this.x = data.x
+        this.y = data.y
+
+        this.xVel = 0;
+        this.yVel = 0;
 
         this.grounded = false;
 
         this.closestCollision = [1, 0, Infinity];
 
-        this.interpolatedX = x;
-        this.interpolatedY = y;
+        this.interpolatedX = this.x;
+        this.interpolatedY = this.y;
 
-        this.pX = x - xVel;
-        this.pY = y - yVel;
-        this.pXVel = xVel;
-        this.pYVel = yVel;
+        this.pX = this.x
+        this.pY = this.y;
+        this.pXVel = 0;
+        this.pYVel = 0;
+    }
 
-        // for items
-        this.deleted = false;
+    render(target: p5, upscaleSize: number): void {
+        target.fill(255, 0, 0);
+
+        target.rect(
+            (this.interpolatedX * game.TILE_WIDTH -
+                game.interpolatedCamX * game.TILE_WIDTH) *
+            upscaleSize,
+            (this.interpolatedY * game.TILE_HEIGHT -
+                game.interpolatedCamY * game.TILE_HEIGHT) *
+            upscaleSize,
+            this.width * upscaleSize * game.TILE_WIDTH,
+            this.height * upscaleSize * game.TILE_HEIGHT
+        );
+    }
+
+    updateData(data: PlayerEntityData): void {
+        this.name = data.name;
     }
 
     keyboardInput() {
@@ -79,11 +94,11 @@ class Player {
         this.pYVel = this.yVel;
 
         this.xVel -=
-            (game.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * this.w) /
+            (game.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * this.width) /
             this.mass;
         this.yVel += game.GRAVITY_SPEED;
         this.yVel -=
-            (game.abs(this.yVel) * this.yVel * game.DRAG_COEFFICIENT * this.h) /
+            (game.abs(this.yVel) * this.yVel * game.DRAG_COEFFICIENT * this.height) /
             this.mass;
     }
 
@@ -134,22 +149,22 @@ class Player {
         // loop through all the possible tiles the physics box could be intersecting with
         for (
             let i = game.floor(game.min(this.x, this.x + this.xVel));
-            i < game.ceil(game.max(this.x, this.x + this.xVel) + this.w);
+            i < game.ceil(game.max(this.x, this.x + this.xVel) + this.width);
             i++
         ) {
             for (
                 let j = game.floor(game.min(this.y, this.y + this.yVel));
-                j < game.ceil(game.max(this.y, this.y + this.yVel) + this.h);
+                j < game.ceil(game.max(this.y, this.y + this.yVel) + this.height);
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
                 if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
-                        i - this.w,
-                        j - this.h,
-                        this.w + 1,
-                        this.h + 1,
+                        i - this.width,
+                        j - this.height,
+                        this.width + 1,
+                        this.height + 1,
                         this.x,
                         this.y,
                         this.xVel,
@@ -196,23 +211,23 @@ class Player {
             // loop through all the possible tiles the physics box could be intersecting with
             for (
                 let i = game.floor(game.min(this.x, this.x + this.slideX));
-                i < game.ceil(game.max(this.x, this.x + this.slideX) + this.w);
+                i < game.ceil(game.max(this.x, this.x + this.slideX) + this.width);
                 i++
             ) {
                 for (
                     let j = game.floor(game.min(this.y, this.y + this.slideY));
                     j <
-                    game.ceil(game.max(this.y, this.y + this.slideY) + this.h);
+                    game.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
                     // if the current tile isn't air (value 0), then continue with the collision detection
                     if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
-                            i - this.w,
-                            j - this.h,
-                            this.w + 1,
-                            this.h + 1,
+                            i - this.width,
+                            j - this.height,
+                            this.width + 1,
+                            this.height + 1,
                             this.x,
                             this.y,
                             this.slideX,
@@ -258,21 +273,22 @@ class Player {
         if (this.x < 0) {
             this.x = 0;
             this.xVel = 0;
-        } else if (this.x + this.w > game.WORLD_WIDTH) {
-            this.x = game.WORLD_WIDTH - this.w;
+        } else if (this.x + this.width > game.WORLD_WIDTH) {
+            this.x = game.WORLD_WIDTH - this.width;
             this.xVel = 0;
         }
 
         if (this.y < 0) {
             this.y = 0;
             this.yVel = 0;
-        } else if (this.y + this.h > game.WORLD_HEIGHT) {
-            this.y = game.WORLD_HEIGHT - this.h;
+        } else if (this.y + this.height > game.WORLD_HEIGHT) {
+            this.y = game.WORLD_HEIGHT - this.height;
             this.yVel = 0;
             this.grounded = true;
         }
     }
+
 }
 
 
-export = Player;
+export = PlayerLocal;

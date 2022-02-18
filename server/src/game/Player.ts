@@ -1,13 +1,11 @@
-import { Permissions } from './GameServer';
+import { Entity } from './Entity';
+import { EntityType } from '../../../api/SocketEvents';
 
-export class Player {
-    id: string
+export class Player extends Entity {
+    userId: string
     name: string;
 
-    connected = false;
     socketId: string
-
-    permissions: Permissions;
 
     // Position
     x: number;
@@ -17,33 +15,19 @@ export class Player {
 
     constructor(
         name: string,
-        id: string,
+        userId: string,
+        entityId: number,
         x: number,
         y: number,
-        permissions: Permissions
     ) {
+        super(EntityType.Player, entityId)
+        this.userId = userId;
         this.name = name;
         this.x = x;
         this.y = y;
-        this.id = id;
-        this.permissions = permissions;
     }
 
-    connect(socketId: string, name: string) {
-        this.name = name
-        this.socketId = socketId
-        this.connected = true
-    }
-
-    disconnect() {
-        this.socketId = undefined
-        this.connected = false
-    }
-
-    getPlayer() {
-        return {
-            x: +this.x.toFixed(2),
-            y: +this.y.toFixed(2),
-        };
+    getData(): object {
+        return {name: this.name, x: this.x, y: this.y}
     }
 }

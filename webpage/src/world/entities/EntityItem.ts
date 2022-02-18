@@ -75,29 +75,29 @@ class EntityItem extends EntityBase {
 
     goTowardsPlayer() {
         if (
-            (this.x + this.w / 2 - game.world.player.x - game.world.player.w / 2) *
-                (this.x + this.w / 2 - game.world.player.x - game.world.player.w / 2) +
-                (this.y + this.h / 2 - game.world.player.y - game.world.player.h / 2) *
-                    (this.y + this.h / 2 - game.world.player.y - game.world.player.h / 2) <
+            (this.x + this.w / 2 - game.world.player.x - game.world.player.width / 2) *
+                (this.x + this.w / 2 - game.world.player.x - game.world.player.width / 2) +
+                (this.y + this.h / 2 - game.world.player.y - game.world.player.height / 2) *
+                    (this.y + this.h / 2 - game.world.player.y - game.world.player.height / 2) <
             20
         ) {
             if (
-                (this.x + this.w / 2 - game.world.player.x - game.world.player.w / 2) *
-                    (this.x + this.w / 2 - game.world.player.x - game.world.player.w / 2) +
-                    (this.y + this.h / 2 - game.world.player.y - game.world.player.h / 2) *
+                (this.x + this.w / 2 - game.world.player.x - game.world.player.width / 2) *
+                    (this.x + this.w / 2 - game.world.player.x - game.world.player.width / 2) +
+                    (this.y + this.h / 2 - game.world.player.y - game.world.player.height / 2) *
                         (this.y +
                             this.h / 2 -
                             game.world.player.y -
-                            game.world.player.h / 2) <
+                            game.world.player.height / 2) <
                 3
             ) {
                 this.deleted = game.pickUpItem(this.itemStack);
             } else {
                 this.xVel -=
-                    (this.x + this.w / 2 - game.world.player.x - game.world.player.w / 2) /
+                    (this.x + this.w / 2 - game.world.player.x - game.world.player.width / 2) /
                     30;
                 this.yVel -=
-                    (this.y + this.h / 2 - game.world.player.y - game.world.player.h / 2) /
+                    (this.y + this.h / 2 - game.world.player.y - game.world.player.height / 2) /
                     30;
             }
         }

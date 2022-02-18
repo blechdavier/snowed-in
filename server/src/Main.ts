@@ -5,18 +5,14 @@ import { Server, Socket } from 'socket.io';
 import { GameServer } from './game/GameServer';
 import crypto from 'crypto';
 import { ServerEvents } from '../../api/SocketEvents';
-import { JsonWebTokenError, JwtPayload, sign, TokenExpiredError, verify } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
+import { md } from 'node-forge'
 
 const app = Express();
 
 const httpServer = http.createServer(app)
 
 export const io = new Server(httpServer, {});
-
-enum Location {
-    None,
-    Game,
-}
 
 const servers: {[name: string]: GameServer} = {}
 
@@ -26,16 +22,37 @@ export type ClientSocket = {
 
 const secretKey = "TfFj0HdGrklwqjo651PCHhKfifNpwMMZBo19hYxwx8R6PJ5tIFScOKrvzygasE3EpqyzrbsO8jlLaG1G5WpF4ZdX5V7aB9CG1dqeH987hrUTdGI5VbeTHLoG32ngNW6m"
 
+servers["e4022d403dcc6d19d6a68ba3abfd0a60"] = new GameServer("dev server", 10, false, "e4022d403dcc6d19d6a68ba3abfd0a60", "asdfasdf")
+
 io.on("connection", (socket : Socket & ClientSocket) => {
     try {
+        // Get the user token from the client
         const token = verify(socket.handshake.auth.token, secretKey);
 
-        socket.userId = (token as {userId: string}).userId
+        // Sha256 hash to token for security
+        const sha256md = md.sha256.create()
+        sha256md.update((token as {userToken: string}).userToken + Math.random().toString())
 
-        socket.emit("init", { playerTickRate: 66 })
+        // Set the sockets userId to the hashed token
+        socket.userId = sha256md.digest().toHex()
+
+        socket.emit("init", { playerTickRate: 30 })
     } catch (e) {
-        const token = sign({userId: crypto.randomBytes(16).toString("hex")}, secretKey)
-        socket.emit("init", { playerTickRate: 66, token: token })
+
+        // Generate new user token
+        const userToken = crypto.randomBytes(16).toString("hex")
+
+        // Sign a jwt with the user token
+        const token = sign({userToken: userToken}, secretKey)
+
+        // Sha256 hash to token for security
+        const sha256md = md.sha256.create()
+        sha256md.update(userToken)
+
+        // Set the sockets userId to the hashed token
+        socket.userId = sha256md.digest().toHex()
+
+        socket.emit("init", { playerTickRate: 30, token: token })
     }
 
     socket.on("create", async (name: string, clientName: string, maxPlayers: number, listed: boolean) => {
