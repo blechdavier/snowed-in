@@ -20,7 +20,6 @@ import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
 import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
-import { State } from '@geckos.io/snapshot-interpolation/lib/types';
 
 /*
 ///INFORMATION
@@ -105,8 +104,6 @@ class Game extends p5 {
     // array for all the items
     items: EntityItem[] = [];
 
-    // mouseDown replaces mouseIsPressed because it wasn't working for some reason
-    mouseDown: boolean;
 
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
@@ -435,29 +432,26 @@ class Game extends p5 {
         this.keys[this.keyCode] = false;
     }
 
-    // when it's dragged, it means it's moved
+    // when it's dragged update the sliders
     mouseDragged() {
-        this.mouseMoved();
+        for(const i of this.currentUi.sliders) {
+            i.updateSliderPosition(this.mouseX, this.mouseY);
+        }
     }
 
     mouseMoved() {
         for(const i of this.currentUi.buttons) {
             i.updateMouseOver(this.mouseX, this.mouseY);
         }
-        console.log(this.mouseIsPressed);
-        if(this.mouseDown) {
-            console.log("eeeeee");
-            for(const i of this.currentUi.sliders) {
-                i.updateSliderPosition(this.mouseX, this.mouseY);
-            }
-        }
     }
 
     mousePressed() {
-        this.mouseDown = true;
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         if(this.currentUi !== undefined) {
             this.currentUi.mousePressed();
+            for(const i of this.currentUi.sliders) {
+                i.updateSliderPosition(this.mouseX, this.mouseY);
+            }
             return;
         }
             if (
@@ -541,7 +535,6 @@ class Game extends p5 {
     }
 
     mouseReleased() {
-        this.mouseDown = false;
         const releasedSlot: number = this.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );

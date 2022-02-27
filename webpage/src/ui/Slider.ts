@@ -44,9 +44,7 @@ class Slider implements Renderable {
         const x = Math.round(this.x/upscaleSize)*upscaleSize;
         const y = Math.round((this.y+this.h/2)/upscaleSize)*upscaleSize;
         const w = Math.round(this.w/upscaleSize)*upscaleSize;
-        const h = Math.round(this.h/upscaleSize)*upscaleSize;
 
-        target.rect(this.x, this.y, this.w, this.h);
         // left side of slider bar
         UiAssets.slider_bar.renderPartial(target, x, y-2*upscaleSize, 2*upscaleSize, 4*upscaleSize, 0, 0, 2, 4);
         // right side of slider bar
@@ -54,15 +52,13 @@ class Slider implements Renderable {
         // center of slider bar
         UiAssets.slider_bar.renderPartial(target, x+2*upscaleSize, y-2*upscaleSize, w-4*upscaleSize, 4*upscaleSize, 2, 0, 1, 4);
         // handle
-
-        // UiAssets.slider_handle.render(target, this.x+this.value, ____, 9, 9);
+        UiAssets.slider_handle.render(target, x+Math.round((this.value-this.min)/(this.max-this.min)*(w-8*upscaleSize)/upscaleSize)*upscaleSize, y-4*upscaleSize, 8*upscaleSize, 9*upscaleSize);
     }
 
     updateSliderPosition(mouseX: number, mouseY: number) {
-        console.log("asfddsaf");
         if(mouseX>this.x && mouseX<this.x+this.w && mouseY>this.y && mouseY<this.y+this.h){
-            this.value = (Math.round((mouseX-this.x-2*game.upscaleSize) / this.w-(4*game.upscaleSize) / this.step)*this.step);
-            console.log(this.value);
+            this.value = Math.max(this.min, Math.min(this.max, Math.round((this.min+(this.max-this.min)*(((mouseX-this.x-4*game.upscaleSize) / (this.w-(8*game.upscaleSize)))))/this.step)*this.step));
+            this.onChanged();
         }
     }
 

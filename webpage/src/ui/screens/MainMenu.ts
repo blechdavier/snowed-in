@@ -37,9 +37,10 @@ export class MainMenu extends UiScreen {
             })
         ];
         this.sliders = [
-            new Slider(0.5, 0, 0, 0.1, 0, 0, 0, 0, function() {
-                console.log("cheese moment");
+            new Slider(1, 0, 8.5, 1, 0, 0, 0, 0, function() {
+                console.log("value: "+this.value);
             })
+
         ];
         this.windowUpdate();
     }
