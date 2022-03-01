@@ -61,7 +61,6 @@ backpack (used as chest)
 //Polish
 better world generation
 font consistency
-fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
 
@@ -170,7 +169,7 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.currentUi = new MainMenu();
+        this.currentUi = new MainMenu(Fonts.title);
 
         // Load the world and set the player
         this.connection.on(

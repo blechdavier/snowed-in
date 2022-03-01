@@ -10,8 +10,14 @@ Options
     - FPS Limit
     - Particle Multiplier 0-10
  - Keybinds
-    - Forward
-    - yes...
+    - Right d
+    - Left a
+    - Jump w
+    - Settings esc
+    - Inventory 
+    - Place
+    - Break
+    - Interact (middle click)
  - Music and sounds
     - Music volume 0-2
     - SFX volume 0-1

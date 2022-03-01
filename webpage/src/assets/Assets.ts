@@ -115,6 +115,7 @@ const Fonts = {
         "T": 8,
         "U": 8,
         "V": 8,
+        "W": 10,
         "X": 8,
         "Y": 8,
         "Z": 9,
@@ -151,7 +152,7 @@ const Fonts = {
         "_": 6,
         "-": 4,
         " ": 2
-    }),
+    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_- "),
 };
 
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {

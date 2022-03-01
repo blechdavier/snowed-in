@@ -5,43 +5,41 @@ import game from '../../Main';
 import Button from '../Button';
 import Slider from '../Slider';
 import { OptionsMenu } from './OptionsMenu';
+import FontResource from '../../assets/resources/FontResource';
 
 export class MainMenu extends UiScreen {
 
-    frame: UiFrame;
-
-    buttons: Button[];
-    sliders: Slider[];
-
-    constructor() {
+    constructor(font: FontResource) {
+        console.log(font);
         super();
+
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
+
         // make 4 buttons with default positions
         this.buttons = [
-            new Button("Resume Game", "Keep playing where you left off.", 0, 0, 0, 0, function() {
+            new Button(font, "Resume Game", "Keep playing where you left off.", 0, 0, 0, 0, function() {
                 console.log("resume game");
                 game.currentUi = undefined;
             }),
-            new Button("New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, function() {
+            new Button(font, "New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, function() {
                 console.log("new game");
                 game.currentUi = undefined;
             }),
-            new Button("Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, function() {
+            new Button(font, "Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, function() {
                 console.log("join game");
                 game.currentUi = undefined;
             }),
-            new Button("Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, function() {
+            new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, function() {
                 console.log("options");
-                game.currentUi = new OptionsMenu
+                game.currentUi = new OptionsMenu(font);
             })
         ];
-        this.sliders = [
-            new Slider(1, 0, 8.5, 1, 0, 0, 0, 0, function() {
-                console.log("value: "+this.value);
-            })
 
-        ];
+        // no sliders
+        this.sliders = [];
+
+        // update the size of the elements based on the initial screen size
         this.windowUpdate();
     }
 
@@ -70,11 +68,11 @@ export class MainMenu extends UiScreen {
     }
 
     windowUpdate() {
-        // set the position of the rectangular image that the whole menu is on
-        this.frame.x = game.width/2-256/2*game.upscaleSize;// center the frame in the center of the screen
-        this.frame.y = game.height/2-192/2*game.upscaleSize;
+        // set the position of the frame
+        this.frame.x = game.width/2-256/2*game.upscaleSize;// center the frame in the middle of the screen
+        this.frame.y = game.height/2-72*game.upscaleSize;
         this.frame.w = 256*game.upscaleSize;
-        this.frame.h = 192*game.upscaleSize;
+        this.frame.h = 64*game.upscaleSize;
 
         // set the positions of all the buttons
         for(let i = 0; i<4; i++) {
@@ -82,11 +80,9 @@ export class MainMenu extends UiScreen {
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;
             this.buttons[i].h = 16*game.upscaleSize;
+            this.buttons[i].updateMouseOver(game.mouseX, game.mouseY);
         }
-        this.sliders[0].x = game.width/2-192/2*game.upscaleSize;
-        this.sliders[0].y = game.height/2+80*game.upscaleSize;
-        this.sliders[0].w = 192*game.upscaleSize;
-        this.sliders[0].h = 16*game.upscaleSize;
+
     }
 
 }
