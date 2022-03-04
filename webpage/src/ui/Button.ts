@@ -9,7 +9,7 @@ class Button implements Renderable {
     font: FontResource
     txt: string
     description: string
-    onPressed: () => void
+    onPressed: Function
     x: number
     y: number
     w: number
@@ -25,7 +25,7 @@ class Button implements Renderable {
         y: number,
         w: number,
         h: number,
-        onPressed: () => void) {
+        onPressed: Function) {
         this.font = font;
         this.txt = txt
         this.description = description

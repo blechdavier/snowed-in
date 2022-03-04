@@ -10,7 +10,6 @@ import FontResource from '../../assets/resources/FontResource';
 export class MainMenu extends UiScreen {
 
     constructor(font: FontResource) {
-        console.log(font);
         super();
 
         // make the frame with some default values.  These will later be changed to fit the screen size.
@@ -38,15 +37,6 @@ export class MainMenu extends UiScreen {
 
         // update the size of the elements based on the initial screen size
         this.windowUpdate();
-    }
-
-    mousePressed(): void {
-        // loop through all the buttons in this menu and if the mouse is over them, then call the button's onPressed() function.  The onPressed() function is passed in through the constructor.
-        this.buttons.forEach(button => {
-            if(button.mouseIsOver) {
-                button.onPressed();
-            }
-        });
     }
 
     render(target: p5, upscaleSize: number): void {

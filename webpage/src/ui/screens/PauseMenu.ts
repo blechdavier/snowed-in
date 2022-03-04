@@ -32,14 +32,6 @@ export class PauseMenu extends UiScreen {
         this.windowUpdate();
     }
 
-    mousePressed(): void {
-        // loop through all the buttons in this menu and if the mouse is over them, then call the button's onPressed() function.  The onPressed() function is passed in through the constructor.
-        this.buttons.forEach(function (button) {
-            if(button.mouseIsOver) {
-                button.onPressed();
-            }
-        });
-    }
 
     render(target: p5, upscaleSize: number): void {
 

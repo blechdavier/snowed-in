@@ -160,11 +160,10 @@ class Game extends p5 {
     }
 
     preload() {
-        console.log('Loading asssets');
+        console.log('Loading assets');
         loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
         console.log('Asset loading completed');
         this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
-        console.log(this.skyShader);
     }
 
     setup() {
@@ -370,7 +369,8 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        this.currentUi.render(this, this.upscaleSize);
+        if(this.currentUi !== undefined)
+            this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -474,11 +474,8 @@ class Game extends p5 {
 
     mousePressed() {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-        if(this.currentUi !== undefined && this.currentUi.sliders !== undefined) {
+        if(this.currentUi !== undefined) {
             this.currentUi.mousePressed();
-            for(const i of this.currentUi.sliders) {
-                i.updateSliderPosition(this.mouseX, this.mouseY);
-            }
             return;// asjgsadkjfgIISUSUEUE
         }
         if (
@@ -507,7 +504,7 @@ class Game extends p5 {
                 // Set the picked up slot to nothing
                 this.pickedUpSlot = -1;
             }
-        } else if(this.world.worldTiles !== undefined) {
+        } else if(this.world !== undefined && this.world.worldTiles !== undefined) {
             // If the tile is air
             if (
                 this.world.worldTiles[

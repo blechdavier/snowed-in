@@ -36,24 +36,15 @@ export class OptionsMenu extends UiScreen {
         this.windowUpdate();
     }
 
-    mousePressed(): void {
-        // loop through all the buttons in this menu and if the mouse is over them, then call the button's onPressed() function.  The onPressed() function is passed in through the constructor.
-        this.buttons.forEach(function (button) {
-            if(button.mouseIsOver) {
-                button.onPressed();
-            }
-        });
-    }
-
     render(target: p5, upscaleSize: number): void {
 
         // render the rectangular image that the whole menu is on
         this.frame.render(target, upscaleSize);
 
         // loop through the buttons array and render each one.
-        for(let i = 0; i<this.buttons.length; i++) {
-            this.buttons[i].render(target, upscaleSize);
-        }
+        this.buttons.forEach(button => {
+            button.render(target, upscaleSize);
+        });
     }
 
     windowUpdate() {

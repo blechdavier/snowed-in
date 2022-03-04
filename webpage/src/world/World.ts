@@ -66,9 +66,9 @@ class World implements Tickable, Renderable {
         this.loadWorld();
     }
 
-    tick(game: Game) {
+    tick(gameInstance: Game) {
         if(this.player !== undefined)
-            game.connection.emit("player-update", this.player.x, this.player.y)
+            gameInstance.connection.emit("player-update", this.player.x, this.player.y)
     }
 
     render(target: p5, upscaleSize: number) {
@@ -162,7 +162,7 @@ class World implements Tickable, Renderable {
             state.forEach(({ id, x, y }: Entity & { x: number, y: number }) => {
                 positionStates[id] = { x, y }
             })
-        } catch (e) {}
+        } catch (e) {console.warn(e)}
 
         // Render each entity in random order :skull:
         Object.entries(this.entities).forEach((entity: [string, ServerEntity]) => {
