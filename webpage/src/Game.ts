@@ -1,4 +1,4 @@
-import p5 from 'p5';
+import p5, { Shader } from 'p5';
 
 import PlayerLocal from './world/entities/PlayerLocal';
 import EntityItem from './world/entities/EntityItem';
@@ -20,6 +20,7 @@ import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
 import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
+import { PauseMenu } from './ui/screens/PauseMenu';
 
 /*
 ///INFORMATION
@@ -104,8 +105,6 @@ class Game extends p5 {
     items: EntityItem[] = [];
 
 
-    // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
-
     hotBar: ItemStack[] = new Array(9);
     selectedSlot = 0;
     pickedUpSlot = -1;
@@ -131,18 +130,21 @@ class Game extends p5 {
         54, // hot bar 6
         55, // hot bar 7
         56, // hot bar 8
-        57, // hot bar 9
+        57 // hot bar 9
     ];
 
     canvas: p5.Renderer;
+    skyLayer: p5.Graphics;
 
     world: World;
 
-    currentUi: UiScreen;
+    currentUi: UiScreen | undefined;
 
     connection: Socket & ClientEvents;
 
     playerTickRate: number;
+
+    skyShader: Shader;
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -158,9 +160,11 @@ class Game extends p5 {
     }
 
     preload() {
-        console.log('Loading assets');
+        console.log('Loading asssets');
         loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
         console.log('Asset loading completed');
+        this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
+        console.log(this.skyShader);
     }
 
     setup() {
@@ -168,6 +172,8 @@ class Game extends p5 {
         this.canvas = this.createCanvas(this.windowWidth, this.windowHeight);
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
+
+        this.skyLayer = this.createGraphics(this.width/this.upscaleSize, this.height/this.upscaleSize, "webgl");
 
         this.currentUi = new MainMenu(Fonts.title);
 
@@ -281,16 +287,15 @@ class Game extends p5 {
             this.keys.push(false);
         }
 
-        // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
+        // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
     }
 
     draw() {
-        // console.time("frame");
 
-        // wipe the screen with a happy little layer of light blue
-        this.background(129, 206, 243);
-
+        if (this.frameCount===2) {
+            this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
+        }
         // do the tick calculations
         this.doTicks();
 
@@ -299,6 +304,15 @@ class Game extends p5 {
 
         // update the camera's interpolation
         this.moveCamera();
+
+        // wipe the screen with a happy little layer of light blue
+        this.skyShader.setUniform("offsetCoords", [this.interpolatedCamX, this.interpolatedCamY]);
+	    this.skyShader.setUniform("millis", this.millis());
+        this.skyLayer.shader(this.skyShader);
+        // this.fill(255, 0, 0);
+        this.skyLayer.rect(0, 0, this.skyLayer.width, this.skyLayer.height);
+
+        this.image(this.skyLayer, 0, 0, this.width, this.height);
 
         if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
@@ -370,6 +384,10 @@ class Game extends p5 {
             this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
 
+        // according to a google search, there isn't a resizeGraphics() function????
+        this.skyLayer.resizeCanvas(this.width, this.height);
+        this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
+
         this.currentUi.windowUpdate();
 
         // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
@@ -424,6 +442,12 @@ class Game extends p5 {
             if (this.keyCode === this.controls[4]) {
                 console.log('Inventory opened');
             }
+
+            if (this.keyCode === this.controls[3]) {
+                console.log("paused");
+                this.currentUi = new PauseMenu(Fonts.title);
+                console.log(this.currentUi);
+            }
         }
     }
 
@@ -433,104 +457,108 @@ class Game extends p5 {
 
     // when it's dragged update the sliders
     mouseDragged() {
-        for(const i of this.currentUi.sliders) {
-            i.updateSliderPosition(this.mouseX, this.mouseY);
+        if(this.currentUi !== undefined && this.currentUi.sliders !== undefined) {
+            for(const i of this.currentUi.sliders) {
+                i.updateSliderPosition(this.mouseX, this.mouseY);
+            }
         }
     }
 
     mouseMoved() {
-        for(const i of this.currentUi.buttons) {
-            i.updateMouseOver(this.mouseX, this.mouseY);
+        if(this.currentUi !== undefined && this.currentUi.buttons !== undefined) {
+            for(const i of this.currentUi.buttons) {
+                i.updateMouseOver(this.mouseX, this.mouseY);
+            }
         }
     }
 
     mousePressed() {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-        if(this.currentUi !== undefined) {
+        if(this.currentUi !== undefined && this.currentUi.sliders !== undefined) {
             this.currentUi.mousePressed();
             for(const i of this.currentUi.sliders) {
                 i.updateSliderPosition(this.mouseX, this.mouseY);
             }
-            return;
+            return;// asjgsadkjfgIISUSUEUE
         }
-            if (
-                this.mouseX > 2 * this.upscaleSize &&
-                this.mouseX <
-                    2 * this.upscaleSize +
-                        16 * this.upscaleSize * this.hotBar.length &&
-                this.mouseY > 2 * this.upscaleSize &&
-                this.mouseY < 18 * this.upscaleSize
-            ) {
-                const clickedSlot: number = this.floor(
-                    (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
-                );
+        if (
+            this.mouseX > 2 * this.upscaleSize &&
+            this.mouseX <
+                2 * this.upscaleSize +
+                    16 * this.upscaleSize * this.hotBar.length &&
+            this.mouseY > 2 * this.upscaleSize &&
+            this.mouseY < 18 * this.upscaleSize
+        ) {
+            const clickedSlot: number = this.floor(
+                (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
+            );
 
-                if (this.pickedUpSlot === -1) {
-                    if (this.hotBar[clickedSlot] !== undefined) {
-                        this.pickedUpSlot = clickedSlot;
-                    }
-                } else {
-                    // Swap clicked slot with the picked slot
-                    [this.hotBar[this.pickedUpSlot], this.hotBar[clickedSlot]] = [
-                        this.hotBar[clickedSlot],
-                        this.hotBar[this.pickedUpSlot],
-                    ];
-
-                    // Set the picked up slot to nothing
-                    this.pickedUpSlot = -1;
+            if (this.pickedUpSlot === -1) {
+                if (this.hotBar[clickedSlot] !== undefined) {
+                    this.pickedUpSlot = clickedSlot;
                 }
             } else {
-                // If the tile is air
-                if (
-                    this.world.worldTiles[
-                        this.world.width * this.worldMouseY + this.worldMouseX
-                    ] === 0
-                )
-                    return;
+                // Swap clicked slot with the picked slot
+                [this.hotBar[this.pickedUpSlot], this.hotBar[clickedSlot]] = [
+                    this.hotBar[clickedSlot],
+                    this.hotBar[this.pickedUpSlot],
+                ];
 
-                this.connection.emit(
-                    'world-break-start',
+                // Set the picked up slot to nothing
+                this.pickedUpSlot = -1;
+            }
+        } else if(this.world.worldTiles !== undefined) {
+            // If the tile is air
+            if (
+                this.world.worldTiles[
                     this.world.width * this.worldMouseY + this.worldMouseX
-                );
-                this.connection.emit('world-break-finish');
-                /*
-                const tile: Tile =
-                    Tiles[
-                        this.world.worldTiles[
-                            this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
-                        ]
-                    ];
+                ] === 0
+            )
+                return;
 
-                if (tile === undefined) return;
+            this.connection.emit(
+                'world-break-start',
+                this.world.width * this.worldMouseY + this.worldMouseX
+            );
+            this.connection.emit('world-break-finish');
+            /*
+            const tile: Tile =
+                Tiles[
+                    this.world.worldTiles[
+                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
+                    ]
+                ];
 
-                if (tile.itemDrop !== undefined) {
-                    // Default drop quantity
-                    let quantity: number = 1;
+            if (tile === undefined) return;
 
-                    // Update the quantity based on
-                    if (
-                        tile.itemDropMax !== undefined &&
-                        tile.itemDropMin !== undefined
-                    ) {
-                        quantity = Math.round(
-                            Math.random() * (tile.itemDropMax - tile.itemDropMin) +
-                                tile.itemDropMin
-                        );
-                    } else if (tile.itemDropMax !== undefined) {
-                        quantity = tile.itemDropMax;
-                    }
+            if (tile.itemDrop !== undefined) {
+                // Default drop quantity
+                let quantity: number = 1;
 
-                    this.dropItemStack(
-                        new ItemStack(tile.itemDrop, quantity),
-                        this.worldMouseX,
-                        this.worldMouseY
+                // Update the quantity based on
+                if (
+                    tile.itemDropMax !== undefined &&
+                    tile.itemDropMin !== undefined
+                ) {
+                    quantity = Math.round(
+                        Math.random() * (tile.itemDropMax - tile.itemDropMin) +
+                            tile.itemDropMin
                     );
+                } else if (tile.itemDropMax !== undefined) {
+                    quantity = tile.itemDropMax;
                 }
 
-
-
-                */
+                this.dropItemStack(
+                    new ItemStack(tile.itemDrop, quantity),
+                    this.worldMouseX,
+                    this.worldMouseY
+                );
             }
+
+
+
+            */
+        }
     }
 
     mouseReleased() {

@@ -15,25 +15,23 @@ export class OptionsMenu extends UiScreen {
         this.frame = new UiFrame(0, 0, 0, 0);
         // make some buttons with default positions
         this.buttons = [
-            new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, function() {
+            new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, () => {
                 console.log("video settings");
                 game.currentUi = undefined;
             }),
-            new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, function() {
+            new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, () => {
                 console.log("control menu");
                 game.currentUi = undefined;
             }),
-            new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, function() {
+            new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
                 console.log("audio menu");
                 game.currentUi = undefined;
             }),
-            new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, function() {
+            new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
                 console.log("main menu");
-                game.currentUi = new MainMenu(this.font);
+                game.currentUi = new MainMenu(font);
             })
         ];
-        // no sliders
-        this.sliders = [];
         // update the size of the elements based on the initial screen size
         this.windowUpdate();
     }

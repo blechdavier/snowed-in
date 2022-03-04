@@ -3,14 +3,13 @@ import p5 from 'p5';
 import UiFrame from '../UiFrame';
 import game from '../../Main';
 import Button from '../Button';
-import Slider from '../Slider';
 import { OptionsMenu } from './OptionsMenu';
 import FontResource from '../../assets/resources/FontResource';
+import { MainMenu } from './MainMenu';
 
-export class MainMenu extends UiScreen {
+export class PauseMenu extends UiScreen {
 
     constructor(font: FontResource) {
-        console.log(font);
         super();
 
         // make the frame with some default values.  These will later be changed to fit the screen size.
@@ -18,21 +17,14 @@ export class MainMenu extends UiScreen {
 
         // make 4 buttons with default positions
         this.buttons = [
-            new Button(font, "Resume Game", "Keep playing where you left off.", 0, 0, 0, 0, () => {
-                console.log("resume game");
+            new Button(font, "Resume Game", "Go back to the game.", 0, 0, 0, 0, () => {
                 game.currentUi = undefined;
             }),
-            new Button(font, "New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, () => {
-                console.log("new game");
-                game.currentUi = undefined;
-            }),
-            new Button(font, "Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, () => {
-                console.log("join game");
-                game.currentUi = undefined;
-            }),
-            new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () =>{
-                console.log("options");
+            new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () => {
                 game.currentUi = new OptionsMenu(font);
+            }),
+            new Button(font, "Leave Game", "Go back to Main Menu", 0, 0, 0, 0, () => {
+                game.currentUi = new MainMenu(font);
             })
         ];
 
@@ -42,7 +34,7 @@ export class MainMenu extends UiScreen {
 
     mousePressed(): void {
         // loop through all the buttons in this menu and if the mouse is over them, then call the button's onPressed() function.  The onPressed() function is passed in through the constructor.
-        this.buttons.forEach(button => {
+        this.buttons.forEach(function (button) {
             if(button.mouseIsOver) {
                 button.onPressed();
             }
@@ -69,7 +61,7 @@ export class MainMenu extends UiScreen {
         this.frame.h = 64*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<4; i++) {
+        for(let i = 0; i<3; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;
