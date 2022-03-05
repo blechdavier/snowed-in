@@ -5,26 +5,36 @@ import game from '../../Main';
 import Button from '../Button';
 import FontResource from '../../assets/resources/FontResource';
 import { MainMenu } from './MainMenu';
+import { WorldOptionsMenu } from './WorldOptionsMenu';
 
-export class OptionsMenu extends UiScreen {
+export class WorldCreationMenu extends UiScreen {
 
     constructor(font: FontResource) {
         super();
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
         // make some buttons with default positions
+        if(game.serverVisibility === undefined)
+            game.serverVisibility = "Public";
+
         this.buttons = [
-            new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, () => {
-                console.log("video settings");
-                game.currentUi = undefined;
+            new Button(font, `Server Visibility: ${game.serverVisibility}`, "Change the visibility of the server", 0, 0, 0, 0, () => {
+                if(this.buttons[0].txt === "Server Visibility: Public"){
+                    game.serverVisibility = "Unlisted";
+                    this.buttons[0].txt = "Server Visibility: Unlisted";
+                }
+                else if(this.buttons[0].txt === "Server Visibility: Unlisted") {
+                    game.serverVisibility = "Private";
+                    this.buttons[0].txt = "Server Visibility: Private";
+                }
+                else {
+                    game.serverVisibility = "Public";
+                    this.buttons[0].txt = "Server Visibility: Public";
+                }
             }),
-            new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, () => {
-                console.log("control menu");
-                game.currentUi = undefined;
-            }),
-            new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
-                console.log("audio menu");
-                game.currentUi = undefined;
+            new Button(font, "World Options", "Change how your world looks and generates.", 0, 0, 0, 0, () => {
+                console.log("world menu");
+                game.currentUi = new WorldOptionsMenu(font);
             }),
             new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
                 console.log("main menu");
@@ -54,7 +64,7 @@ export class OptionsMenu extends UiScreen {
         this.frame.h = 48*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<4; i++) {
+        for(let i = 0; i<3; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;

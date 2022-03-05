@@ -132,7 +132,7 @@ class EntityBase {
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
-                if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.w,
@@ -195,7 +195,7 @@ class EntityBase {
                     j++
                 ) {
                     // if the current tile isn't air (value 0), then continue with the collision detection
-                    if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                    if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.w,
@@ -247,16 +247,16 @@ class EntityBase {
         if (this.x < 0) {
             this.x = 0;
             this.xVel = 0;
-        } else if (this.x + this.w > game.WORLD_WIDTH) {
-            this.x = game.WORLD_WIDTH - this.w;
+        } else if (this.x + this.w > game.worldWidth) {
+            this.x = game.worldWidth - this.w;
             this.xVel = 0;
         }
 
         if (this.y < 0) {
             this.y = 0;
             this.yVel = 0;
-        } else if (this.y + this.h > game.WORLD_HEIGHT) {
-            this.y = game.WORLD_HEIGHT - this.h;
+        } else if (this.y + this.h > game.worldHeight) {
+            this.y = game.worldHeight - this.h;
             this.yVel = 0;
             this.grounded = true;
         }

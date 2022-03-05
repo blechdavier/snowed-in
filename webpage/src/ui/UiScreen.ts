@@ -28,7 +28,18 @@ abstract class UiScreen implements Renderable {
         if(this.sliders !== undefined) {
             // loop through all the sliders and interact with them accordingly
             for(const i of this.sliders) {
-                i.updateSliderPosition(game.mouseX, game.mouseY);
+                i.updateSliderPosition(game.mouseX);
+                if(game.mouseX>i.x && game.mouseX<i.x+i.w && game.mouseY>i.y && game.mouseY<i.y+i.h)
+                    i.beingEdited = true;
+            }
+        }
+    }
+
+    mouseReleased() {
+        if(this.sliders !== undefined) {
+            // loop through all the sliders and interact with them accordingly
+            for(const i of this.sliders) {
+                i.beingEdited = false;
             }
         }
     }

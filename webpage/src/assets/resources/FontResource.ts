@@ -1,8 +1,6 @@
-import Resource from './Resource';
 import ImageResource from './ImageResource';
 import p5 from 'p5';
 import game from '../../Main'
-import { Tiles } from '../../world/Tiles';
 
 class FontResource extends ImageResource {
 

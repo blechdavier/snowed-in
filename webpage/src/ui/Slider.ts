@@ -3,6 +3,7 @@ import p5 from 'p5';
 import { UiAssets } from '../assets/Assets';
 import ImageResource from '../assets/resources/ImageResource';
 import game from '../Main'
+import FontResource from '../assets/resources/FontResource';
 
 class Slider implements Renderable {
 
@@ -16,9 +17,11 @@ class Slider implements Renderable {
     w: number
     h: number
     image: ImageResource
-    mouseIsOver: boolean
+    beingEdited: boolean
 
     constructor(
+        font: FontResource,
+        txt: string,
         value:number,
         min: number,
         max: number,
@@ -37,6 +40,7 @@ class Slider implements Renderable {
         this.y = y
         this.w = w
         this.h = h
+        this.beingEdited = false;
     }
 
     render(target: p5, upscaleSize: number) {
@@ -55,8 +59,8 @@ class Slider implements Renderable {
         UiAssets.slider_handle.render(target, x+Math.round((this.value-this.min)/(this.max-this.min)*(w-8*upscaleSize)/upscaleSize)*upscaleSize, y-4*upscaleSize, 8*upscaleSize, 9*upscaleSize);
     }
 
-    updateSliderPosition(mouseX: number, mouseY: number) {
-        if(mouseX>this.x && mouseX<this.x+this.w && mouseY>this.y && mouseY<this.y+this.h){
+    updateSliderPosition(mouseX: number) {
+        if(this.beingEdited){
             this.value = Math.max(this.min, Math.min(this.max, Math.round((this.min+(this.max-this.min)*(((mouseX-this.x-4*game.upscaleSize) / (this.w-(8*game.upscaleSize)))))/this.step)*this.step));
             this.onChanged();
         }

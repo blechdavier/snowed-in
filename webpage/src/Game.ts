@@ -74,8 +74,8 @@ craftables
 */
 
 class Game extends p5 {
-    WORLD_WIDTH: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
-    WORLD_HEIGHT: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldHeight: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
     TILE_WIDTH: number = 8; // width of a tile in pixels
     TILE_HEIGHT: number = 8; // height of a tile in pixels
@@ -84,8 +84,8 @@ class Game extends p5 {
 
     upscaleSize: number = 6; // number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
-    camX: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
-    camY: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is top of world) (WORLD_HEIGHT*TILE_HEIGHT is bottom of world)
+    camX: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is left of world) (worldWidth*TILE_WIDTH is bottom of world)
+    camY: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is top of world) (worldHeight*TILE_HEIGHT is bottom of world)
     pCamX: number = 0; // last frame's x of the camera
     pCamY: number = 0; // last frame's y of the camera
     interpolatedCamX: number = 0; // interpolated position of the camera
@@ -145,6 +145,12 @@ class Game extends p5 {
     playerTickRate: number;
 
     skyShader: Shader;
+
+
+    // things you can change in the menus are saved to these values if they need to be
+
+    serverVisibility: string;// this value is sent to the server at creation TODO: changing server visibility
+    worldBumpiness: number;// the server multiplies this number by the noisemap to change how much it affects it
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -387,15 +393,16 @@ class Game extends p5 {
         this.skyLayer.resizeCanvas(this.width, this.height);
         this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
 
-        this.currentUi.windowUpdate();
+        if(this.currentUi !== undefined)
+            this.currentUi.windowUpdate();
 
         // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
 
         // // if the world is too zoomed out, then zoom it in.
         // while (
-        //     this.WORLD_WIDTH * this.TILE_WIDTH - this.width / this.upscaleSize <
+        //     this.worldWidth * this.TILE_WIDTH - this.width / this.upscaleSize <
         //         0 ||
-        //     this.WORLD_HEIGHT * this.TILE_HEIGHT -
+        //     this.worldHeight * this.TILE_HEIGHT -
         //         this.height / this.upscaleSize <
         //         0
         // ) {
@@ -458,7 +465,7 @@ class Game extends p5 {
     mouseDragged() {
         if(this.currentUi !== undefined && this.currentUi.sliders !== undefined) {
             for(const i of this.currentUi.sliders) {
-                i.updateSliderPosition(this.mouseX, this.mouseY);
+                i.updateSliderPosition(this.mouseX);
             }
         }
     }
@@ -521,7 +528,7 @@ class Game extends p5 {
             const tile: Tile =
                 Tiles[
                     this.world.worldTiles[
-                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
+                        this.worldWidth * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
@@ -558,6 +565,9 @@ class Game extends p5 {
     }
 
     mouseReleased() {
+        if(this.currentUi !== undefined) {
+            this.currentUi.mouseReleased();
+        }
         const releasedSlot: number = this.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );
@@ -719,19 +729,19 @@ class Game extends p5 {
             this.camX = 0;
         } else if (
             this.camX >
-            this.WORLD_WIDTH - this.width / this.upscaleSize / this.TILE_WIDTH
+            this.worldWidth - this.width / this.upscaleSize / this.TILE_WIDTH
         ) {
             this.camX =
-                this.WORLD_WIDTH -
+                this.worldWidth -
                 this.width / this.upscaleSize / this.TILE_WIDTH;
         }
         if (
             this.camY >
-            this.WORLD_HEIGHT -
+            this.worldHeight -
                 this.height / this.upscaleSize / this.TILE_HEIGHT
         ) {
             this.camY =
-                this.WORLD_HEIGHT -
+                this.worldHeight -
                 this.height / this.upscaleSize / this.TILE_HEIGHT;
         }
 

@@ -7,6 +7,7 @@ import Slider from '../Slider';
 import { OptionsMenu } from './OptionsMenu';
 import FontResource from '../../assets/resources/FontResource';
 import { UiAssets } from '../../assets/Assets';
+import { WorldCreationMenu } from './WorldCreationMenu';
 
 export class MainMenu extends UiScreen {
 
@@ -24,7 +25,7 @@ export class MainMenu extends UiScreen {
             }),
             new Button(font, "New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, () => {
                 console.log("new game");
-                game.currentUi = undefined;
+                game.currentUi = new WorldCreationMenu(font);
             }),
             new Button(font, "Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, () => {
                 console.log("join game");

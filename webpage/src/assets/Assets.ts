@@ -152,8 +152,9 @@ const Fonts = {
         "?": 6,
         "_": 6,
         "-": 4,
+        ":": 2,
         " ": 2
-    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_- "),
+    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
 };
 
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {

@@ -190,7 +190,7 @@ class World implements Tickable, Renderable {
                 if (this.worldTiles[i * this.width + j] !== 0) {
                     // Draw the correct image for the tile onto the tile layer
                     const tile: Tile =
-                        Tiles[this.worldTiles[i * game.WORLD_WIDTH + j]];
+                        Tiles[this.worldTiles[i * game.worldWidth + j]];
 
                     if (
                         tile.connected &&
