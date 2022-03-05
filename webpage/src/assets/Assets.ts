@@ -22,7 +22,8 @@ const UiAssets = {
     button_unselected: new ImageResource('assets/textures/ui/button0.png'),
     button_selected: new ImageResource('assets/textures/ui/button1.png'),
     slider_bar: new ImageResource('assets/textures/ui/sliderBar.png'),
-    slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png')
+    slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png'),
+    title_image: new ImageResource('assets/textures/ui/snowedinBUMP.png')
 };
 
 // Item related assets

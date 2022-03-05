@@ -6,6 +6,7 @@ import Button from '../Button';
 import Slider from '../Slider';
 import { OptionsMenu } from './OptionsMenu';
 import FontResource from '../../assets/resources/FontResource';
+import { UiAssets } from '../../assets/Assets';
 
 export class MainMenu extends UiScreen {
 
@@ -44,6 +45,8 @@ export class MainMenu extends UiScreen {
         // render the rectangular image that the whole menu is on
         this.frame.render(target, upscaleSize);
 
+        UiAssets.title_image.render(target, Math.round(this.frame.x/upscaleSize+1)*upscaleSize, Math.round(this.frame.y/upscaleSize+4)*upscaleSize, 256*upscaleSize, 40*upscaleSize);
+
         // loop through the buttons array and render each one.
         for (const item of this.buttons) {
             item.render(target, upscaleSize);
@@ -53,10 +56,10 @@ export class MainMenu extends UiScreen {
 
     windowUpdate() {
         // set the position of the frame
-        this.frame.x = game.width/2-256/2*game.upscaleSize;// center the frame in the middle of the screen
-        this.frame.y = game.height/2-72*game.upscaleSize;
-        this.frame.w = 256*game.upscaleSize;
-        this.frame.h = 64*game.upscaleSize;
+        this.frame.x = game.width/2-264/2*game.upscaleSize;// center the frame in the middle of the screen
+        this.frame.y = game.height/2-56*game.upscaleSize;
+        this.frame.w = 264*game.upscaleSize;
+        this.frame.h = 48*game.upscaleSize;
 
         // set the positions of all the buttons
         for(let i = 0; i<4; i++) {

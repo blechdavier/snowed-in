@@ -172,7 +172,7 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.skyLayer = this.createGraphics(this.width/this.upscaleSize, this.height/this.upscaleSize, "webgl");
+        this.skyLayer = this.createGraphics(this.width, this.height, "webgl");
 
         this.currentUi = new MainMenu(Fonts.title);
 
@@ -291,7 +291,6 @@ class Game extends p5 {
     }
 
     draw() {
-
         if (this.frameCount===2) {
             this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
         }
