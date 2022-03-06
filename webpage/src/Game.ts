@@ -1,5 +1,8 @@
 import p5, { Shader } from 'p5'
 
+require('p5/lib/addons/p5.sound');
+
+
 import PlayerLocal from './world/entities/PlayerLocal';
 import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
@@ -166,7 +169,7 @@ class Game extends p5 {
 
     preload() {
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
+        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts, AudioAssets);
         console.log('Asset loading completed');
         this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
     }

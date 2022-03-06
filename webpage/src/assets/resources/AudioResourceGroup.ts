@@ -15,7 +15,7 @@ class AudioResourceGroup {
                 `There are no sounds: ${this.sounds}`
             );
 
-        const r = floor(random(this.sounds.length));
+        const r = Math.floor(Math.random() * this.sounds.length);
         this.sounds[r].playRandom();// play a random sound from the array at a slightly randomized pitch, leading to the effect of it making a new sound each time, removing repetitiveness
 
     }

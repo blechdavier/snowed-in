@@ -9,7 +9,7 @@ import AudioResource from './resources/AudioResource';
 interface AssetGroup {
     [name: string]:
     | {
-        [name: string]: Resource | AssetGroup;
+        [name: string]: Resource | AssetGroup | AudioResourceGroup;
     }
     | Resource;
 }
@@ -160,8 +160,9 @@ const Fonts = {
 };
 
 const AudioAssets = {
-    inventoryClack: new AudioResourceGroup([new AudioResource('assets/sounds/clack1.mp3'), new AudioResource('assets/sounds/clack3.mp3'), new AudioResource('assets/sounds/clack3.mp3')]),
-    test: new AudioResource('assets/sounds/clack1.mp3')
+    ui: {
+        inventoryClack: new AudioResourceGroup([new AudioResource('assets/sounds/clack1.mp3'), new AudioResource('assets/sounds/clack3.mp3'), new AudioResource('assets/sounds/clack3.mp3')])
+    }
 }
 
 
@@ -172,7 +173,7 @@ const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
 
 };
 
-function searchGroup(assetGroup: AssetGroup | Resource, sketch: P5) {
+function searchGroup(assetGroup: AssetGroup | Resource | AudioResourceGroup, sketch: P5) {
     if (assetGroup instanceof Resource) {
         console.log(`Loading asset ${assetGroup.path}`);
         assetGroup.loadResource(sketch);
