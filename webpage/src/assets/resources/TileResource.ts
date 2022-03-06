@@ -66,7 +66,7 @@ class TileResource extends ImageResource {
         width: number,
         height: number
     ) {
-        if (x > this.width || y > this.height)
+        if (x > this.width || y > this.height || x < 0 || y < 0)
             throw new Error(
                 `Out of bounds tile. Tried to load tile at ${x}, ${y} on a ${this.width}, ${this.height} grid`
             );

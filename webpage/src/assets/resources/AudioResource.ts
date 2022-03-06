@@ -11,9 +11,9 @@ class AudioResource extends Resource {
     }
 
     loadResource(game: P5) {
-        //const loadSound = (path: string) =>
-            //((game as any) as P5.SoundFile).loadSound(path);
-        //this.sound = loadSound("../audio/demo.mp3")
+        // const loadSound = (path: string) =>
+            // ((game as any) as P5.SoundFile).loadSound(path);
+        // this.sound = loadSound("../audio/demo.mp3")
     }
 
     playRandom() {
@@ -23,8 +23,8 @@ class AudioResource extends Resource {
                 `Tried to play sound before loading it: ${this.path}`
             );
 
-        //this.sound.rate(random(0.9, 1 / 0.9));
-        //this.sound.play();
+        // this.sound.rate(random(0.9, 1 / 0.9));
+        // this.sound.play();
     }
 
     play() {// play the sound
@@ -32,7 +32,7 @@ class AudioResource extends Resource {
             throw new Error(
                 `Tried to play sound before loading it: ${this.path}`
             );
-        //this.sound.play();
+        // this.sound.play();
     }
 
 }
