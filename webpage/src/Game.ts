@@ -1,6 +1,6 @@
 import p5, { Shader } from 'p5'
 
-require('p5/lib/addons/p5.sound');
+// require('p5/lib/addons/p5.sound');
 
 
 import PlayerLocal from './world/entities/PlayerLocal';

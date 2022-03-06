@@ -1,6 +1,6 @@
 import P5 from 'p5';
 import Resource from './Resource';
-require('p5/lib/addons/p5.sound');
+// require('p5/lib/addons/p5.sound');
 
 
 class AudioResource extends Resource {
