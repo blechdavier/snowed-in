@@ -14,16 +14,16 @@ export class WorldCreationMenu extends UiScreen {
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
         // make some buttons with default positions
-        if(game.serverVisibility === undefined)
+        if (game.serverVisibility === undefined)
             game.serverVisibility = "Public";
 
         this.buttons = [
             new Button(font, `Server Visibility: ${game.serverVisibility}`, "Change the visibility of the server", 0, 0, 0, 0, () => {
-                if(this.buttons[0].txt === "Server Visibility: Public"){
+                if (this.buttons[0].txt === "Server Visibility: Public") {
                     game.serverVisibility = "Unlisted";
                     this.buttons[0].txt = "Server Visibility: Unlisted";
                 }
-                else if(this.buttons[0].txt === "Server Visibility: Unlisted") {
+                else if (this.buttons[0].txt === "Server Visibility: Unlisted") {
                     game.serverVisibility = "Private";
                     this.buttons[0].txt = "Server Visibility: Private";
                 }
@@ -58,17 +58,17 @@ export class WorldCreationMenu extends UiScreen {
 
     windowUpdate() {
         // set the position of the frame
-        this.frame.x = game.width/2-200/2*game.upscaleSize;// center the frame in the center of the screen
-        this.frame.y = game.height/2-56*game.upscaleSize;
-        this.frame.w = 200*game.upscaleSize;
-        this.frame.h = 48*game.upscaleSize;
+        this.frame.x = game.width / 2 - 200 / 2 * game.upscaleSize;// center the frame in the center of the screen
+        this.frame.y = game.height / 2 - 56 * game.upscaleSize;
+        this.frame.w = 200 * game.upscaleSize;
+        this.frame.h = 48 * game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<3; i++) {
-            this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
-            this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
-            this.buttons[i].w = 192*game.upscaleSize;
-            this.buttons[i].h = 16*game.upscaleSize;
+        for (let i = 0; i < 3; i++) {
+            this.buttons[i].x = game.width / 2 - 192 / 2 * game.upscaleSize;
+            this.buttons[i].y = game.height / 2 + 20 * i * game.upscaleSize;
+            this.buttons[i].w = 192 * game.upscaleSize;
+            this.buttons[i].h = 16 * game.upscaleSize;
             this.buttons[i].updateMouseOver(game.mouseX, game.mouseY);
         }
     }

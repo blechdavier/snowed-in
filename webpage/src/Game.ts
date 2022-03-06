@@ -1,10 +1,11 @@
-import p5, { Shader } from 'p5';
+import p5, { Shader } from 'p5'
 
 import PlayerLocal from './world/entities/PlayerLocal';
 import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
 
 import {
+    AudioAssets,
     Fonts,
     ItemsAssets,
     loadAssets,
@@ -15,7 +16,6 @@ import { Tile, Tiles } from './world/Tiles';
 import ItemStack from './world/inventory/items/ItemStack';
 import TileResource from './assets/resources/TileResource';
 import ImageResource from './assets/resources/ImageResource';
-import Renderable from './interfaces/Renderable';
 import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
 import { ClientEvents, EntityType } from '../../api/SocketEvents';
@@ -37,7 +37,6 @@ When something in the todo section, either delete it and mark what was done in t
 //Audio
 sounds
 music
-NPC's
 
 //Visual
 Update snow textures
@@ -302,6 +301,8 @@ class Game extends p5 {
         }
         // do the tick calculations
         this.doTicks();
+
+
 
         // update mouse position
         this.updateMouse();

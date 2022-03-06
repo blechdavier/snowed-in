@@ -2,14 +2,16 @@ import TileResource from './resources/TileResource';
 import ImageResource from './resources/ImageResource';
 import FontResource from './resources/FontResource';
 import Resource from './resources/Resource';
+import AudioResourceGroup from './resources/AudioResourceGroup';
 import P5 from 'p5';
+import AudioResource from './resources/AudioResource';
 
 interface AssetGroup {
     [name: string]:
-        | {
-              [name: string]: Resource | AssetGroup;
-          }
-        | Resource;
+    | {
+        [name: string]: Resource | AssetGroup;
+    }
+    | Resource;
 }
 
 // Ui related assets
@@ -157,6 +159,12 @@ const Fonts = {
     }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
 };
 
+const AudioAssets = {
+    inventoryClack: new AudioResourceGroup([new AudioResource('assets/sounds/clack1.mp3'), new AudioResource('assets/sounds/clack3.mp3'), new AudioResource('assets/sounds/clack3.mp3')]),
+    test: new AudioResource('assets/sounds/clack1.mp3')
+}
+
+
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
     assets.forEach((assetGroup) => {
         searchGroup(assetGroup, sketch);
@@ -175,4 +183,4 @@ function searchGroup(assetGroup: AssetGroup | Resource, sketch: P5) {
     });
 }
 
-export { UiAssets, ItemsAssets, WorldAssets, Fonts, loadAssets };
+export { UiAssets, ItemsAssets, WorldAssets, Fonts, AudioAssets, loadAssets };
