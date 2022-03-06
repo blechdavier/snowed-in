@@ -2,7 +2,7 @@ import p5 from 'p5';
 import Resource from './Resource';
 
 class AudioResource extends Resource {
-    //sound: sound file type;
+    // sound: sound file type;
 
     constructor(path: string) {
         super(path);
@@ -10,7 +10,7 @@ class AudioResource extends Resource {
 
     loadResource() {
         console.log("asdf");
-        //this.sound = loadSound(this.path);
+        // this.sound = loadSound(this.path);
     }
 
     playRandom() {
