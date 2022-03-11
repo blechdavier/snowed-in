@@ -16,7 +16,6 @@ class Slider implements Renderable {
     y: number
     w: number
     h: number
-    image: ImageResource
     beingEdited: boolean
 
     constructor(

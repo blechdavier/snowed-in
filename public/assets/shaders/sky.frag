@@ -1,4 +1,4 @@
-precision mediump float;
+precision lowp float;
 
 // this is the same variable we declared in the vertex shader
 // we need to declare it here too!
@@ -35,15 +35,13 @@ bool isSnow(vec2 p, float w) {
 void main() {
 	vec2 coord = (vec2(vTexCoord.x, (1.0-vTexCoord.y)) * screenDimensions)/10.0;
 	
-	vec3 skyColor = mix(vec3(0.74, 0.78, 0.75)*(40.0+fractalnoise(coord))/41.0, vec3(0.56, 0.61, 0.64), coord.y/10.0);
+	vec3 skyColor = mix(vec3(0.74, 0.78, 0.75), vec3(0.56, 0.61, 0.64), coord.y/10.0);
 
 	vec2 frontSnowPos = vec2((coord.x+millis/-300.0)*2.0, (coord.y+millis/-150.0)*2.0)+offsetCoords*0.9;
 	vec2 backSnowPos = vec2((coord.x+millis/-400.0)*2.0, (coord.y+millis/-200.0)*2.0)+offsetCoords*0.75;
 
 	//(coord.x+millis/-300.0)*2.0+noise(vec2((coord.x+millis/-300.0), millis/200.0)/5.0)*1.5
 	bool snowBool = (rand(floor(frontSnowPos))>0.9 && isSnow(frontSnowPos, 0.3)) || (rand(floor(backSnowPos))>0.6 && isSnow(backSnowPos, 0.2));
-	
-
 	
 	if(snowBool) {
 		gl_FragColor = vec4(1.0);

@@ -19,6 +19,10 @@ class FontResource extends ImageResource {
     drawText(target: p5, str: string, x: number, y: number) {
         let xOffset: number = 0;
         for(let i = 0; i<str.length; i++) {
+            if(this.alphabet_soup[str[i]] === undefined)
+                throw new Error(
+                    `There is no letter: ${this.alphabet_soup[str[i]]}`
+                );
             this.renderPartial(target, x+xOffset*game.upscaleSize, y, this.alphabet_soup[str[i]].w*game.upscaleSize, this.alphabet_soup[str[i]].h*game.upscaleSize, this.alphabet_soup[str[i]].x, this.alphabet_soup[str[i]].y, this.alphabet_soup[str[i]].w, this.alphabet_soup[str[i]].h);
             xOffset += this.alphabet_soup[str[i]].w+1;
         }

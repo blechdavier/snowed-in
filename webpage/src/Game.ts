@@ -11,6 +11,7 @@ import {
     AudioAssets,
     Fonts,
     ItemsAssets,
+    Keys,
     loadAssets,
     UiAssets,
     WorldAssets,
@@ -119,20 +120,20 @@ class Game extends p5 {
 
     // the keycode for the key that does the action
     controls = [
-        68, // right
-        65, // left
-        87, // jump
-        27, // settings
-        69, // inventory?
-        49, // hot bar 1
-        50, // hot bar 2
-        51, // hot bar 3
-        52, // hot bar 4
-        53, // hot bar 5
-        54, // hot bar 6
-        55, // hot bar 7
-        56, // hot bar 8
-        57 // hot bar 9
+        {keyboard: true, value: 68}, // right
+        {keyboard: true, value: 65}, // left
+        {keyboard: true, value: 32}, // jump
+        {keyboard: true, value: 27}, // pause
+        {keyboard: true, value: 69}, // inventory?
+        {keyboard: true, value: 49}, // hot bar 1
+        {keyboard: true, value: 50}, // hot bar 2
+        {keyboard: true, value: 51}, // hot bar 3
+        {keyboard: true, value: 52}, // hot bar 4
+        {keyboard: true, value: 53}, // hot bar 5
+        {keyboard: true, value: 54}, // hot bar 6
+        {keyboard: true, value: 55}, // hot bar 7
+        {keyboard: true, value: 56}, // hot bar 8
+        {keyboard: true, value: 57} // hot bar 9
     ];
 
     canvas: p5.Renderer;
@@ -153,6 +154,9 @@ class Game extends p5 {
 
     serverVisibility: string;// this value is sent to the server at creation TODO: changing server visibility
     worldBumpiness: number;// the server multiplies this number by the noisemap to change how much it affects it
+    skyMod: number = 2;
+    skyToggle: boolean = true;
+    particleMultiplier: number;
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -314,14 +318,19 @@ class Game extends p5 {
         this.moveCamera();
 
         // wipe the screen with a happy little layer of light blue
-        this.skyShader.setUniform("offsetCoords", [this.interpolatedCamX, this.interpolatedCamY]);
-	    this.skyShader.setUniform("millis", this.millis());
-        this.skyLayer.shader(this.skyShader);
-        // this.fill(255, 0, 0);
-        this.skyLayer.rect(0, 0, this.skyLayer.width, this.skyLayer.height);
-
-        this.image(this.skyLayer, 0, 0, this.width, this.height);
-
+        if(this.skyToggle) {
+            if((this.frameCount-1)%this.skyMod===0) {
+                this.skyShader.setUniform("offsetCoords", [this.interpolatedCamX, this.interpolatedCamY]);
+                this.skyShader.setUniform("millis", this.millis());
+                this.skyLayer.shader(this.skyShader);
+                this.skyLayer.rect(0, 0, this.skyLayer.width, this.skyLayer.height);
+            }
+            this.image(this.skyLayer, 0, 0, this.width, this.height);
+        }
+        else {
+            this.fill(112, 124, 140);
+            this.rect(0, 0, this.width, this.height);
+        }
         if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
         // render the player, all items, etc.  Basically any physicsRect or particle
@@ -415,48 +424,65 @@ class Game extends p5 {
     }
 
     keyPressed() {
-        this.keys[this.keyCode] = true;
-        if (this.controls.includes(this.keyCode)) {
-            // hot bar slots
-            for (let i = 0; i < 12; i++) {
-                if (this.keyCode === this.controls[i + 5]) {
-                    if (
-                        this.mouseX > 2 * this.upscaleSize &&
-                        this.mouseX <
-                            2 * this.upscaleSize +
-                                16 * this.upscaleSize * this.hotBar.length &&
-                        this.mouseY > 2 * this.upscaleSize &&
-                        this.mouseY < 18 * this.upscaleSize
-                    ) {
-                        const temp = this.hotBar[i];
-                        this.hotBar[i] =
+        if(this.currentUi !== undefined) {
+            // loop through all the input boxes and interact with them accordingly
+            if(this.currentUi.inputBoxes !== undefined) {
+                for(const i of this.currentUi.inputBoxes) {
+                    if(i.listening) {
+                        i.listening = false;
+                        this.controls[i.index].value = this.keyCode;
+                        this.controls[i.index].keyboard = true;
+                        i.value = this.keyCode;
+                        i.keyboard = true;
+                        i.image = UiAssets.button_unselected;
+                    }
+                }
+            }
+        }
+        else {
+            this.keys[this.keyCode] = true;
+            if (this.controls.some(e => e.value === this.keyCode && e.keyboard === true)) {
+                // hot bar slots
+                for (let i = 0; i < this.hotBar.length; i++) {
+                    if (this.controls[i+5].keyboard && this.keyCode === this.controls[i + 5].value) {
+                        if (
+                            this.mouseX > 2 * this.upscaleSize &&
+                            this.mouseX <
+                                2 * this.upscaleSize +
+                                    16 * this.upscaleSize * this.hotBar.length &&
+                            this.mouseY > 2 * this.upscaleSize &&
+                            this.mouseY < 18 * this.upscaleSize
+                        ) {
+                            const temp = this.hotBar[i];
+                            this.hotBar[i] =
+                                this.hotBar[
+                                    this.floor(
+                                        (this.mouseX - 2 * this.upscaleSize) /
+                                            16 /
+                                            this.upscaleSize
+                                    )
+                                ];
                             this.hotBar[
                                 this.floor(
                                     (this.mouseX - 2 * this.upscaleSize) /
                                         16 /
                                         this.upscaleSize
                                 )
-                            ];
-                        this.hotBar[
-                            this.floor(
-                                (this.mouseX - 2 * this.upscaleSize) /
-                                    16 /
-                                    this.upscaleSize
-                            )
-                        ] = temp;
-                    } else this.selectedSlot = i;
-                    return;
+                            ] = temp;
+                        } else this.selectedSlot = i;
+                        return;
+                    }
                 }
-            }
 
-            if (this.keyCode === this.controls[4]) {
-                console.log('Inventory opened');
-            }
+                if (this.controls[4].keyboard && this.keyCode === this.controls[4].value) {
+                    console.log('Inventory opened');
+                }
 
-            if (this.keyCode === this.controls[3]) {
-                console.log("paused");
-                this.currentUi = new PauseMenu(Fonts.title);
-                console.log(this.currentUi);
+                if (this.controls[3].keyboard && this.keyCode === this.controls[3].value) {
+                    console.log("paused");
+                    this.currentUi = new PauseMenu(Fonts.title);
+                    console.log(this.currentUi);
+                }
             }
         }
     }
@@ -475,18 +501,27 @@ class Game extends p5 {
     }
 
     mouseMoved() {
-        if(this.currentUi !== undefined && this.currentUi.buttons !== undefined) {
-            for(const i of this.currentUi.buttons) {
-                i.updateMouseOver(this.mouseX, this.mouseY);
+        if(this.currentUi !== undefined) {
+            if(this.currentUi.buttons !== undefined) {
+                for(const i of this.currentUi.buttons) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
+            }
+            if(this.currentUi.inputBoxes !== undefined) {
+                for(const i of this.currentUi.inputBoxes) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
             }
         }
     }
 
-    mousePressed() {
+    mousePressed(e: MouseEvent) {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         if(this.currentUi !== undefined) {
-            this.currentUi.mousePressed();
-            return;// asjgsadkjfgIISUSUEUE
+            this.currentUi.mousePressed(e.button);
+            if(e.button === 1)// stops middle click "compass" scrolling if there is a ui menu up
+                return false;// https://stackoverflow.com/questions/5136845/prevent-middle-mouse-click-scrolling
+            return;
         }
         if (
             this.mouseX > 2 * this.upscaleSize &&
@@ -566,6 +601,8 @@ class Game extends p5 {
 
             */
         }
+        if(e.button === 1)// stops middle click "compass" scrolling if there isn't a ui menu up
+            return false;// https://stackoverflow.com/questions/5136845/prevent-middle-mouse-click-scrolling
     }
 
     mouseReleased() {

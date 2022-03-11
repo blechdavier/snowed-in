@@ -1,41 +1,46 @@
 import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
-import { AudioAssets, UiAssets } from '../assets/Assets';
+import { Keys, UiAssets } from '../assets/Assets';
 import ImageResource from '../assets/resources/ImageResource';
 import FontResource from '../assets/resources/FontResource';
 
-class Button implements Renderable {
+class InputBox implements Renderable {
 
     font: FontResource
     txt: string
-    description: string
-    onPressedCustom: Function
+    value: number
+    keyboard: boolean
+    index: number
     x: number
     y: number
     w: number
     h: number
     image: ImageResource
     mouseIsOver: boolean
+    listening: boolean
 
     constructor(
         font: FontResource,
         txt: string,
-        description: string,
+        keyboard: boolean,
+        value: number,
+        index: number,// the index in the game.controls array that it changes
         x: number,
         y: number,
         w: number,
-        h: number,
-        onPressedCustom: Function) {
+        h: number) {
         this.font = font;
         this.txt = txt
-        this.description = description
-        this.onPressedCustom = onPressedCustom
+        this.value = value;
+        this.keyboard = keyboard;
+        this.index = index;
         this.x = x
         this.y = y
         this.w = w
         this.h = h
         this.image = UiAssets.button_unselected;
         this.mouseIsOver = false;
+        this.listening = false;
     }
 
     render(target: p5, upscaleSize: number) {
@@ -62,27 +67,40 @@ class Button implements Renderable {
         // center
         this.image.renderPartial(target, x + 7 * upscaleSize, y + 7 * upscaleSize, w - 14 * upscaleSize, h - 14 * upscaleSize, 7, 7, 1, 1);
 
-        this.font.drawText(target, this.txt, x + 6 * upscaleSize, Math.round((this.y + this.h / 2) / upscaleSize) * upscaleSize - 6 * upscaleSize);
+        if(this.listening) {
+            this.font.drawText(target, this.txt+": click to cancel", x + 6 * upscaleSize, Math.round((this.y + this.h / 2) / upscaleSize) * upscaleSize - 6 * upscaleSize);
+        }
+        else {
+            if(this.keyboard) {
+                this.font.drawText(target, this.txt+":   "+Keys.keyboardMap[this.value], x + 6 * upscaleSize, Math.round((this.y + this.h / 2) / upscaleSize) * upscaleSize - 6 * upscaleSize);
+            }
+            else {
+                this.font.drawText(target, this.txt+":   Mouse "+this.value, x + 6 * upscaleSize, Math.round((this.y + this.h / 2) / upscaleSize) * upscaleSize - 6 * upscaleSize);
+            }
+        }
     }
 
     updateMouseOver(mouseX: number, mouseY: number) {
         // if the mouse position is inside the button, return true
         if (mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h) {
             this.mouseIsOver = true;
-            this.image = UiAssets.button_selected;
         }
         else {
             this.mouseIsOver = false;
-            this.image = UiAssets.button_unselected;
         }
     }
 
     onPressed() {
-        this.onPressedCustom();
-        console.log("button pressed");
+        console.log("input box pressed");
+        this.listening = !this.listening;
+        if(this.listening) {
+            this.image = UiAssets.button_selected;
+            return;
+        }
+        this.image = UiAssets.button_unselected;
         // AudioAssets.ui.inventoryClack.playRandom();
     }
 
 }
 
-export = Button;
+export = InputBox;
