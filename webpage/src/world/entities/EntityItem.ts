@@ -1,6 +1,7 @@
+/*
 import EntityBase from './EntityBase';
 import game from '../../Main';
-import ItemStack from '../inventory/items/ItemStack';
+import ItemStack from '../items/ItemStack';
 
 class EntityItem extends EntityBase {
     itemStack: ItemStack;
@@ -105,3 +106,4 @@ class EntityItem extends EntityBase {
 }
 
 export = EntityItem;
+ */

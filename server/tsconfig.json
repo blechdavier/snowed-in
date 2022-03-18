@@ -7,6 +7,7 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
+    "resolveJsonModule": true,
     "lib": [
       "es6",
       "dom"

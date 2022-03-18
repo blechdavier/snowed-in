@@ -1,35 +1,27 @@
 import ImageResource from '../assets/resources/ImageResource';
 import { WorldAssets } from '../assets/Assets';
 import TileResource from '../assets/resources/TileResource';
-import { Item, Items } from './inventory/items/Items';
+import { TileType } from '../../../api/Tile';
 
-interface Tile {
+export interface Tile {
     name: string;
     texture: ImageResource | TileResource;
-    itemDrop?: Item;
-    itemDropMax?: number;
-    itemDropMin?: number;
     connected?: boolean;
+    anyConnection?: boolean;
 }
 
-const Tiles: Tile[] = [
-    undefined, // Air
-    {
+export const WorldTiles: Record<TileType, Tile | undefined> = {
+    [TileType.Air]: undefined,
+    [TileType.Snow]: {
         name: 'snow',
-        itemDrop: Items.snowballs,
-        itemDropMin: 2,
-        itemDropMax: 4,
         texture: WorldAssets.middleground.tileset_snow,
         connected: true,
+        anyConnection: true,
     },
-    {
+    [TileType.Ice]: {
         name: 'ice',
-        itemDrop: Items.ice_shards,
-        itemDropMin: 3,
-        itemDropMax: 5,
         texture: WorldAssets.middleground.tileset_ice,
         connected: true,
+        anyConnection: true,
     },
-];
-
-export { Tiles, Tile };
+};

@@ -1,6 +1,6 @@
 //webpack.config.js
 const path = require('path');
-//const TerserPlugin = require("terser-webpack-plugin");
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: "development",
@@ -8,10 +8,32 @@ module.exports = {
     entry: {
         main: "./webpage/src/Main.ts",
     },
+    cache: {
+        type: 'filesystem',
+        memoryCacheUnaffected: true,
+    },
+    optimization: {
+        minimize: false,
+        minimizer: [new TerserPlugin()],
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    test: /[\\/]node_modules[\\/]/,
+
+                    // cacheGroupKey here is `commons` as the key of the cacheGroup
+                    name(module, chunks, cacheGroupKey) {
+                        const allChunksNames = chunks.map((item) => item.name).join('~');
+                        return `${cacheGroupKey}-${allChunksNames}`;
+                    },
+
+                    chunks: 'all',
+                    reuseExistingChunk: true,
+                },
+            }
+        },
+    },
     output: {
         path: path.resolve(__dirname, '../public'),
-
-        filename: "game.js" // <--- Will be compiled to this single file
     },
     resolve: {
         extensions: [".ts", ".tsx", ".js"],
@@ -24,10 +46,4 @@ module.exports = {
             }
         ]
     },
-    /*
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin()],
-    },
-     */
-};
+}

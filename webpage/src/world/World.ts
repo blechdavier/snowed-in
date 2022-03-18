@@ -1,51 +1,50 @@
-import game from "../Main"
+import game from '../Main';
 import P5 from 'p5';
-import { Tile, Tiles } from './Tiles';
+import p5 from 'p5';
 import ImageResource from '../assets/resources/ImageResource';
 import TileResource from '../assets/resources/TileResource';
-import { WorldAssets } from '../assets/Assets';
 import Tickable from '../interfaces/Tickable';
-import Game from '../Game';
 import Renderable from '../interfaces/Renderable';
-import p5 from 'p5';
+import Game from '../Game';
 import PlayerLocal from './entities/PlayerLocal';
 import { ServerEntity } from './entities/ServerEntity';
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
 import { Entity, Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
-import { EntityType } from '../../../api/SocketEvents';
-import { PlayerEntityData, PlayerEntity } from './entities/PlayerEntity';
+import { Tile, WorldTiles } from './WorldTiles';
+import { TileType } from '../../../api/Tile';
 
 class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
     height: number; // height of the world in tiles
 
     tileLayer: P5.Graphics; // Tile layer graphic
-    backTileLayer: P5.Graphics; // Background tile layer graphic
+    backTileLayer: P5.Graphics; // Background tiles layer graphic
 
     backTileLayerOffsetWidth: number; // what is this exactly xavier...
     backTileLayerOffsetHeight: number; // what is this exactly xavier...
 
-    worldTiles: number[]; // number for each tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
-    backgroundTiles: number[]; // number for each background tile in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+    worldTiles: (TileType | string)[]; // number for each tiles in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
-    playerId: string
-    player: PlayerLocal
+    player: PlayerLocal;
 
-    entities: {[name: string]: ServerEntity} = {}
+    entities: { [id: string]: ServerEntity } = {};
 
-    snapshotInterpolation: SnapshotInterpolation
+    snapshotInterpolation: SnapshotInterpolation;
 
-    constructor(width: number, height: number, tiles: number[], backgroundTiles: number[], playerId: string) {
+    constructor(
+        width: number,
+        height: number,
+        tiles: (TileType | string)[]
+    ) {
         // Initialize the world with the tiles and dimensions from the server
         this.width = width;
         this.height = height;
-        this.worldTiles = tiles
-        this.backgroundTiles = backgroundTiles
+        this.worldTiles = tiles;
 
-        this.playerId = playerId
-
-        this.snapshotInterpolation = new SnapshotInterpolation()
-        this.snapshotInterpolation.interpolationBuffer.set( (1000 / game.playerTickRate) * 3)
+        this.snapshotInterpolation = new SnapshotInterpolation();
+        this.snapshotInterpolation.interpolationBuffer.set(
+            (1000 / game.netManager.playerTickRate) * 2
+        );
 
         // define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
         this.tileLayer = game.createGraphics(
@@ -59,20 +58,20 @@ class World implements Tickable, Renderable {
 
         // calculate these variables:
         this.backTileLayerOffsetWidth =
-            (game.TILE_WIDTH - game.BACK_TILE_WIDTH) / 2; // calculated in the setup function, this variable is the number of pixels left of a tile to draw a background tile from at the same position
+            (game.TILE_WIDTH - game.BACK_TILE_WIDTH) / 2; // calculated in the setup function, this variable is the number of pixels left of a tiles to draw a background tiles from at the same position
         this.backTileLayerOffsetHeight =
-            (game.TILE_HEIGHT - game.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tile to draw a background tile from at the same position
+            (game.TILE_HEIGHT - game.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tiles to draw a background tiles from at the same position
 
         this.loadWorld();
     }
 
     tick(game: Game) {
-        if(this.player !== undefined)
-            game.connection.emit("player-update", this.player.x, this.player.y)
+        if (this.player !== undefined)
+            game.connection.emit('playerUpdate', this.player.x, this.player.y);
     }
 
     render(target: p5, upscaleSize: number) {
-        // draw the background tile layer onto the screen
+        // draw the background tiles layer onto the screen
         target.image(
             this.backTileLayer,
             0,
@@ -85,7 +84,7 @@ class World implements Tickable, Renderable {
             game.height / upscaleSize
         );
 
-        // draw the tile layer onto the screen
+        // draw the tiles layer onto the screen
         target.image(
             this.tileLayer,
             0,
@@ -98,99 +97,93 @@ class World implements Tickable, Renderable {
             game.height / upscaleSize
         );
 
-        this.renderPlayers(target, upscaleSize)
+        this.renderPlayers(target, upscaleSize);
     }
 
     updatePlayers(snapshot: Snapshot) {
         this.snapshotInterpolation.snapshot.add(snapshot);
     }
 
-    updateEntities(entities: (
-        | { id: string; type: EntityType; data: object }
-        )[]) {
-        entities.forEach((entity: { id: string; type: EntityType; data: object }
-        ) => {
-            console.log(typeof this.playerId)
-            console.log(typeof entity.id)
-            console.log(entity.id === this.playerId)
-            // If the type is undefined meaning that this entity should be deleted
-            if(entity.type === undefined) {
-                if(entity.id === this.playerId) {
-                    this.player = undefined
-                    return;
-                }
-                delete this.entities[entity.id];
-                return
-            }
+    updateTile(tileIndex: number, tile: TileType) {
+        // Update the tile and the 4 neighbouring tiles
+        this.worldTiles[tileIndex] = tile;
 
-            // If the entity that is being updated is the local player
-            if(entity.id === this.playerId) {
-                if(this.player !== undefined) {
-                    this.player.updateData(entity.data as PlayerEntityData)
-                    return;
-                }
-                this.player = new PlayerLocal(entity.id, entity.data as PlayerEntityData)
-                return;
-            }
+        // erase the broken tiles and its surrounding tiles using two erasing rectangles in a + shape
+        this.tileLayer.erase();
+        this.tileLayer.noStroke();
+        this.tileLayer.rect(
+            ((tileIndex % this.width) - 1) * game.TILE_WIDTH,
+            Math.floor(tileIndex / this.width) * game.TILE_HEIGHT,
+            game.TILE_WIDTH * 3,
+            game.TILE_HEIGHT
+        );
+        this.tileLayer.rect(
+            (tileIndex % this.width) * game.TILE_WIDTH,
+            (Math.floor(tileIndex / this.width) - 1) * game.TILE_HEIGHT,
+            game.TILE_WIDTH,
+            game.TILE_HEIGHT * 3
+        );
+        this.tileLayer.noErase();
 
-            // If the entity already exists update it
-            if(this.entities[entity.id] !== undefined) {
-                this.entities[entity.id].updateData(entity.data);
-                return;
-            }
-
-            // Set the entity to the player
-            switch (entity.type) {
-                case EntityType.Player:
-                    this.entities[entity.id] = new PlayerEntity(entity.id, entity.data as PlayerEntityData)
-            }
-        })
+        // redraw the neighboring tiles
+        this.drawTile(tileIndex);
+        this.drawTile(tileIndex + this.width);
+        this.drawTile(tileIndex - 1);
+        this.drawTile(tileIndex - this.width);
+        this.drawTile(tileIndex + 1);
     }
 
     renderPlayers(target: p5, upscaleSize: number) {
-
         // Calculate the interpolated position of all updated entities
-        const positionStates: { [id: string]: { x: number, y: number } } = {}
+        const positionStates: { [id: string]: { x: number; y: number } } = {};
         try {
-            const calculatedSnapshot = this.snapshotInterpolation.calcInterpolation('x y')
-            if (!calculatedSnapshot) return
+            const calculatedSnapshot =
+                this.snapshotInterpolation.calcInterpolation('x y');
+            if (!calculatedSnapshot) return;
 
-            const state = calculatedSnapshot.state
+            const state = calculatedSnapshot.state;
             if (!state) return;
 
             // The new positions of entities as object
-            state.forEach(({ id, x, y }: Entity & { x: number, y: number }) => {
-                positionStates[id] = { x, y }
-            })
+            state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
+                positionStates[id] = { x, y };
+            });
         } catch (e) {}
 
         // Render each entity in random order :skull:
-        Object.entries(this.entities).forEach((entity: [string, ServerEntity]) => {
-            const updatedPosition = positionStates[entity[0]]
-            if(updatedPosition !== undefined) {
-                entity[1].x = updatedPosition.x
-                entity[1].y = updatedPosition.y
-            }
+        Object.entries(this.entities).forEach(
+            (entity: [string, ServerEntity]) => {
+                const updatedPosition = positionStates[entity[0]];
+                if (updatedPosition !== undefined) {
+                    entity[1].x = updatedPosition.x;
+                    entity[1].y = updatedPosition.y;
+                }
 
-            entity[1].render(target, upscaleSize)
-        })
+                entity[1].render(target, upscaleSize);
+            }
+        );
 
         // Render the player on top :thumbsup:
-        if(this.player !== undefined) {
-            this.player.findInterpolatedCoordinates()
-            this.player.render(target, upscaleSize)
+        if (this.player !== undefined) {
+            this.player.findInterpolatedCoordinates();
+            this.player.render(target, upscaleSize);
         }
     }
 
     loadWorld() {
-        for (let i = 0; i < this.height; i++) {
-            // i will be the y position of tile being drawn
-            for (let j = 0; j < this.width; j++) {
-                // j is x position " "    "      "
-                if (this.worldTiles[i * this.width + j] !== 0) {
-                    // Draw the correct image for the tile onto the tile layer
-                    const tile: Tile =
-                        Tiles[this.worldTiles[i * game.WORLD_WIDTH + j]];
+        for (let x = 0; x < this.height; x++) {
+            // i will be the y position of tiles being drawn
+            for (let y = 0; y < this.width; y++) {
+                const tileVal = this.worldTiles[x * this.width + y];
+
+                if (typeof tileVal === 'string') {
+                    console.log(tileVal);
+                    continue;
+                }
+
+                if (tileVal !== TileType.Air) {
+                    // Draw the correct image for the tiles onto the tiles layer
+                    const tile: Tile = WorldTiles[tileVal];
 
                     if (
                         tile.connected &&
@@ -198,17 +191,21 @@ class World implements Tickable, Renderable {
                     ) {
                         // test if the neighboring tiles are solid
                         const topTileBool =
-                            i === 0 ||
-                            this.worldTiles[(i - 1) * this.width + j] !== 0;
+                            x === TileType.Air ||
+                            this.worldTiles[(x - 1) * this.width + y] !==
+                                TileType.Air;
                         const leftTileBool =
-                            j === 0 ||
-                            this.worldTiles[i * this.width + j - 1] !== 0;
+                            y === TileType.Air ||
+                            this.worldTiles[x * this.width + y - 1] !==
+                                TileType.Air;
                         const bottomTileBool =
-                            i === this.height - 1 ||
-                            this.worldTiles[(i + 1) * this.width + j] !== 0;
+                            x === this.height - 1 ||
+                            this.worldTiles[(x + 1) * this.width + y] !==
+                                TileType.Air;
                         const rightTileBool =
-                            j === this.width - 1 ||
-                            this.worldTiles[i * this.width + j + 1] !== 0;
+                            y === this.width - 1 ||
+                            this.worldTiles[x * this.width + y + 1] !==
+                                TileType.Air;
 
                         // convert 4 digit binary number to base 10
                         const tileSetIndex =
@@ -217,12 +214,12 @@ class World implements Tickable, Renderable {
                             2 * +bottomTileBool +
                             +leftTileBool;
 
-                        // Render connected tile
+                        // Render connected tiles
                         tile.texture.renderTile(
                             tileSetIndex,
                             this.tileLayer,
-                            j * game.TILE_WIDTH,
-                            i * game.TILE_HEIGHT,
+                            y * game.TILE_WIDTH,
+                            x * game.TILE_HEIGHT,
                             game.TILE_WIDTH,
                             game.TILE_HEIGHT
                         );
@@ -230,29 +227,85 @@ class World implements Tickable, Renderable {
                         !tile.connected &&
                         tile.texture instanceof ImageResource
                     ) {
-                        // Render non-connected tile
+                        // Render non-connected tiles
                         tile.texture.render(
                             this.tileLayer,
-                            j * game.TILE_WIDTH,
-                            i * game.TILE_HEIGHT,
+                            y * game.TILE_WIDTH,
+                            x * game.TILE_HEIGHT,
                             game.TILE_WIDTH,
                             game.TILE_HEIGHT
                         );
                     }
                 }
-                if (this.backgroundTiles[i * this.width + j] !== 0) {
-                    // draw the correct image for the background tile onto the background tile layer
-                    WorldAssets.background.snow.render(
-                        this.backTileLayer,
-                        j * game.TILE_WIDTH + this.backTileLayerOffsetWidth,
-                        i * game.TILE_HEIGHT + this.backTileLayerOffsetHeight,
-                        game.BACK_TILE_WIDTH,
-                        game.BACK_TILE_HEIGHT
-                    );
-                }
             }
         }
-        console.log("Loading complete")
+    }
+
+    drawTile(tileIndex: number) {
+        const x = tileIndex % this.width;
+        const y = Math.floor(tileIndex / this.width);
+
+        if (this.worldTiles[tileIndex] !== TileType.Air) {
+            // Draw the correct image for the tiles onto the tiles layer
+
+            const tileVal = this.worldTiles[tileIndex]
+
+            if(typeof tileVal === 'string') {
+                console.log("Tried to draw: " + tileVal)
+                return;
+            }
+
+            const tile: Tile = WorldTiles[tileVal];
+
+            // if the tiles is off-screen
+            if (tile === undefined) {
+                return;
+            }
+
+            if (tile.connected && tile.texture instanceof TileResource) {
+                // Test the neighboring 4 tiles
+                const topTileBool =
+                    y <= 0 ||
+                    this.worldTiles[tileIndex - this.width] !== TileType.Air;
+                const leftTileBool =
+                    x <= 0 || this.worldTiles[tileIndex - 1] !== TileType.Air;
+                const bottomTileBool =
+                    y >= this.height - 1 ||
+                    this.worldTiles[tileIndex + this.width] !== TileType.Air;
+                const rightTileBool =
+                    x >= this.width - 1 ||
+                    this.worldTiles[tileIndex + 1] !== TileType.Air;
+
+                // convert 4 digit binary number to base 10
+                const tileSetIndex =
+                    8 * +topTileBool +
+                    4 * +rightTileBool +
+                    2 * +bottomTileBool +
+                    +leftTileBool;
+
+                // Render connected tiles
+                tile.texture.renderTile(
+                    tileSetIndex,
+                    this.tileLayer,
+                    x * game.TILE_WIDTH,
+                    y * game.TILE_HEIGHT,
+                    game.TILE_WIDTH,
+                    game.TILE_HEIGHT
+                );
+            } else if (
+                !tile.connected &&
+                tile.texture instanceof ImageResource
+            ) {
+                // Render non-connected tiles
+                tile.texture.render(
+                    this.tileLayer,
+                    x * game.TILE_WIDTH,
+                    y * game.TILE_HEIGHT,
+                    game.TILE_WIDTH,
+                    game.TILE_HEIGHT
+                );
+            }
+        }
     }
 }
 export = World;

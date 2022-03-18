@@ -1,13 +1,11 @@
-import P5 from 'p5';
-import game from '../../Main';
 import ImageResource from './ImageResource';
 
 class TileResource extends ImageResource {
-    // The width and height of the tile set
+    // The width and height of the tiles set
     width: number;
     height: number;
 
-    // The width and height of each tile in pixels
+    // The width and height of each tiles in pixels
     tileWidth: number;
     tileHeight: number;
 
@@ -36,7 +34,7 @@ class TileResource extends ImageResource {
         const tileSetX = i % this.width;
         const tileSetY = Math.floor(i / this.width);
 
-        // Make sure the tile isn't out of bounds
+        // Make sure the tiles isn't out of bounds
         if (tileSetY > this.height)
             throw new Error(
                 `Out of bounds tile. Tried to load tile ${i} with a maximum of ${

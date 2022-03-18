@@ -24,26 +24,19 @@ const UiAssets = {
 };
 
 // Item related assets
-const ItemsAssets = {
+const ItemAssets = {
     resources: {
         ice_shard: new ImageResource(
             'assets/textures/items/resource_ice_shards.png'
         ),
-
         snowball: new ImageResource(
             'assets/textures/items/resource_snowball.png'
-        ),
-    },
-    consumables: {
-        snow_berries: new ImageResource(
-            'assets/textures/items/consumable_snow_berries.png'
         ),
     },
     blocks: {
         ice: new ImageResource('assets/textures/items/block_ice.png'),
         snow: new ImageResource('assets/textures/items/block_snow.png'),
     },
-    tools: {},
 };
 
 // World related assets
@@ -101,4 +94,4 @@ function searchGroup(assetGroup: AssetGroup | Resource, sketch: P5) {
     });
 }
 
-export { UiAssets, ItemsAssets, WorldAssets, Fonts, loadAssets };
+export { UiAssets, ItemAssets, WorldAssets, Fonts, loadAssets };

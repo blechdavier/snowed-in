@@ -1,7 +1,7 @@
 import game from '../../Main';
 import { ServerEntity } from './ServerEntity';
-import { PlayerEntityData } from './PlayerEntity';
 import p5 from 'p5';
+import { Entities, EntityPayload } from '../../../../api/Entity';
 
 class PlayerLocal extends ServerEntity {
 
@@ -29,15 +29,13 @@ class PlayerLocal extends ServerEntity {
     mass: number = this.width * this.height
 
     constructor(
-        entityId: string,
-        data: PlayerEntityData
+        data: EntityPayload
     ) {
-        super(entityId)
-        console.log(this)
+        super(data.id)
 
-        this.name = data.name
-        this.x = data.x
-        this.y = data.y
+        if(data.type === Entities.Player) {
+            this.name = data.data.name
+        }
 
         this.xVel = 0;
         this.yVel = 0;
@@ -70,8 +68,9 @@ class PlayerLocal extends ServerEntity {
         );
     }
 
-    updateData(data: PlayerEntityData): void {
-        this.name = data.name;
+    updateData(data: EntityPayload): void {
+        if(data.type === Entities.Player)
+            this.name = data.data.name
     }
 
     keyboardInput() {
@@ -157,7 +156,7 @@ class PlayerLocal extends ServerEntity {
                 j < game.ceil(game.max(this.y, this.y + this.yVel) + this.height);
                 j++
             ) {
-                // if the current tile isn't air (value 0), then continue with the collision detection
+                // if the current tiles isn't air (value 0), then continue with the collision detection
                 if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
@@ -220,7 +219,7 @@ class PlayerLocal extends ServerEntity {
                     game.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
-                    // if the current tile isn't air (value 0), then continue with the collision detection
+                    // if the current tiles isn't air (value 0), then continue with the collision detection
                     if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(

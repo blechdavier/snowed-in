@@ -1,4 +1,3 @@
-import WebSocketClient from './websocket/WebSocketClient';
 import Game from './Game';
 import { io } from "socket.io-client";
 

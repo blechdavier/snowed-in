@@ -1,27 +1,25 @@
 import { ServerEntity } from './ServerEntity';
 import p5 from 'p5';
 import game from '../../Main';
+import { Entities, EntityPayload } from '../../../../api/Entity';
 
-export type PlayerEntityData = {
-    name: string
-    x: number
-    y: number
-}
-
-export class PlayerEntity extends ServerEntity{
+export class PlayerEntity extends ServerEntity {
 
     width: number = 12 / game.TILE_WIDTH;
     height: number = 20 / game.TILE_HEIGHT;
     name: string
 
-    constructor(entityId: string, data: PlayerEntityData) {
-        super(entityId);
-        this.name = data.name;
-        console.log(this)
+    constructor(data: EntityPayload) {
+        super(data.id);
+        if(data.type === Entities.Player) {
+            this.name = data.data.name;
+        }
     }
 
-    updateData(data: PlayerEntityData): void {
-        this.name = data.name
+    updateData(data: EntityPayload): void {
+        if(data.type === Entities.Player) {
+            this.name = data.data.name;
+        }
     }
 
     render(target: p5, upscaleSize: number): void {

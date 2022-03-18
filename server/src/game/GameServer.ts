@@ -1,17 +1,20 @@
-import { ClientSocket, io } from '../Main';
-import { RemoteSocket, Socket } from 'socket.io';
-import { Player } from './Player';
-import { World } from './World';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { BroadcastOperator } from 'socket.io/dist/broadcast-operator';
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
 import { State } from '@geckos.io/snapshot-interpolation/lib/types';
-import { EntityType } from '../../../api/SocketEvents';
-import chalk from 'chalk';
+import { BroadcastOperator } from 'socket.io/dist/broadcast-operator';
+import { Socket } from 'socket.io';
+import {
+    ClientEvents,
+    ServerEvents,
+} from '../../../api/API';
+import { UserData, io } from '../Main';
+import { Player } from './entity/Player';
+import { World } from './World';
+import { TileEntityPayload } from '../../../api/TileEntity';
+import { EntityPayload } from '../../../api/Entity';
+import { TileType } from '../../../api/Tile';
+import { v4 as uuidv4 } from 'uuid';
 
 export class GameServer {
-    entityId: number = 0;
-
     id: string;
     name: string;
     maxPlayers: number;
@@ -27,7 +30,7 @@ export class GameServer {
     // Update related
     snapshotInterpolation: SnapshotInterpolation;
 
-    room: BroadcastOperator<DefaultEventsMap, any>;
+    room: BroadcastOperator<ServerEvents, UserData>;
 
     constructor(
         name: string,
@@ -44,118 +47,123 @@ export class GameServer {
         this.hostId = hostId;
 
         this.snapshotInterpolation = new SnapshotInterpolation();
+    }
 
+    async start() {
         // Generate world
         this.world = new World(512, 64);
-
-        console.log(this.id);
+        await this.world.generate();
 
         // Server ticks per second
         let tps = 30;
         setInterval(async () => {
-            let start = process.hrtime.bigint();
-
-            let start3 = process.hrtime.bigint();
             // Get the state of all the entities
             const entitiesState: State = [];
             Object.entries(this.players).forEach(([, player]) => {
                 if (player.socketId !== undefined)
-                    entitiesState.push(player.getState());
+                    entitiesState.push(player.getSnapshot());
             });
 
             // Create a snapshot with that state
             if (entitiesState.length > 0) {
                 const snapshot =
                     this.snapshotInterpolation.snapshot.create(entitiesState);
-                this.room.emit('entity-snapshot', snapshot);
+                this.room.emit('entitySnapshot', snapshot);
             }
-            console.log(
-                `Tick took ${
-                    Number(process.hrtime.bigint() - start) / 1000000
-                }ms total.`
-            );
         }, 1000 / tps);
     }
 
-    async join(socket: Socket & ClientSocket, name: string) {
+    async join(
+        socket: Socket<ClientEvents, ServerEvents, {}, UserData>,
+        name: string
+    ) {
         const sockets = await this.room.allSockets();
 
         // If the server is full
         if (sockets.size >= this.maxPlayers) return;
 
-        if (this.players[socket.userId] !== undefined) {
-            console.log(`Player ${name} reconnected`);
-            if (this.players[socket.userId].socketId !== undefined) return;
-
-            this.players[socket.userId].socketId = socket.id;
-            this.players[socket.userId].name = name;
-        } else {
+        if (this.players[socket.data.userId] === undefined) {
             console.log(`Player ${name} joined for the first time!`);
-            this.players[socket.userId] = new Player(
+            this.players[socket.data.userId] = new Player(
                 name,
-                socket.userId,
-                this.entityId++,
+                socket.data.userId,
+                uuidv4(),
                 this.world.spawnPosition.x,
                 this.world.spawnPosition.y
             );
-
-            this.players[socket.userId].socketId = socket.id;
-            this.players[socket.userId].name = name;
         }
+
+        const user = this.players[socket.data.userId];
+
+        // User is already connected
+        if (user.socketId !== undefined) return;
+
+        user.socketId = socket.id;
+        user.name = name;
 
         // Join the room
         socket.join(this.id);
 
+        // Initialize the client with all the entities
+        const entities: EntityPayload[] = [];
+        Object.entries(this.players).forEach(([id, player]) => {
+            if (player.socketId !== undefined && id !== user.userId) entities.push(player.get());
+        });
+
+        // Initialize the client with all the entities
+        const tileEntities: TileEntityPayload[] = [];
+        Object.entries(this.world.tileEntities).forEach(([, tileEntity]) => {
+            tileEntities.push(tileEntity.get());
+        });
+
         // Send the world to the client
         socket.emit(
-            'load-world',
+            'worldLoad',
             this.world.width,
             this.world.height,
             this.world.tiles,
-            this.world.backgroundTiles,
-            this.players[socket.userId]._id.toString()
+            tileEntities,
+            entities,
+            user.get()
         );
+        socket.emit('setPlayer', this.world.spawnPosition.x, this.world.spawnPosition.y, 0, 0)
 
-        this.room.emit("entities-update", [this.players[socket.userId].get()]);
-
-        // Initialize the client with all the entities
-        const initUpdates: { id: string; type: EntityType; data: object }[] =
-            [];
-        Object.entries(this.players).forEach(([, player]) => {
-            if (player.socketId !== undefined)
-                initUpdates.push(player.get());
-        });
-        socket.emit('entities-update', initUpdates);
+        socket.broadcast.emit('entityCreate', user.get());
 
         // Update player
         {
-            socket.on('player-update', (x: number, y: number) => {
-                this.players[socket.userId].x = x;
-                this.players[socket.userId].y = y;
+            socket.on('playerUpdate', (x: number, y: number) => {
+                user.x = x;
+                user.y = y;
             });
         }
 
         // World interact
         {
-            socket.on('world-break-start', (tileIndex) => {
-                this.players[socket.userId].breakingTile = {
+            socket.on('worldBreakStart', (tileIndex) => {
+                user.breakingTile = {
                     tileIndex,
                     start: Date.now(),
                 };
             });
 
-            socket.on('world-break-cancel', () => {
-                this.players[socket.userId].breakingTile = undefined;
+            socket.on('worldBreakCancel', () => {
+                user.breakingTile = undefined;
             });
 
-            socket.on('world-break-finish', () => {
-                const brokenTile = this.players[socket.userId].breakingTile;
+            socket.on('worldBreakFinish', () => {
+                const brokenTile = user.breakingTile;
 
-                this.world.tiles[brokenTile.tileIndex] = 0;
-                this.room.emit("world-update", {
-                    tileIndex: brokenTile.tileIndex,
-                    tile: this.world.tiles[brokenTile.tileIndex],
-                });
+                // If the user did not have a breaking target
+                if (brokenTile === undefined) return;
+
+                this.world.tiles[brokenTile.tileIndex] = TileType.Air;
+                this.room.emit('worldUpdate', [
+                    {
+                        tileIndex: brokenTile.tileIndex,
+                        tile: this.world.tiles[brokenTile.tileIndex],
+                    },
+                ]);
             });
         }
 
@@ -165,13 +173,9 @@ export class GameServer {
                 `Player ${name} disconnect from ${this.name} reason: ${reason}`
             );
 
-            this.room.emit("entities-update", [{
-                id: this.players[socket.userId]._id.toString(),
-                type: undefined,
-                data: undefined,
-            }]);
+            this.room.emit('entityDelete', user.id.toString());
 
-            this.players[socket.userId].socketId = undefined;
+            user.socketId = undefined;
         });
     }
 }

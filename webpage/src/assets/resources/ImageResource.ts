@@ -13,13 +13,13 @@ class ImageResource extends Resource {
     }
 
     render(target: any, x: number, y: number, width: number, height: number) {
-        // Verify that the tile has been loaded
+        // Verify that the tiles has been loaded
         if (this.image === undefined)
             throw new Error(
                 `Tried to render image before loading it: ${this.path}`
             );
 
-        // Draw non tile image
+        // Draw non tiles image
         target.image(this.image, x, y, width, height);
     }
 
@@ -34,7 +34,7 @@ class ImageResource extends Resource {
         sourceWidth?: number,
         sourceHeight?: number
     ) {
-        // Verify that the tile has been loaded
+        // Verify that the tiles has been loaded
         if (this.image === undefined)
             throw new Error(
                 `Tried to render image before loading it: ${this.path}`

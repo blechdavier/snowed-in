@@ -1,26 +1,19 @@
-import p5 from 'p5';
-
-import PlayerLocal from './world/entities/PlayerLocal';
-import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
-
 import {
     Fonts,
-    ItemsAssets,
-    loadAssets,
+    ItemAssets,
     UiAssets,
     WorldAssets,
+    loadAssets,
 } from './assets/Assets';
-import { Tile, Tiles } from './world/Tiles';
-import ItemStack from './world/inventory/items/ItemStack';
-import TileResource from './assets/resources/TileResource';
-import ImageResource from './assets/resources/ImageResource';
-import Renderable from './interfaces/Renderable';
+import ItemStack from './world/items/ItemStack';
 import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
-import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
-import { State } from '@geckos.io/snapshot-interpolation/lib/types';
+import { NetManager } from './websocket/NetManager';
+
+import p5 from 'p5';
+import { ClientEvents, ServerEvents } from '../../api/API';
 
 /*
 ///INFORMATION
@@ -78,10 +71,10 @@ class Game extends p5 {
     WORLD_WIDTH: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
     WORLD_HEIGHT: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
-    TILE_WIDTH: number = 8; // width of a tile in pixels
-    TILE_HEIGHT: number = 8; // height of a tile in pixels
-    BACK_TILE_WIDTH: number = 12; // width of a tile in pixels
-    BACK_TILE_HEIGHT: number = 12; // height of a tile in pixels
+    TILE_WIDTH: number = 8; // width of a tiles in pixels
+    TILE_HEIGHT: number = 8; // height of a tiles in pixels
+    BACK_TILE_WIDTH: number = 12; // width of a tiles in pixels
+    BACK_TILE_HEIGHT: number = 12; // height of a tiles in pixels
 
     upscaleSize: number = 6; // number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
@@ -103,7 +96,7 @@ class Game extends p5 {
     DRAG_COEFFICIENT: number = 0.21; // arbitrary number, 0 means no drag
 
     // array for all the items
-    items: EntityItem[] = [];
+    //items: EntityItem[] = [];
 
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
@@ -141,26 +134,21 @@ class Game extends p5 {
 
     currentUi: UiScreen;
 
-    connection: Socket & ClientEvents;
+    connection: Socket<ServerEvents, ClientEvents>
 
-    playerTickRate: number;
+    netManager: NetManager
 
-    constructor(connection: Socket) {
+    constructor(connection: Socket<ServerEvents, ClientEvents>) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection;
-        this.connection.on('init', ({ playerTickRate, token }) => {
-            console.log(`Tick rate set to: ${playerTickRate}`);
-            this.playerTickRate = playerTickRate;
-            if (token) {
-                window.localStorage.setItem('token', token);
-                (this.connection.auth as { token: string }).token = token;
-            }
-        });
+
+        // Initialise the network manager
+        this.netManager = new NetManager(this)
     }
 
     preload() {
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
+        loadAssets(this, UiAssets, ItemAssets, WorldAssets, Fonts);
         console.log('Asset loading completed');
     }
 
@@ -170,101 +158,14 @@ class Game extends p5 {
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
 
-        this.currentUi = new MainMenu();
-
-        // Load the world and set the player
-        this.connection.on(
-            'load-world',
-            (width, height, tiles, backgroundTiles, entityId) => {
-                this.world = new World(
-                    width,
-                    height,
-                    tiles,
-                    backgroundTiles,
-                    entityId
-                );
-            }
-        );
-
-        this.connection.on(
-            'world-update',
-            (updatedTiles: { tileIndex: number; tile: number }[]) => {
-                updatedTiles.forEach((tile) => {
-                    // set the broken tile to air in the world data
-                    this.world.worldTiles[tile.tileIndex] = tile.tile;
-
-                    // erase the broken tile and its surrounding tiles using two erasing rectangles in a + shape
-                    this.world.tileLayer.erase();
-                    this.world.tileLayer.noStroke();
-                    this.world.tileLayer.rect(
-                        ((tile.tileIndex % this.world.width) - 1) *
-                            this.TILE_WIDTH,
-                        Math.floor(tile.tileIndex / this.world.width) *
-                            this.TILE_HEIGHT,
-                        this.TILE_WIDTH * 3,
-                        this.TILE_HEIGHT
-                    );
-                    this.world.tileLayer.rect(
-                        (tile.tileIndex % this.world.width) * this.TILE_WIDTH,
-                        (Math.floor(tile.tileIndex / this.world.width) - 1) *
-                            this.TILE_HEIGHT,
-                        this.TILE_WIDTH,
-                        this.TILE_HEIGHT * 3
-                    );
-                    this.world.tileLayer.noErase();
-
-                    // redraw the neighboring tiles
-                    this.drawTile(tile.tileIndex);
-                    this.drawTile(tile.tileIndex + this.world.width);
-                    this.drawTile(tile.tileIndex - 1);
-                    this.drawTile(tile.tileIndex - this.world.width);
-                    this.drawTile(tile.tileIndex + 1);
-                });
-            }
-        );
-
-        // Update the player
-        this.connection.on('set-player', (x, y, yVel, xVel) => {
-            this.world.player.x = x;
-            this.world.player.y = y;
-            this.world.player.yVel = yVel;
-            this.world.player.xVel = xVel;
-        });
-
-        this.connection.on('entities-update', (entities: (
-            | { id: string; type: EntityType; data: object }
-            )[]) => {
-            this.world.updateEntities(entities)
-        })
-
-        // Update the other players in the world
-        this.connection.on(
-            'entity-snapshot',
-            (snapshot: {
-                id: string;
-                time: number;
-                state: { id: string; x: string; y: string }[];
-            }) => {
-                // If the world is not set
-                if (this.world === undefined) return;
-
-                // this.world.snapshotInterpolation.snapshot.add(snapshot);
-                this.world.updatePlayers(snapshot)
-            }
-        );
-
+        // Tick
         setInterval(() => {
             if (this.world === undefined) return;
             this.world.tick(this);
-        }, 1000 / this.playerTickRate);
+        }, 1000 / this.netManager.playerTickRate);
 
-        // this.connection.emit(
-        //     'create',
-        //     "Numericly's Server",
-        //     'Numericly',
-        //     10,
-        //     false
-        // );
+        this.currentUi = new MainMenu();
+
         this.connection.emit(
             'join',
             'e4022d403dcc6d19d6a68ba3abfd0a60',
@@ -336,7 +237,7 @@ class Game extends p5 {
                     this.fill(0, 127);
                 }
 
-                this.hotBar[i].item.texture.render(
+                this.hotBar[i].texture.render(
                     this,
                     6 * this.upscaleSize + 16 * i * this.upscaleSize,
                     6 * this.upscaleSize,
@@ -372,19 +273,6 @@ class Game extends p5 {
         );
 
         this.currentUi.windowUpdate();
-
-        // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
-
-        // // if the world is too zoomed out, then zoom it in.
-        // while (
-        //     this.WORLD_WIDTH * this.TILE_WIDTH - this.width / this.upscaleSize <
-        //         0 ||
-        //     this.WORLD_HEIGHT * this.TILE_HEIGHT -
-        //         this.height / this.upscaleSize <
-        //         0
-        // ) {
-        //     this.upscaleSize += 2;
-        // }
     }
 
     keyPressed() {
@@ -462,7 +350,7 @@ class Game extends p5 {
                 this.pickedUpSlot = -1;
             }
         } else {
-            // If the tile is air
+            // If the tiles is air
             if (
                 this.world.worldTiles[
                     this.world.width * this.worldMouseY + this.worldMouseX
@@ -471,39 +359,39 @@ class Game extends p5 {
                 return;
 
             this.connection.emit(
-                'world-break-start',
+                'worldBreakStart',
                 this.world.width * this.worldMouseY + this.worldMouseX
             );
-            this.connection.emit('world-break-finish');
+            this.connection.emit('worldBreakFinish');
             /*
-            const tile: Tile =
-                Tiles[
+            const tiles: Tile =
+                WorldTiles[
                     this.world.worldTiles[
                         this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
-            if (tile === undefined) return;
+            if (tiles === undefined) return;
 
-            if (tile.itemDrop !== undefined) {
+            if (tiles.itemDrop !== undefined) {
                 // Default drop quantity
                 let quantity: number = 1;
 
                 // Update the quantity based on
                 if (
-                    tile.itemDropMax !== undefined &&
-                    tile.itemDropMin !== undefined
+                    tiles.itemDropMax !== undefined &&
+                    tiles.itemDropMin !== undefined
                 ) {
                     quantity = Math.round(
-                        Math.random() * (tile.itemDropMax - tile.itemDropMin) +
-                            tile.itemDropMin
+                        Math.random() * (tiles.itemDropMax - tiles.itemDropMin) +
+                            tiles.itemDropMin
                     );
-                } else if (tile.itemDropMax !== undefined) {
-                    quantity = tile.itemDropMax;
+                } else if (tiles.itemDropMax !== undefined) {
+                    quantity = tiles.itemDropMax;
                 }
 
                 this.dropItemStack(
-                    new ItemStack(tile.itemDrop, quantity),
+                    new ItemStack(tiles.itemDrop, quantity),
                     this.worldMouseX,
                     this.worldMouseY
                 );
@@ -540,15 +428,6 @@ class Game extends p5 {
 
                 this.pickedUpSlot = -1;
             } else {
-                this.dropItemStack(
-                    this.hotBar[this.pickedUpSlot],
-                    (this.interpolatedCamX * this.TILE_WIDTH +
-                        this.mouseX / this.upscaleSize) /
-                        this.TILE_WIDTH,
-                    (this.interpolatedCamY * this.TILE_HEIGHT +
-                        this.mouseY / this.upscaleSize) /
-                        this.TILE_HEIGHT
-                );
                 this.hotBar[this.pickedUpSlot] = undefined;
                 this.pickedUpSlot = -1;
             }
@@ -560,70 +439,6 @@ class Game extends p5 {
             this.pCamX + (this.camX - this.pCamX) * this.amountSinceLastTick;
         this.interpolatedCamY =
             this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
-    }
-
-    drawTile(tileIndex: number) {
-        if (this.world.worldTiles[tileIndex] !== 0) {
-            // Draw the correct image for the tile onto the tile layer
-
-            const tile: Tile = Tiles[this.world.worldTiles[tileIndex]];
-
-            // if the tile is off-screen
-            if (tile === undefined) {
-                return;
-            }
-
-            if (tile.connected && tile.texture instanceof TileResource) {
-                // test if the neighboring tiles are solid
-                // console.log(Math.floor((tileIndex - this.world.width) / this.world.width))
-                const topTileBool =
-                    Math.floor(
-                        (tileIndex - this.world.width) / this.world.width
-                    ) <= 0 ||
-                    this.world.worldTiles[tileIndex - this.world.width] !== 0;
-                const leftTileBool =
-                    tileIndex % this.world.width === 0 ||
-                    this.world.worldTiles[tileIndex - 1] !== 0;
-                const bottomTileBool =
-                    Math.floor(
-                        (tileIndex - this.world.width) / this.world.width
-                    ) >=
-                        this.world.height - 1 ||
-                    this.world.worldTiles[tileIndex + this.world.width] !== 0;
-                const rightTileBool =
-                    tileIndex % this.world.width === this.world.width - 1 ||
-                    this.world.worldTiles[tileIndex + 1] !== 0;
-
-                // convert 4 digit binary number to base 10
-                const tileSetIndex =
-                    8 * +topTileBool +
-                    4 * +rightTileBool +
-                    2 * +bottomTileBool +
-                    +leftTileBool;
-
-                // Render connected tile
-                tile.texture.renderTile(
-                    tileSetIndex,
-                    this.world.tileLayer,
-                    (tileIndex % this.world.width) * this.TILE_WIDTH,
-                    Math.floor(tileIndex / this.world.width) * this.TILE_HEIGHT,
-                    this.TILE_WIDTH,
-                    this.TILE_HEIGHT
-                );
-            } else if (
-                !tile.connected &&
-                tile.texture instanceof ImageResource
-            ) {
-                // Render non-connected tile
-                tile.texture.render(
-                    this.world.tileLayer,
-                    tileIndex % this.world.width,
-                    Math.floor(tileIndex / this.world.width),
-                    this.TILE_WIDTH,
-                    this.TILE_HEIGHT
-                );
-            }
-        }
     }
 
     doTicks() {
@@ -693,19 +508,20 @@ class Game extends p5 {
                 this.height / this.upscaleSize / this.TILE_HEIGHT;
         }
 
-        for (const item of this.items) {
-            item.goTowardsPlayer();
-            item.combineWithNearItems();
-            item.applyGravityAndDrag();
-            item.applyVelocityAndCollide();
-        }
 
-        for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i].deleted === true) {
-                this.items.splice(i, 1);
-                i--;
-            }
-        }
+        // for (const item of this.items) {
+        //     item.goTowardsPlayer();
+        //     item.combineWithNearItems();
+        //     item.applyGravityAndDrag();
+        //     item.applyVelocityAndCollide();
+        // }
+        //
+        // for (let i = 0; i < this.items.length; i++) {
+        //     if (this.items[i].deleted === true) {
+        //         this.items.splice(i, 1);
+        //         i--;
+        //     }
+        // }
     }
 
     uiFrameRect(x: number, y: number, w: number, h: number) {
@@ -934,53 +750,40 @@ class Game extends p5 {
         //     this.world.player.height * this.upscaleSize * this.TILE_HEIGHT
         // );
 
-        for (const item of this.items) {
-            item.findInterpolatedCoordinates();
 
-            item.itemStack.item.texture.render(
-                this,
-                (item.interpolatedX * this.TILE_WIDTH -
-                    this.interpolatedCamX * this.TILE_WIDTH) *
-                    this.upscaleSize,
-                (item.interpolatedY * this.TILE_HEIGHT -
-                    this.interpolatedCamY * this.TILE_HEIGHT) *
-                    this.upscaleSize,
-                item.w * this.upscaleSize * this.TILE_WIDTH,
-                item.h * this.upscaleSize * this.TILE_HEIGHT
-            );
-
-            // Render the item quantity label
-            this.fill(0);
-
-            this.noStroke();
-
-            this.textAlign(this.RIGHT, this.BOTTOM);
-            this.textSize(5 * this.upscaleSize);
-
-            this.text(
-                item.itemStack.stackSize,
-                (item.interpolatedX * this.TILE_WIDTH -
-                    this.interpolatedCamX * this.TILE_WIDTH) *
-                    this.upscaleSize,
-                (item.interpolatedY * this.TILE_HEIGHT -
-                    this.interpolatedCamY * this.TILE_HEIGHT) *
-                    this.upscaleSize
-            );
-        }
-    }
-
-    dropItemStack(itemStack: ItemStack, x: number, y: number) {
-        this.items.push(
-            new EntityItem(
-                itemStack,
-                x,
-                y,
-                0.5,
-                0.5,
-                this.random(-0.1, 0.1),
-                this.random(-0.1, 0)
-            )
-        );
+        // for (const item of this.items) {
+        //     item.findInterpolatedCoordinates();
+        //
+        //     item.itemStack.texture.render(
+        //         this,
+        //         (item.interpolatedX * this.TILE_WIDTH -
+        //             this.interpolatedCamX * this.TILE_WIDTH) *
+        //             this.upscaleSize,
+        //         (item.interpolatedY * this.TILE_HEIGHT -
+        //             this.interpolatedCamY * this.TILE_HEIGHT) *
+        //             this.upscaleSize,
+        //         item.w * this.upscaleSize * this.TILE_WIDTH,
+        //         item.h * this.upscaleSize * this.TILE_HEIGHT
+        //     );
+        //
+        //     // Render the item quantity label
+        //     this.fill(0);
+        //
+        //     this.noStroke();
+        //
+        //     this.textAlign(this.RIGHT, this.BOTTOM);
+        //     this.textSize(5 * this.upscaleSize);
+        //
+        //     this.text(
+        //         item.itemStack.stackSize,
+        //         (item.interpolatedX * this.TILE_WIDTH -
+        //             this.interpolatedCamX * this.TILE_WIDTH) *
+        //             this.upscaleSize,
+        //         (item.interpolatedY * this.TILE_HEIGHT -
+        //             this.interpolatedCamY * this.TILE_HEIGHT) *
+        //             this.upscaleSize
+        //     );
+        // }
     }
 
     pickUpItem(itemStack: ItemStack): boolean {
@@ -994,10 +797,10 @@ class Game extends p5 {
             }
 
             if (
-                item.item === itemStack.item &&
-                item.stackSize < item.item.maxStackSize
+                item === itemStack &&
+                item.stackSize < item.maxStackSize
             ) {
-                const remainingSpace = item.item.maxStackSize - item.stackSize;
+                const remainingSpace = item.maxStackSize - item.stackSize;
 
                 // Top off the stack with items if it can take more than the stack being added
                 if (remainingSpace >= itemStack.stackSize) {
@@ -1008,11 +811,11 @@ class Game extends p5 {
 
                 itemStack.stackSize -= remainingSpace;
 
-                this.hotBar[i].stackSize = itemStack.item.maxStackSize;
+                this.hotBar[i].stackSize = itemStack.maxStackSize;
             }
         }
         console.error(
-            `Could not pickup ${itemStack.stackSize} ${itemStack.item.name}`
+            `Could not pickup ${itemStack.stackSize} ${itemStack.name}`
         );
         return false;
     }
@@ -1042,7 +845,7 @@ class Game extends p5 {
     drawCursor() {
         if (this.mouseOn) {
             if (this.pickedUpSlot > -1) {
-                this.hotBar[this.pickedUpSlot].item.texture.render(
+                this.hotBar[this.pickedUpSlot].texture.render(
                     this,
                     this.mouseX,
                     this.mouseY,

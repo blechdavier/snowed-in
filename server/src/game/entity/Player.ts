@@ -1,5 +1,5 @@
 import { Entity } from './Entity';
-import { EntityType } from '../../../api/SocketEvents';
+import { Entities, EntityData } from '../../../../api/Entity';
 
 export class Player extends Entity {
     userId: string
@@ -7,27 +7,27 @@ export class Player extends Entity {
 
     socketId: string
 
-    // Position
-    x: number;
-    y: number;
-
     breakingTile: { start: number, tileIndex: number}
 
     constructor(
         name: string,
         userId: string,
-        entityId: number,
+        entityId: string,
         x: number,
         y: number,
     ) {
-        super(EntityType.Player, entityId)
+        super(Entities.Player, entityId)
         this.userId = userId;
         this.name = name;
         this.x = x;
         this.y = y;
     }
 
-    getData(): object {
-        return {name: this.name, x: this.x, y: this.y}
+    getData(): EntityData {
+        return {
+            type: Entities.Player,
+            data: {name: this.name}
+        }
+
     }
 }

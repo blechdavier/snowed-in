@@ -1,6 +1,6 @@
-import { PlayerEntity } from './PlayerEntity';
 import Renderable from '../../interfaces/Renderable';
 import p5 from 'p5';
+import { EntityPayload } from '../../../../api/Entity';
 
 export abstract class ServerEntity implements Renderable {
 
@@ -13,7 +13,7 @@ export abstract class ServerEntity implements Renderable {
         this.entityId = entityId
     }
 
-    abstract updateData(data: object): void
+    abstract updateData(data: EntityPayload): void
 
     abstract render(target: p5, upscaleSize: number): void;
 }

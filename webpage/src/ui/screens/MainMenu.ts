@@ -3,7 +3,6 @@ import p5 from 'p5';
 import UiFrame from '../UiFrame';
 import game from '../../Main';
 import Button from '../Button';
-import { isFunctionExpression } from 'typescript';
 
 export class MainMenu extends UiScreen {
 
@@ -17,7 +16,7 @@ export class MainMenu extends UiScreen {
             new Button("Resume Game", "Keep playing where you left off.", 0, 0, 0, 0),
             new Button("New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0),
             new Button("Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0),
-            new Button("Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0)
+            new Button("Options", "Change your key binds, reduce lag, etc.", 0, 0, 0, 0)
         ];
         this.windowUpdate();
     }
@@ -58,8 +57,8 @@ export class MainMenu extends UiScreen {
         // set the position of the join game button
         this.buttons[2].x = game.width/2-192/2*game.upscaleSize;
         this.buttons[2].y = game.height/2+40*game.upscaleSize;
-        this.buttons[2].w = 192*game.upscaleSize;
-        this.buttons[2].h = 16*game.upscaleSize;
+        this.buttons[2].w = 192 * game.upscaleSize;
+        this.buttons[2].h = 16 * game.upscaleSize;
 
         // set the position of the options button
         this.buttons[3].x = game.width/2-192/2*game.upscaleSize;

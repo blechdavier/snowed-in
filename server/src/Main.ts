@@ -1,13 +1,19 @@
 import Express from 'express'
 import http from 'http';
-import StaticDispatcher from './StaticDispatcher';
-import { Server, Socket } from 'socket.io';
-import { GameServer } from './game/GameServer';
 import crypto from 'crypto';
-import { ServerEvents } from '../../api/SocketEvents';
-import { sign, verify } from 'jsonwebtoken';
+import { Server, Socket } from 'socket.io';
 import { md } from 'node-forge'
+import { sign, verify } from 'jsonwebtoken';
+import * as WorkerPool  from 'workerpool'
+import * as path from 'path';
 
+import StaticDispatcher from './StaticDispatcher';
+import { Tasks } from './Worker';
+import { GameServer } from './game/GameServer';
+import { ClientEvents, ServerEvents } from '../../api/API';
+import { Keys } from "../config.json"
+
+console.log(generateId())
 const app = Express();
 
 const httpServer = http.createServer(app)
@@ -16,50 +22,47 @@ export const io = new Server(httpServer, {});
 
 const servers: {[name: string]: GameServer} = {}
 
-export type ClientSocket = {
+export const pool: WorkerPool.WorkerPool & Tasks = WorkerPool.pool(path.resolve(__dirname, 'Worker.ts'), {forkOpts: { execArgv: ['-r', 'ts-node/register'] }})
+
+export type UserData = {
     userId: string
-} & ServerEvents
+}
 
-const secretKey = "TfFj0HdGrklwqjo651PCHhKfifNpwMMZBo19hYxwx8R6PJ5tIFScOKrvzygasE3EpqyzrbsO8jlLaG1G5WpF4ZdX5V7aB9CG1dqeH987hrUTdGI5VbeTHLoG32ngNW6m"
-
-servers["e4022d403dcc6d19d6a68ba3abfd0a60"] = new GameServer("dev server", 10, false, "e4022d403dcc6d19d6a68ba3abfd0a60", "asdfasdf")
-
-io.on("connection", (socket : Socket & ClientSocket) => {
+io.on("connection", (socket: Socket<ClientEvents ,ServerEvents, {}, UserData>) => {
     try {
-        // Get the user token from the client
-        const token = verify(socket.handshake.auth.token, secretKey);
+        const token = verify(socket.handshake.auth.token, Keys.userTokenKey);
 
         // Sha256 hash to token for security
         const sha256md = md.sha256.create()
         sha256md.update((token as {userToken: string}).userToken + Math.random().toString())
 
         // Set the sockets userId to the hashed token
-        socket.userId = sha256md.digest().toHex()
+        socket.data.userId = sha256md.digest().toHex()
 
-        socket.emit("init", { playerTickRate: 30 })
+        socket.emit("init", 30)
     } catch (e) {
 
         // Generate new user token
         const userToken = crypto.randomBytes(16).toString("hex")
 
         // Sign a jwt with the user token
-        const token = sign({userToken: userToken}, secretKey)
+        const token = sign({userToken: userToken}, Keys.userTokenKey)
 
         // Sha256 hash to token for security
         const sha256md = md.sha256.create()
         sha256md.update(userToken)
 
         // Set the sockets userId to the hashed token
-        socket.userId = sha256md.digest().toHex()
+        socket.data.userId = sha256md.digest().toHex()
 
-        socket.emit("init", { playerTickRate: 30, token: token })
+        socket.emit("init", 30, token)
     }
 
     socket.on("create", async (name: string, clientName: string, maxPlayers: number, listed: boolean) => {
         // Generate server id
         const serverId = crypto.randomBytes(16).toString("hex");
 
-        servers[serverId] = new GameServer(name, maxPlayers, listed, serverId, socket.userId)
+        servers[serverId] = new GameServer(name, maxPlayers, listed, serverId, socket.data.userId)
 
         // Add the current socket to the room
         await servers[serverId].join(socket, clientName)
@@ -77,10 +80,18 @@ io.on("connection", (socket : Socket & ClientSocket) => {
 
 });
 
+export function generateId() {
+    return crypto.randomInt(16)
+}
+
 async function main() {
     console.log("Listening on port 8080")
     StaticDispatcher(app)
     httpServer.listen(8080)
+
+    // Create the server and then start it
+    servers["e4022d403dcc6d19d6a68ba3abfd0a60"] = new GameServer("dev server", 10, false, "e4022d403dcc6d19d6a68ba3abfd0a60", "asdfasdf")
+    await servers["e4022d403dcc6d19d6a68ba3abfd0a60"].start()
 }
 
 main().catch(err => {
