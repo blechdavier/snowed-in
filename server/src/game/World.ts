@@ -21,7 +21,6 @@ export class World {
         this.width = width;
         this.height = height;
         this.seed = seed;
-
         // Initialize the tiles sets
         this.tiles = new Array(this.width * this.height);
         this.backgroundTiles = new Array(this.width * this.height);
@@ -46,3 +45,13 @@ export class World {
         console.log(tileEntity)
     }
 }
+
+
+
+/*
+
+trees
+snow
+dirt/ice
+stone/ore
+*/

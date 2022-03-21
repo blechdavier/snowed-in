@@ -1,6 +1,6 @@
 import ImageResource from './ImageResource';
 
-class TileResource extends ImageResource {
+class VariatedTileResource extends ImageResource {
     // The width and height of the tiles set
     width: number;
     height: number;
@@ -10,7 +10,7 @@ class TileResource extends ImageResource {
     tileHeight: number;
 
     constructor(
-        path: string,
+        path: string[],
         width: number,
         height: number,
         tileWidth: number,

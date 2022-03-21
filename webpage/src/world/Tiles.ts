@@ -1,20 +1,17 @@
 import ImageResource from '../assets/resources/ImageResource';
 import { WorldAssets } from '../assets/Assets';
 import TileResource from '../assets/resources/TileResource';
-import { TileType } from '../../../api/Tile';
+import { Item, Items } from './inventory/items/Items';
 
-export interface Tile {
+interface Tile {
     name: string;
     texture: ImageResource | TileResource;
+    itemDrop?: Item;
+    itemDropMax?: number;
+    itemDropMin?: number;
     connected?: boolean;
-    anyConnection?: boolean;
 }
 
-<<<<<<< Updated upstream:webpage/src/world/WorldTiles.ts
-export const WorldTiles: Record<TileType, Tile | undefined> = {
-    [TileType.Air]: undefined,
-    [TileType.Snow]: {
-=======
 
 
 const Blocks = {//used for readability in other scripts
@@ -31,25 +28,19 @@ const Blocks = {//used for readability in other scripts
 const Tiles: Tile[] = [
     undefined, // Air
     {
->>>>>>> Stashed changes:webpage/src/world/Tiles.ts
         name: 'snow',
+        itemDrop: Items.snowballs,
+        itemDropMin: 2,
+        itemDropMax: 4,
         texture: WorldAssets.middleground.tileset_snow,
-<<<<<<< Updated upstream:webpage/src/world/WorldTiles.ts
-        connected: true,
-        anyConnection: true,
-=======
         connected: true
->>>>>>> Stashed changes:webpage/src/world/Tiles.ts
     },
-    [TileType.Ice]: {
+    {
         name: 'ice',
+        itemDrop: Items.ice_shards,
+        itemDropMin: 3,
+        itemDropMax: 5,
         texture: WorldAssets.middleground.tileset_ice,
-<<<<<<< Updated upstream:webpage/src/world/WorldTiles.ts
-        connected: true,
-        anyConnection: true,
-    },
-};
-=======
         connected: true
     },
     {
@@ -71,4 +62,3 @@ const Tiles: Tile[] = [
 ];
 
 export { Tiles, Tile, Blocks };
->>>>>>> Stashed changes:webpage/src/world/Tiles.ts

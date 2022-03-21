@@ -737,8 +737,8 @@ class Game extends p5 {
 
     renderEntities() {
         // draw player
-        this.fill(255, 0, 0);
-        this.noStroke();
+        // this.fill(255, 0, 0);
+        // this.noStroke();
         // this.rect(
         //     (this.world.player.interpolatedX * this.TILE_WIDTH -
         //         this.interpolatedCamX * this.TILE_WIDTH) *

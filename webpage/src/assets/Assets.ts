@@ -59,6 +59,13 @@ const WorldAssets = {
             8,
             8
         ),
+        tileset_dirt: new TileResource(
+            'assets/textures/world/middleground/tileset_snow.png',
+            16,
+            1,
+            8,
+            8
+        ),
     },
     foreground: {
         tileset_pipe: new TileResource(
@@ -71,9 +78,8 @@ const WorldAssets = {
     },
 };
 
-// The game font
 const Fonts = {
-    title: new FontResource('assets/fonts/Cave-Story.ttf'),
+    
 };
 
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
