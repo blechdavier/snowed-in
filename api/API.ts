@@ -1,5 +1,5 @@
 import { Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
-import { EntityPayload } from './Entity';
+import { Entities, EntityPayload } from './Entity';
 import { TileEntityPayload } from './TileEntity';
 import { TileType } from './Tile';
 
@@ -17,7 +17,7 @@ export interface ServerEvents {
         tiles: (TileType | string)[],
         tileEntities: TileEntityPayload[],
         entities: EntityPayload[],
-        player: EntityPayload
+        player: EntityPayload<Entities.LocalPlayer>
     ) => void;
     /**
      * Sends information about updated tiles

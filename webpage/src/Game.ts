@@ -1,7 +1,5 @@
 import p5 from 'p5';
 
-import PlayerLocal from './world/entities/PlayerLocal';
-import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
 
 import {
@@ -11,16 +9,13 @@ import {
     UiAssets,
     WorldAssets,
 } from './assets/Assets';
-import { Tile, Tiles } from './world/Tiles';
-import ItemStack from './world/inventory/items/ItemStack';
-import TileResource from './assets/resources/TileResource';
-import ImageResource from './assets/resources/ImageResource';
-import Renderable from './interfaces/Renderable';
 import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
-import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
-import { State } from '@geckos.io/snapshot-interpolation/lib/types';
+import { PauseMenu } from './ui/screens/PauseMenu';
+import { NetManager } from './websocket/NetManager';
+import { ClientEvents, ServerEvents } from '../../api/API';
+import ItemStack from './world/items/ItemStack';
 
 /*
 ///INFORMATION
@@ -136,6 +131,7 @@ class Game extends p5 {
 
     canvas: p5.Renderer;
     skyLayer: p5.Graphics;
+    skyShader: p5.Shader;
 
     world: World;
 
@@ -144,6 +140,9 @@ class Game extends p5 {
     connection: Socket<ServerEvents, ClientEvents>
 
     netManager: NetManager
+
+    serverVisibility: string;
+    worldBumpiness: number;
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -175,8 +174,6 @@ class Game extends p5 {
             if (this.world === undefined) return;
             this.world.tick(this);
         }, 1000 / this.netManager.playerTickRate);
-
-        this.currentUi = new MainMenu();
 
         this.connection.emit(
             'join',

@@ -184,4 +184,4 @@ function searchGroup(assetGroup: AssetGroup | Resource | AudioResourceGroup, ske
     });
 }
 
-export { UiAssets, ItemsAssets, WorldAssets, Fonts, loadAssets };
+export { AudioAssets, UiAssets, ItemsAssets, WorldAssets, Fonts, loadAssets };

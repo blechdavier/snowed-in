@@ -1,5 +1,5 @@
 import { Entity } from './Entity';
-import { Entities, EntityData } from '../../../../api/Entity';
+import { Entities, EntityData, EntityPayload } from '../../../../api/Entity';
 
 export class Player extends Entity {
     userId: string
@@ -28,6 +28,13 @@ export class Player extends Entity {
             type: Entities.Player,
             data: {name: this.name}
         }
+    }
 
+    getLocal(): EntityPayload<Entities.LocalPlayer> {
+        return {
+            id: this.id,
+            type: Entities.LocalPlayer,
+            data: {name: this.name, x: this.x, y: this.y}
+        }
     }
 }

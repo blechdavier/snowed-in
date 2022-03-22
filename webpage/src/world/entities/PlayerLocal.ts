@@ -1,7 +1,7 @@
 import game from '../../Main';
 import { ServerEntity } from './ServerEntity';
-import { PlayerEntityData } from './PlayerEntity';
 import p5 from 'p5';
+import { Entities, EntityPayload } from '../../../../api/Entity';
 
 class PlayerLocal extends ServerEntity {
 
@@ -9,8 +9,8 @@ class PlayerLocal extends ServerEntity {
     height: number = 20 / game.TILE_HEIGHT;
     name: string
 
-    xVel: number;
-    yVel: number;
+    xVel: number = 0
+    yVel: number = 0
     interpolatedX: number;
     interpolatedY: number;
     slideX: number;
@@ -18,10 +18,10 @@ class PlayerLocal extends ServerEntity {
 
     pX: number;
     pY: number;
-    pXVel: number;
-    pYVel: number;
+    pXVel: number = 0
+    pYVel: number = 0
 
-    grounded: boolean;
+    grounded: boolean = false;
 
     collisionData: any;
     closestCollision: [number, number, number]
@@ -29,20 +29,14 @@ class PlayerLocal extends ServerEntity {
     mass: number = this.width * this.height
 
     constructor(
-        entityId: string,
-        data: PlayerEntityData
+        data: EntityPayload<Entities.LocalPlayer>
     ) {
-        super(entityId)
-        console.log(this)
+        super(data.id)
 
-        this.name = data.name
-        this.x = data.x
-        this.y = data.y
+        this.name = data.data.name
 
-        this.xVel = 0;
-        this.yVel = 0;
-
-        this.grounded = false;
+        this.x = data.data.x
+        this.y = data.data.y
 
         this.closestCollision = [1, 0, Infinity];
 
@@ -51,8 +45,6 @@ class PlayerLocal extends ServerEntity {
 
         this.pX = this.x
         this.pY = this.y;
-        this.pXVel = 0;
-        this.pYVel = 0;
     }
 
     render(target: p5, upscaleSize: number): void {
@@ -70,8 +62,9 @@ class PlayerLocal extends ServerEntity {
         );
     }
 
-    updateData(data: PlayerEntityData): void {
-        this.name = data.name;
+    updateData(data: EntityPayload): void {
+        if(data.type === Entities.Player)
+            this.name = data.data.name;
     }
 
     keyboardInput() {
@@ -158,7 +151,7 @@ class PlayerLocal extends ServerEntity {
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
-                if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -221,7 +214,7 @@ class PlayerLocal extends ServerEntity {
                     j++
                 ) {
                     // if the current tile isn't air (value 0), then continue with the collision detection
-                    if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                    if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,
@@ -287,87 +280,6 @@ class PlayerLocal extends ServerEntity {
             this.grounded = true;
         }
     }
-
-}
-
-function rectVsRay(
-    rectX?: any,
-    rectY?: any,
-    rectW?: any,
-    rectH?: any,
-    rayX?: any,
-    rayY?: any,
-    rayW?: any,
-    rayH?: any
-) {
-    // this ray is actually a line segment mathematically, but it's common to see people refer to similar checks as ray-casts, so for the duration of the definition of this function, ray can be assumed to mean the same as line segment.
-
-    // if the ray doesn't have a length, then it can't have entered the rectangle.  This assumes that the objects don't start in collision, otherwise they'll behave strangely
-    if (rayW === 0 && rayH === 0) {
-        return false;
-    }
-
-    // calculate how far along the ray each side of the rectangle intersects with it (each side is extended out infinitely in both directions)
-    const topIntersection = (rectY - rayY) / rayH;
-    const bottomIntersection = (rectY + rectH - rayY) / rayH;
-    const leftIntersection = (rectX - rayX) / rayW;
-    const rightIntersection = (rectX + rectW - rayX) / rayW;
-
-    if (
-        isNaN(topIntersection) ||
-        isNaN(bottomIntersection) ||
-        isNaN(leftIntersection) ||
-        isNaN(rightIntersection)
-    ) {
-        // you have to use the JS function isNaN() to check if a value is NaN because both NaN==NaN and NaN===NaN are false.
-        // if any of these values are NaN, no collision has occurred
-        return false;
-    }
-
-    // calculate the nearest and farthest intersections for both x and y
-    const nearX = game.min(leftIntersection, rightIntersection);
-    const farX = game.max(leftIntersection, rightIntersection);
-    const nearY = game.min(topIntersection, bottomIntersection);
-    const farY = game.max(topIntersection, bottomIntersection);
-
-    if (nearX > farY || nearY > farX) {
-        // this must mean that the line that makes up the line segment doesn't pass through the ray
-        return false;
-    }
-
-    if (farX < 0 || farY < 0) {
-        // the intersection is happening before the ray starts, so the ray is pointing away from the triangle
-        return false;
-    }
-
-    // calculate where the potential collision could be
-    const nearCollisionPoint = game.max(nearX, nearY);
-
-    if (nearX > 1 || nearY > 1) {
-        // the intersection happens after the ray(line segment) ends
-        return false;
-    }
-
-    if (nearX === nearCollisionPoint) {
-        // it must have collided on either the left or the right! now which?
-        if (leftIntersection === nearX) {
-            // It must have collided on the left!  Return the collision normal [-1, 0]
-            return [-1, 0, nearCollisionPoint];
-        }
-        // If it didn't collide on the left, it must have collided on the right.  Return the collision normal [1, 0]
-        return [1, 0, nearCollisionPoint];
-    }
-    // If it didn't collide on the left or right, it must have collided on either the top or the bottom! now which?
-    if (topIntersection === nearY) {
-        // It must have collided on the top!  Return the collision normal [0, -1]
-        return [0, -1, nearCollisionPoint];
-    }
-    // If it didn't collide on the top, it must have collided on the bottom.  Return the collision normal [0, 1]
-    return [0, 1, nearCollisionPoint];
-
-    // output if no collision: false
-    // output if collision: [collision normal X, collision normal Y, nearCollisionPoint]
-    //                         -1 to 1              -1 to 1            0 to 1
 }
 
 export = PlayerLocal;

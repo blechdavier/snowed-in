@@ -23,8 +23,6 @@ abstract class ItemStack {
         if(maxStackSize !== undefined)
             this.maxStackSize = maxStackSize
     }
-
-    use() {}
 }
 
 export = ItemStack;

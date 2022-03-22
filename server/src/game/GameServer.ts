@@ -124,9 +124,8 @@ export class GameServer {
             this.world.tiles,
             tileEntities,
             entities,
-            user.get()
+            user.getLocal()
         );
-        socket.emit('setPlayer', this.world.spawnPosition.x, this.world.spawnPosition.y, 0, 0)
 
         socket.broadcast.emit('entityCreate', user.get());
 
