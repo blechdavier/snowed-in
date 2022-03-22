@@ -1,8 +1,8 @@
 import ImageResource from '../../assets/resources/ImageResource';
-import { ItemAssets } from '../../assets/Assets';
 import { ItemTile } from './tileItems/ItemTile';
 import { ItemType } from '../../../../api/Item';
 import { TileType } from '../../../../api/Tile';
+import { ItemsAssets } from '../../assets/Assets';
 
 export class Item {
 
@@ -28,6 +28,6 @@ export interface Placable {
 }
 
 export const Items: Record<ItemType, Item> = {
-    [ItemType.SnowBlock]: new ItemTile(TileType.Snow, ItemType.SnowBlock, ItemAssets.blocks.snow, "Snow Block"),
-    [ItemType.IceBlock]: new ItemTile(TileType.Ice, ItemType.IceBlock, ItemAssets.blocks.ice, "Ice Block")
+    [ItemType.SnowBlock]: new ItemTile(TileType.Snow, ItemType.SnowBlock, ItemsAssets.blocks.snow, "Snow Block"),
+    [ItemType.IceBlock]: new ItemTile(TileType.Ice, ItemType.IceBlock, ItemsAssets.blocks.ice, "Ice Block")
 }

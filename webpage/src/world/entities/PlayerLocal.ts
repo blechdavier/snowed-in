@@ -9,8 +9,8 @@ class PlayerLocal extends ServerEntity {
     height: number = 20 / game.TILE_HEIGHT;
     name: string
 
-    xVel: number;
-    yVel: number;
+    xVel: number = 0
+    yVel: number = 0
     interpolatedX: number;
     interpolatedY: number;
     slideX: number;
@@ -18,10 +18,10 @@ class PlayerLocal extends ServerEntity {
 
     pX: number;
     pY: number;
-    pXVel: number;
-    pYVel: number;
+    pXVel: number = 0
+    pYVel: number = 0
 
-    grounded: boolean;
+    grounded: boolean = false;
 
     collisionData: any;
     closestCollision: [number, number, number]
@@ -29,18 +29,14 @@ class PlayerLocal extends ServerEntity {
     mass: number = this.width * this.height
 
     constructor(
-        data: EntityPayload
+        data: EntityPayload<Entities.LocalPlayer>
     ) {
         super(data.id)
 
-        if(data.type === Entities.Player) {
-            this.name = data.data.name
-        }
+        this.name = data.data.name
 
-        this.xVel = 0;
-        this.yVel = 0;
-
-        this.grounded = false;
+        this.x = data.data.x
+        this.y = data.data.y
 
         this.closestCollision = [1, 0, Infinity];
 
@@ -49,8 +45,6 @@ class PlayerLocal extends ServerEntity {
 
         this.pX = this.x
         this.pY = this.y;
-        this.pXVel = 0;
-        this.pYVel = 0;
     }
 
     render(target: p5, upscaleSize: number): void {
@@ -70,7 +64,7 @@ class PlayerLocal extends ServerEntity {
 
     updateData(data: EntityPayload): void {
         if(data.type === Entities.Player)
-            this.name = data.data.name
+            this.name = data.data.name;
     }
 
     keyboardInput() {
@@ -156,8 +150,8 @@ class PlayerLocal extends ServerEntity {
                 j < game.ceil(game.max(this.y, this.y + this.yVel) + this.height);
                 j++
             ) {
-                // if the current tiles isn't air (value 0), then continue with the collision detection
-                if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                // if the current tile isn't air (value 0), then continue with the collision detection
+                if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -219,8 +213,8 @@ class PlayerLocal extends ServerEntity {
                     game.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
-                    // if the current tiles isn't air (value 0), then continue with the collision detection
-                    if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
+                    // if the current tile isn't air (value 0), then continue with the collision detection
+                    if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,
@@ -272,22 +266,20 @@ class PlayerLocal extends ServerEntity {
         if (this.x < 0) {
             this.x = 0;
             this.xVel = 0;
-        } else if (this.x + this.width > game.WORLD_WIDTH) {
-            this.x = game.WORLD_WIDTH - this.width;
+        } else if (this.x + this.width > game.worldWidth) {
+            this.x = game.worldWidth - this.width;
             this.xVel = 0;
         }
 
         if (this.y < 0) {
             this.y = 0;
             this.yVel = 0;
-        } else if (this.y + this.height > game.WORLD_HEIGHT) {
-            this.y = game.WORLD_HEIGHT - this.height;
+        } else if (this.y + this.height > game.worldHeight) {
+            this.y = game.worldHeight - this.height;
             this.yVel = 0;
             this.grounded = true;
         }
     }
-
 }
-
 
 export = PlayerLocal;

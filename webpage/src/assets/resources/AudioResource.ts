@@ -1,6 +1,6 @@
 import P5 from 'p5';
 import Resource from './Resource';
-import {AudioType} from 'ts-audio';
+import { AudioType } from 'ts-audio';
 import Audio from 'ts-audio';
 
 
