@@ -1,0 +1,26 @@
+/*
+
+Snowed In
+
+Resume Game
+New Game --sends packet to multiplayer server
+Join Game --sends plcket to ask for a list of 
+Options
+ - Video settings
+    - FPS Limit
+    - Particle Multiplier 0-10
+ - Keybinds
+    - Right d
+    - Left a
+    - Jump w
+    - Settings esc
+    - Inventory 
+    - Place
+    - Break
+    - Interact (middle click)
+ - Music and sounds
+    - Music volume 0-2
+    - SFX volume 0-1
+    - Music Interval: short, medium, long, off
+
+*/

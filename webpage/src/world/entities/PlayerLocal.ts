@@ -1,7 +1,7 @@
 import game from '../../Main';
 import { ServerEntity } from './ServerEntity';
+import { PlayerEntityData } from './PlayerEntity';
 import p5 from 'p5';
-import { Entities, EntityPayload } from '../../../../api/Entity';
 
 class PlayerLocal extends ServerEntity {
 
@@ -29,13 +29,15 @@ class PlayerLocal extends ServerEntity {
     mass: number = this.width * this.height
 
     constructor(
-        data: EntityPayload
+        entityId: string,
+        data: PlayerEntityData
     ) {
-        super(data.id)
+        super(entityId)
+        console.log(this)
 
-        if(data.type === Entities.Player) {
-            this.name = data.data.name
-        }
+        this.name = data.name
+        this.x = data.x
+        this.y = data.y
 
         this.xVel = 0;
         this.yVel = 0;
@@ -68,9 +70,8 @@ class PlayerLocal extends ServerEntity {
         );
     }
 
-    updateData(data: EntityPayload): void {
-        if(data.type === Entities.Player)
-            this.name = data.data.name
+    updateData(data: PlayerEntityData): void {
+        this.name = data.name;
     }
 
     keyboardInput() {
@@ -156,10 +157,10 @@ class PlayerLocal extends ServerEntity {
                 j < game.ceil(game.max(this.y, this.y + this.yVel) + this.height);
                 j++
             ) {
-                // if the current tiles isn't air (value 0), then continue with the collision detection
+                // if the current tile isn't air (value 0), then continue with the collision detection
                 if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                     // get the data about the collision and store it in a variable
-                    this.collisionData = rectVsRay(
+                    this.collisionData = game.rectVsRay(
                         i - this.width,
                         j - this.height,
                         this.width + 1,
@@ -219,10 +220,10 @@ class PlayerLocal extends ServerEntity {
                     game.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
-                    // if the current tiles isn't air (value 0), then continue with the collision detection
+                    // if the current tile isn't air (value 0), then continue with the collision detection
                     if (game.world.worldTiles[j * game.WORLD_WIDTH + i] !== 0) {
                         // get the data about the collision and store it in a variable
-                        this.collisionData = rectVsRay(
+                        this.collisionData = game.rectVsRay(
                             i - this.width,
                             j - this.height,
                             this.width + 1,
@@ -272,16 +273,16 @@ class PlayerLocal extends ServerEntity {
         if (this.x < 0) {
             this.x = 0;
             this.xVel = 0;
-        } else if (this.x + this.width > game.WORLD_WIDTH) {
-            this.x = game.WORLD_WIDTH - this.width;
+        } else if (this.x + this.width > game.worldWidth) {
+            this.x = game.worldWidth - this.width;
             this.xVel = 0;
         }
 
         if (this.y < 0) {
             this.y = 0;
             this.yVel = 0;
-        } else if (this.y + this.height > game.WORLD_HEIGHT) {
-            this.y = game.WORLD_HEIGHT - this.height;
+        } else if (this.y + this.height > game.worldHeight) {
+            this.y = game.worldHeight - this.height;
             this.yVel = 0;
             this.grounded = true;
         }

@@ -1,19 +1,26 @@
+import p5 from 'p5';
+
+import PlayerLocal from './world/entities/PlayerLocal';
+import EntityItem from './world/entities/EntityItem';
 import World from './world/World';
+
 import {
     Fonts,
-    ItemAssets,
+    ItemsAssets,
+    loadAssets,
     UiAssets,
     WorldAssets,
-    loadAssets,
 } from './assets/Assets';
-import ItemStack from './world/items/ItemStack';
+import { Tile, Tiles } from './world/Tiles';
+import ItemStack from './world/inventory/items/ItemStack';
+import TileResource from './assets/resources/TileResource';
+import ImageResource from './assets/resources/ImageResource';
+import Renderable from './interfaces/Renderable';
 import { MainMenu } from './ui/screens/MainMenu';
 import { Socket } from 'socket.io-client';
+import { ClientEvents, EntityType } from '../../api/SocketEvents';
 import UiScreen from './ui/UiScreen';
-import { NetManager } from './websocket/NetManager';
-
-import p5 from 'p5';
-import { ClientEvents, ServerEvents } from '../../api/API';
+import { State } from '@geckos.io/snapshot-interpolation/lib/types';
 
 /*
 ///INFORMATION
@@ -68,8 +75,8 @@ craftables
 */
 
 class Game extends p5 {
-    WORLD_WIDTH: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
-    WORLD_HEIGHT: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldHeight: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
     TILE_WIDTH: number = 8; // width of a tiles in pixels
     TILE_HEIGHT: number = 8; // height of a tiles in pixels
@@ -78,8 +85,8 @@ class Game extends p5 {
 
     upscaleSize: number = 6; // number of screen pixels per texture pixels (think of this as hud scale in Minecraft)
 
-    camX: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is left of world) (WORLD_WIDTH*TILE_WIDTH is bottom of world)
-    camY: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is top of world) (WORLD_HEIGHT*TILE_HEIGHT is bottom of world)
+    camX: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is left of world) (worldWidth*TILE_WIDTH is bottom of world)
+    camY: number = 0; // position of the top left corner of the screen in un-up-scaled pixels (0 is top of world) (worldHeight*TILE_HEIGHT is bottom of world)
     pCamX: number = 0; // last frame's x of the camera
     pCamY: number = 0; // last frame's y of the camera
     interpolatedCamX: number = 0; // interpolated position of the camera
@@ -98,7 +105,6 @@ class Game extends p5 {
     // array for all the items
     //items: EntityItem[] = [];
 
-    // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
     hotBar: ItemStack[] = new Array(9);
     selectedSlot = 0;
@@ -121,24 +127,25 @@ class Game extends p5 {
         50, // hot bar 2
         51, // hot bar 3
         52, // hot bar 4
-        52, // hot bar 5
+        53, // hot bar 5
         54, // hot bar 6
         55, // hot bar 7
         56, // hot bar 8
-        57, // hot bar 9
+        57 // hot bar 9
     ];
 
     canvas: p5.Renderer;
+    skyLayer: p5.Graphics;
 
     world: World;
 
-    currentUi: UiScreen;
+    currentUi: UiScreen | undefined;
 
     connection: Socket<ServerEvents, ClientEvents>
 
     netManager: NetManager
 
-    constructor(connection: Socket<ServerEvents, ClientEvents>) {
+    constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection;
 
@@ -148,8 +155,9 @@ class Game extends p5 {
 
     preload() {
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemAssets, WorldAssets, Fonts);
+        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
         console.log('Asset loading completed');
+        this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
     }
 
     setup() {
@@ -157,6 +165,10 @@ class Game extends p5 {
         this.canvas = this.createCanvas(this.windowWidth, this.windowHeight);
         this.canvas.mouseOut(this.mouseExited);
         this.canvas.mouseOver(this.mouseEntered);
+
+        this.skyLayer = this.createGraphics(this.width, this.height, "webgl");
+
+        this.currentUi = new MainMenu(Fonts.title);
 
         // Tick
         setInterval(() => {
@@ -183,24 +195,33 @@ class Game extends p5 {
             this.keys.push(false);
         }
 
-        // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate.)
+        // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
     }
 
     draw() {
-        // console.time("frame");
-
-        // wipe the screen with a happy little layer of light blue
-        this.background(129, 206, 243);
-
+        if (this.frameCount===2) {
+            this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
+        }
         // do the tick calculations
         this.doTicks();
+
+
 
         // update mouse position
         this.updateMouse();
 
         // update the camera's interpolation
         this.moveCamera();
+
+        // wipe the screen with a happy little layer of light blue
+        this.skyShader.setUniform("offsetCoords", [this.interpolatedCamX, this.interpolatedCamY]);
+	    this.skyShader.setUniform("millis", this.millis());
+        this.skyLayer.shader(this.skyShader);
+        // this.fill(255, 0, 0);
+        this.skyLayer.rect(0, 0, this.skyLayer.width, this.skyLayer.height);
+
+        this.image(this.skyLayer, 0, 0, this.width, this.height);
 
         if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
@@ -258,7 +279,8 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        // this.currentUi.render(this, this.upscaleSize);
+        if(this.currentUi !== undefined)
+            this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -272,7 +294,25 @@ class Game extends p5 {
             this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
 
-        this.currentUi.windowUpdate();
+        // according to a google search, there isn't a resizeGraphics() function????
+        this.skyLayer.resizeCanvas(this.width, this.height);
+        this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
+
+        if(this.currentUi !== undefined)
+            this.currentUi.windowUpdate();
+
+        // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
+
+        // // if the world is too zoomed out, then zoom it in.
+        // while (
+        //     this.worldWidth * this.TILE_WIDTH - this.width / this.upscaleSize <
+        //         0 ||
+        //     this.worldHeight * this.TILE_HEIGHT -
+        //         this.height / this.upscaleSize <
+        //         0
+        // ) {
+        //     this.upscaleSize += 2;
+        // }
     }
 
     keyPressed() {
@@ -313,6 +353,12 @@ class Game extends p5 {
             if (this.keyCode === this.controls[4]) {
                 console.log('Inventory opened');
             }
+
+            if (this.keyCode === this.controls[3]) {
+                console.log("paused");
+                this.currentUi = new PauseMenu(Fonts.title);
+                console.log(this.currentUi);
+            }
         }
     }
 
@@ -320,9 +366,29 @@ class Game extends p5 {
         this.keys[this.keyCode] = false;
     }
 
+    // when it's dragged update the sliders
+    mouseDragged() {
+        if(this.currentUi !== undefined && this.currentUi.sliders !== undefined) {
+            for(const i of this.currentUi.sliders) {
+                i.updateSliderPosition(this.mouseX);
+            }
+        }
+    }
+
+    mouseMoved() {
+        if(this.currentUi !== undefined && this.currentUi.buttons !== undefined) {
+            for(const i of this.currentUi.buttons) {
+                i.updateMouseOver(this.mouseX, this.mouseY);
+            }
+        }
+    }
+
     mousePressed() {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-
+        if(this.currentUi !== undefined) {
+            this.currentUi.mousePressed();
+            return;// asjgsadkjfgIISUSUEUE
+        }
         if (
             this.mouseX > 2 * this.upscaleSize &&
             this.mouseX <
@@ -350,7 +416,7 @@ class Game extends p5 {
                 this.pickedUpSlot = -1;
             }
         } else {
-            // If the tiles is air
+            // If the tile is air
             if (
                 this.world.worldTiles[
                     this.world.width * this.worldMouseY + this.worldMouseX
@@ -367,7 +433,7 @@ class Game extends p5 {
             const tiles: Tile =
                 WorldTiles[
                     this.world.worldTiles[
-                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
+                        this.worldWidth * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
@@ -399,11 +465,14 @@ class Game extends p5 {
 
 
 
-             */
+            */
         }
     }
 
     mouseReleased() {
+        if(this.currentUi !== undefined) {
+            this.currentUi.mouseReleased();
+        }
         const releasedSlot: number = this.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );
@@ -492,19 +561,19 @@ class Game extends p5 {
             this.camX = 0;
         } else if (
             this.camX >
-            this.WORLD_WIDTH - this.width / this.upscaleSize / this.TILE_WIDTH
+            this.worldWidth - this.width / this.upscaleSize / this.TILE_WIDTH
         ) {
             this.camX =
-                this.WORLD_WIDTH -
+                this.worldWidth -
                 this.width / this.upscaleSize / this.TILE_WIDTH;
         }
         if (
             this.camY >
-            this.WORLD_HEIGHT -
+            this.worldHeight -
                 this.height / this.upscaleSize / this.TILE_HEIGHT
         ) {
             this.camY =
-                this.WORLD_HEIGHT -
+                this.worldHeight -
                 this.height / this.upscaleSize / this.TILE_HEIGHT;
         }
 
@@ -654,6 +723,86 @@ class Game extends p5 {
   */
 
     // this class holds an axis-aligned rectangle affected by gravity, drag, and collisions with tiles.
+
+    rectVsRay(
+        rectX?: any,
+        rectY?: any,
+        rectW?: any,
+        rectH?: any,
+        rayX?: any,
+        rayY?: any,
+        rayW?: any,
+        rayH?: any
+    ) {
+        // this ray is actually a line segment mathematically, but it's common to see people refer to similar checks as ray-casts, so for the duration of the definition of this function, ray can be assumed to mean the same as line segment.
+
+        // if the ray doesn't have a length, then it can't have entered the rectangle.  This assumes that the objects don't start in collision, otherwise they'll behave strangely
+        if (rayW === 0 && rayH === 0) {
+            return false;
+        }
+
+        // calculate how far along the ray each side of the rectangle intersects with it (each side is extended out infinitely in both directions)
+        const topIntersection = (rectY - rayY) / rayH;
+        const bottomIntersection = (rectY + rectH - rayY) / rayH;
+        const leftIntersection = (rectX - rayX) / rayW;
+        const rightIntersection = (rectX + rectW - rayX) / rayW;
+
+        if (
+            isNaN(topIntersection) ||
+            isNaN(bottomIntersection) ||
+            isNaN(leftIntersection) ||
+            isNaN(rightIntersection)
+        ) {
+            // you have to use the JS function isNaN() to check if a value is NaN because both NaN==NaN and NaN===NaN are false.
+            // if any of these values are NaN, no collision has occurred
+            return false;
+        }
+
+        // calculate the nearest and farthest intersections for both x and y
+        const nearX = this.min(leftIntersection, rightIntersection);
+        const farX = this.max(leftIntersection, rightIntersection);
+        const nearY = this.min(topIntersection, bottomIntersection);
+        const farY = this.max(topIntersection, bottomIntersection);
+
+        if (nearX > farY || nearY > farX) {
+            // this must mean that the line that makes up the line segment doesn't pass through the ray
+            return false;
+        }
+
+        if (farX < 0 || farY < 0) {
+            // the intersection is happening before the ray starts, so the ray is pointing away from the triangle
+            return false;
+        }
+
+        // calculate where the potential collision could be
+        const nearCollisionPoint = this.max(nearX, nearY);
+
+        if (nearX > 1 || nearY > 1) {
+            // the intersection happens after the ray(line segment) ends
+            return false;
+        }
+
+        if (nearX === nearCollisionPoint) {
+            // it must have collided on either the left or the right! now which?
+            if (leftIntersection === nearX) {
+                // It must have collided on the left!  Return the collision normal [-1, 0]
+                return [-1, 0, nearCollisionPoint];
+            }
+            // If it didn't collide on the left, it must have collided on the right.  Return the collision normal [1, 0]
+            return [1, 0, nearCollisionPoint];
+        }
+        // If it didn't collide on the left or right, it must have collided on either the top or the bottom! now which?
+        if (topIntersection === nearY) {
+            // It must have collided on the top!  Return the collision normal [0, -1]
+            return [0, -1, nearCollisionPoint];
+        }
+        // If it didn't collide on the top, it must have collided on the bottom.  Return the collision normal [0, 1]
+        return [0, 1, nearCollisionPoint];
+
+        // output if no collision: false
+        // output if collision: [collision normal X, collision normal Y, nearCollisionPoint]
+        //                         -1 to 1              -1 to 1            0 to 1
+    }
 
     renderEntities() {
         // draw player
