@@ -13,7 +13,6 @@ import { GameServer } from './game/GameServer';
 import { ClientEvents, ServerEvents } from '../../api/API';
 import { Keys } from "../config.json"
 
-console.log(generateId())
 const app = Express();
 
 const httpServer = http.createServer(app)
@@ -79,10 +78,6 @@ io.on("connection", (socket: Socket<ClientEvents ,ServerEvents, {}, UserData>) =
     })
 
 });
-
-export function generateId() {
-    return crypto.randomInt(16)
-}
 
 async function main() {
     console.log("Listening on port 8080")
