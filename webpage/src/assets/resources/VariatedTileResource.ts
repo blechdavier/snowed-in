@@ -1,3 +1,4 @@
+/*
 import ImageResource from './ImageResource';
 
 class VariatedTileResource extends ImageResource {
@@ -84,3 +85,4 @@ class VariatedTileResource extends ImageResource {
 }
 
 export = TileResource;
+*/

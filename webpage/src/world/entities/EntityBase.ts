@@ -19,7 +19,6 @@ class EntityBase {
     pXVel: number;
     pYVel: number;
     type: any;
-    itemType: any;
     deleted: boolean;
     slideX: number;
     slideY: number;

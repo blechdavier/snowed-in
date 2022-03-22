@@ -11,13 +11,13 @@ class Slider implements Renderable {
     min: number
     max: number
     step: number
-    onChanged: Function
     x: number
     y: number
     w: number
     h: number
-    image: ImageResource
     beingEdited: boolean
+
+    onChanged: Function
 
     constructor(
         font: FontResource,

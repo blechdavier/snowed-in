@@ -13,7 +13,7 @@ class FontResource extends ImageResource {
             this.alphabet_soup[characterOrder[i]] = {x: runningTotal, y: 0, w: characterData[characterOrder[i]], h: 12}
             runningTotal += characterData[characterOrder[i]] + 1
             // console.log(characterOrder[i]+": "+characterData[characterOrder[i]]);
-        };
+        }
     }
 
     drawText(target: p5, str: string, x: number, y: number) {
