@@ -1,6 +1,6 @@
 import ImageResource from './ImageResource';
 
-class TileResource extends ImageResource {
+class VariatedTileResource extends ImageResource {
     // The width and height of the tiles set
     width: number;
     height: number;
@@ -10,7 +10,7 @@ class TileResource extends ImageResource {
     tileHeight: number;
 
     constructor(
-        path: string,
+        path: string[],
         width: number,
         height: number,
         tileWidth: number,
@@ -64,7 +64,7 @@ class TileResource extends ImageResource {
         width: number,
         height: number
     ) {
-        if (x > this.width || y > this.height || x < 0 || y < 0)
+        if (x > this.width || y > this.height)
             throw new Error(
                 `Out of bounds tile. Tried to load tile at ${x}, ${y} on a ${this.width}, ${this.height} grid`
             );

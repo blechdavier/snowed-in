@@ -37,7 +37,11 @@
     "process": "^0.11.10",
     "simplex-noise": "^3.0.1",
     "socket.io": "^4.4.1",
+<<<<<<< Updated upstream
     "speed-measure-webpack-plugin": "^1.5.0",
+=======
+    "ts-audio": "^0.6.1",
+>>>>>>> Stashed changes
     "ts-node": "^10.4.0",
     "typed-emitter": "^2.1.0",
     "uuid": "^8.3.2",

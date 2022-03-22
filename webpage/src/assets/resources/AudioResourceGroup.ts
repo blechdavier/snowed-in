@@ -9,14 +9,13 @@ class AudioResourceGroup {
     }
 
     playRandom() {// play a random sound
-        // only happen if it's defined
         if(this.sounds === undefined || this.sounds.length === 0)
             throw new Error(
                 `There are no sounds: ${this.sounds}`
             );
 
         const r = Math.floor(Math.random() * this.sounds.length);
-        this.sounds[r].playRandom();// play a random sound from the array at a slightly randomized pitch, leading to the effect of it making a new sound each time, removing repetitiveness
+        this.sounds[r].play();// play a random sound from the array at a slightly randomized pitch, leading to the effect of it making a new sound each time, removing repetitiveness
 
     }
 

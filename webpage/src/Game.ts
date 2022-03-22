@@ -1,4 +1,7 @@
-import p5 from 'p5';
+import p5, { Shader } from 'p5'
+
+import Audio from 'ts-audio';
+
 
 import World from './world/World';
 
@@ -14,6 +17,7 @@ import { Socket } from 'socket.io-client';
 import UiScreen from './ui/UiScreen';
 import { PauseMenu } from './ui/screens/PauseMenu';
 import { NetManager } from './websocket/NetManager';
+
 import { ClientEvents, ServerEvents } from '../../api/API';
 import ItemStack from './world/items/ItemStack';
 
@@ -100,6 +104,7 @@ class Game extends p5 {
     // array for all the items
     //items: EntityItem[] = [];
 
+    // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
     hotBar: ItemStack[] = new Array(9);
     selectedSlot = 0;
@@ -174,7 +179,7 @@ class Game extends p5 {
             if (this.world === undefined) return;
             this.world.tick(this);
         }, 1000 / this.netManager.playerTickRate);
-
+        
         this.connection.emit(
             'join',
             'e4022d403dcc6d19d6a68ba3abfd0a60',
@@ -276,8 +281,7 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        if(this.currentUi !== undefined)
-            this.currentUi.render(this, this.upscaleSize);
+        // this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -291,25 +295,7 @@ class Game extends p5 {
             this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
 
-        // according to a google search, there isn't a resizeGraphics() function????
-        this.skyLayer.resizeCanvas(this.width, this.height);
-        this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
-
-        if(this.currentUi !== undefined)
-            this.currentUi.windowUpdate();
-
-        // if the world width or height are either less than 64, I think a bug will happen where the screen shakes.  If you need to, uncomment this code.
-
-        // // if the world is too zoomed out, then zoom it in.
-        // while (
-        //     this.worldWidth * this.TILE_WIDTH - this.width / this.upscaleSize <
-        //         0 ||
-        //     this.worldHeight * this.TILE_HEIGHT -
-        //         this.height / this.upscaleSize <
-        //         0
-        // ) {
-        //     this.upscaleSize += 2;
-        // }
+        this.currentUi.windowUpdate();
     }
 
     keyPressed() {
@@ -413,7 +399,7 @@ class Game extends p5 {
                 this.pickedUpSlot = -1;
             }
         } else {
-            // If the tile is air
+            // If the tiles is air
             if (
                 this.world.worldTiles[
                     this.world.width * this.worldMouseY + this.worldMouseX
@@ -430,7 +416,7 @@ class Game extends p5 {
             const tiles: Tile =
                 WorldTiles[
                     this.world.worldTiles[
-                        this.worldWidth * this.worldMouseY + this.worldMouseX
+                        this.WORLD_WIDTH * this.worldMouseY + this.worldMouseX
                     ]
                 ];
 
@@ -803,8 +789,8 @@ class Game extends p5 {
 
     renderEntities() {
         // draw player
-        this.fill(255, 0, 0);
-        this.noStroke();
+        // this.fill(255, 0, 0);
+        // this.noStroke();
         // this.rect(
         //     (this.world.player.interpolatedX * this.TILE_WIDTH -
         //         this.interpolatedCamX * this.TILE_WIDTH) *

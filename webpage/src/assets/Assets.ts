@@ -34,7 +34,6 @@ const ItemsAssets = {
         ice_shard: new ImageResource(
             'assets/textures/items/resource_ice_shards.png'
         ),
-
         snowball: new ImageResource(
             'assets/textures/items/resource_snowball.png'
         ),
@@ -71,6 +70,13 @@ const WorldAssets = {
             8,
             8
         ),
+        tileset_dirt: new TileResource(
+            'assets/textures/world/middleground/tileset_snow.png',
+            16,
+            1,
+            8,
+            8
+        ),
     },
     foreground: {
         tileset_pipe: new TileResource(
@@ -83,7 +89,6 @@ const WorldAssets = {
     },
 };
 
-// The game font
 const Fonts = {
     title: new FontResource('assets/textures/ui/font.png', {
         "0": 7,
@@ -157,6 +162,7 @@ const Fonts = {
         ":": 2,
         " ": 2
     }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
+
 };
 
 const AudioAssets = {
