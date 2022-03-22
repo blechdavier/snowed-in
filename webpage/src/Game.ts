@@ -1,3 +1,13 @@
+<<<<<<< Updated upstream
+=======
+import p5, { Shader } from 'p5'
+
+import Audio from 'ts-audio';
+
+
+import PlayerLocal from './world/entities/PlayerLocal';
+import EntityItem from './world/entities/EntityItem';
+>>>>>>> Stashed changes
 import World from './world/World';
 import {
     Fonts,
@@ -276,6 +286,7 @@ class Game extends p5 {
     }
 
     keyPressed() {
+<<<<<<< Updated upstream
         this.keys[this.keyCode] = true;
         if (this.controls.includes(this.keyCode)) {
             // hot bar slots
@@ -291,6 +302,47 @@ class Game extends p5 {
                     ) {
                         const temp = this.hotBar[i];
                         this.hotBar[i] =
+=======
+        AudioAssets.ui.inventoryClack.playRandom();
+        if(this.currentUi !== undefined) {
+            // loop through all the input boxes and interact with them accordingly
+            if(this.currentUi.inputBoxes !== undefined) {
+                for(const i of this.currentUi.inputBoxes) {
+                    if(i.listening) {
+                        i.listening = false;
+                        this.controls[i.index].value = this.keyCode;
+                        this.controls[i.index].keyboard = true;
+                        i.value = this.keyCode;
+                        i.keyboard = true;
+                        i.image = UiAssets.button_unselected;
+                    }
+                }
+            }
+        }
+        else {
+            this.keys[this.keyCode] = true;
+            if (this.controls.some(e => e.value === this.keyCode && e.keyboard === true)) {
+                // hot bar slots
+                for (let i = 0; i < this.hotBar.length; i++) {
+                    if (this.controls[i+5].keyboard && this.keyCode === this.controls[i + 5].value) {
+                        if (
+                            this.mouseX > 2 * this.upscaleSize &&
+                            this.mouseX <
+                                2 * this.upscaleSize +
+                                    16 * this.upscaleSize * this.hotBar.length &&
+                            this.mouseY > 2 * this.upscaleSize &&
+                            this.mouseY < 18 * this.upscaleSize
+                        ) {
+                            const temp = this.hotBar[i];
+                            this.hotBar[i] =
+                                this.hotBar[
+                                    this.floor(
+                                        (this.mouseX - 2 * this.upscaleSize) /
+                                            16 /
+                                            this.upscaleSize
+                                    )
+                                ];
+>>>>>>> Stashed changes
                             this.hotBar[
                                 this.floor(
                                     (this.mouseX - 2 * this.upscaleSize) /

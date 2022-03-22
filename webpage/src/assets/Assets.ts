@@ -3,6 +3,11 @@ import ImageResource from './resources/ImageResource';
 import FontResource from './resources/FontResource';
 import Resource from './resources/Resource';
 import P5 from 'p5';
+<<<<<<< Updated upstream
+=======
+import Audio from 'ts-audio';
+import AudioResource from './resources/AudioResource';
+>>>>>>> Stashed changes
 
 interface AssetGroup {
     [name: string]:
