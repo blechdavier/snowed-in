@@ -281,5 +281,4 @@ class PlayerLocal extends ServerEntity {
         }
     }
 }
-
 export = PlayerLocal;
