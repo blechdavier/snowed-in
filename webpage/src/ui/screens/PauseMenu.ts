@@ -17,13 +17,13 @@ export class PauseMenu extends UiScreen {
 
         // make 4 buttons with default positions
         this.buttons = [
-            new Button(font, "Resume Game", "Go back to the game.", 0, 0, 0, 0, () => {
+            new Button(font, "Resume game", "Go back to the game.", 0, 0, 0, 0, () => {
                 game.currentUi = undefined;
             }),
             new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () => {
                 game.currentUi = new OptionsMenu(font);
             }),
-            new Button(font, "Leave Game", "Go back to Main Menu", 0, 0, 0, 0, () => {
+            new Button(font, "Leave game", "Go back to Main Menu", 0, 0, 0, 0, () => {
                 game.currentUi = new MainMenu(font);
             })
         ];

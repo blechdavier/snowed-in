@@ -1,4 +1,5 @@
 import AudioResource from './AudioResource';
+import P5 from "p5";
 
 class AudioResourceGroup {
 
@@ -13,9 +14,8 @@ class AudioResourceGroup {
             throw new Error(
                 `There are no sounds: ${this.sounds}`
             );
-
         const r = Math.floor(Math.random() * this.sounds.length);
-        this.sounds[r].play();// play a random sound from the array at a slightly randomized pitch, leading to the effect of it making a new sound each time, removing repetitiveness
+        this.sounds[r].playSound();// play a random sound from the array at a slightly randomized pitch, leading to the effect of it making a new sound each time, removing repetitiveness
 
     }
 

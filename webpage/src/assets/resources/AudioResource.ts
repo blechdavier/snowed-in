@@ -29,12 +29,13 @@ class AudioResource extends Resource {
     //     this.sound.play();
     // }
 
-    play() {// play the sound
+    playSound() {// play the sound
+        //Verify that the sound has been loaded
         if (this.sound === undefined)
             throw new Error(
                 `Tried to play sound before loading it: ${this.path}`
             );
-        this.sound.stop();
+        this.sound.pause();
         this.sound.play();
     }
 

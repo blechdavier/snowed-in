@@ -1,7 +1,6 @@
 import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
 import { UiAssets } from '../assets/Assets';
-import ImageResource from '../assets/resources/ImageResource';
 import game from '../Main'
 import FontResource from '../assets/resources/FontResource';
 
@@ -11,13 +10,12 @@ class Slider implements Renderable {
     min: number
     max: number
     step: number
+    onChanged: Function
     x: number
     y: number
     w: number
     h: number
     beingEdited: boolean
-
-    onChanged: Function
 
     constructor(
         font: FontResource,

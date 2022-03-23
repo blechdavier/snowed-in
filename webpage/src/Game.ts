@@ -6,6 +6,7 @@ import Audio from 'ts-audio';
 import World from './world/World';
 
 import {
+    AudioAssets,
     Fonts,
     ItemsAssets,
     loadAssets,
@@ -20,6 +21,7 @@ import { NetManager } from './websocket/NetManager';
 
 import { ClientEvents, ServerEvents } from '../../api/API';
 import ItemStack from './world/items/ItemStack';
+import { Control } from './input/Control';
 
 /*
 ///INFORMATION
@@ -101,9 +103,6 @@ class Game extends p5 {
     GRAVITY_SPEED: number = 0.04; // in units per second tick, positive means downward gravity, negative means upward gravity
     DRAG_COEFFICIENT: number = 0.21; // arbitrary number, 0 means no drag
 
-    // array for all the items
-    //items: EntityItem[] = [];
-
     // CHARACTER SHOULD BE ROUGHLY 12 PIXELS BY 20 PIXELS
 
     hotBar: ItemStack[] = new Array(9);
@@ -117,21 +116,63 @@ class Game extends p5 {
     keys: boolean[] = [];
 
     // the keycode for the key that does the action
-    controls = [
-        68, // right
-        65, // left
-        87, // jump
-        27, // settings
-        69, // inventory?
-        49, // hot bar 1
-        50, // hot bar 2
-        51, // hot bar 3
-        52, // hot bar 4
-        53, // hot bar 5
-        54, // hot bar 6
-        55, // hot bar 7
-        56, // hot bar 8
-        57 // hot bar 9
+    controls: Control[] = [
+        new Control("Walk Right", true, 68, ()=>{
+            //if(this.currentUi!==undefined)
+            //return
+            //localPlayer.rightButton = true
+        }),// right
+        new Control("Walk Left", true, 65, ()=>{
+            //if(this.currentUi!==undefined)
+            //return
+            //localPlayer.leftButton = true
+        }),// left
+        new Control("Jump", true, 87, ()=>{
+            //if(this.currentUi!==undefined)
+            //return
+            //localPlayer.jumpButton = true
+        }),// jump
+        new Control("Pause", true, 27, ()=>{
+            //if inventory open{
+            //close inventory
+            //return;}
+            if(this.currentUi===undefined)
+                this.currentUi = new PauseMenu(Fonts.title);
+            else
+                this.currentUi = undefined;
+        }),// settings
+        new Control("Inventory", true, 69, ()=>{
+            //if ui open return;
+            //if inventory closed open inventory
+            //else close inventory
+        }),// inventory
+        new Control("Hotbar 1", true, 49, ()=>{
+            this.selectedSlot = 0;
+        }),// hot bar 1
+        new Control("Hotbar 2", true, 49, ()=>{
+            this.selectedSlot = 1;
+        }),// hot bar 2
+        new Control("Hotbar 3", true, 49, ()=>{
+            this.selectedSlot = 2;
+        }),// hot bar 3
+        new Control("Hotbar 4", true, 49, ()=>{
+            this.selectedSlot = 3;
+        }),// hot bar 4
+        new Control("Hotbar 5", true, 49, ()=>{
+            this.selectedSlot = 4;
+        }),// hot bar 5
+        new Control("Hotbar 6", true, 49, ()=>{
+            this.selectedSlot = 5;
+        }),// hot bar 6
+        new Control("Hotbar 7", true, 49, ()=>{
+            this.selectedSlot = 6;
+        }),// hot bar 7
+        new Control("Hotbar 8", true, 49, ()=>{
+            this.selectedSlot = 7;
+        }),// hot bar 8
+        new Control("Hotbar 9", true, 49, ()=>{
+            this.selectedSlot = 8;
+        }),// hot bar 9
     ];
 
     canvas: p5.Renderer;
@@ -146,8 +187,12 @@ class Game extends p5 {
 
     netManager: NetManager
 
+    //changeable options from menus
     serverVisibility: string;
     worldBumpiness: number;
+    skyMod: number;
+    skyToggle: boolean;
+    particleMultiplier: number;
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -159,7 +204,7 @@ class Game extends p5 {
 
     preload() {
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts);
+        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts, AudioAssets);
         console.log('Asset loading completed');
         this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
     }
@@ -281,13 +326,14 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        // this.currentUi.render(this, this.upscaleSize);
+        this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
 
     windowResized() {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
+        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize, this.windowHeight/this.upscaleSize]);
 
         // go for a scale of <48 tiles screen
         this.upscaleSize = Math.min(
@@ -298,55 +344,20 @@ class Game extends p5 {
         this.currentUi.windowUpdate();
     }
 
-    keyPressed() {
+    keyPressed(event: KeyboardEvent) {
         this.keys[this.keyCode] = true;
-        if (this.controls.includes(this.keyCode)) {
-            // hot bar slots
-            for (let i = 0; i < 12; i++) {
-                if (this.keyCode === this.controls[i + 5]) {
-                    if (
-                        this.mouseX > 2 * this.upscaleSize &&
-                        this.mouseX <
-                            2 * this.upscaleSize +
-                                16 * this.upscaleSize * this.hotBar.length &&
-                        this.mouseY > 2 * this.upscaleSize &&
-                        this.mouseY < 18 * this.upscaleSize
-                    ) {
-                        const temp = this.hotBar[i];
-                        this.hotBar[i] =
-                            this.hotBar[
-                                this.floor(
-                                    (this.mouseX - 2 * this.upscaleSize) /
-                                        16 /
-                                        this.upscaleSize
-                                )
-                            ];
-                        this.hotBar[
-                            this.floor(
-                                (this.mouseX - 2 * this.upscaleSize) /
-                                    16 /
-                                    this.upscaleSize
-                            )
-                        ] = temp;
-                    } else this.selectedSlot = i;
-                    return;
-                }
-            }
-
-            if (this.keyCode === this.controls[4]) {
-                console.log('Inventory opened');
-            }
-
-            if (this.keyCode === this.controls[3]) {
-                console.log("paused");
-                this.currentUi = new PauseMenu(Fonts.title);
-                console.log(this.currentUi);
-            }
+        for(let control of this.controls) {
+            if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
+                control.onPressed();
         }
     }
 
-    keyReleased() {
+    keyReleased(event: KeyboardEvent) {
         this.keys[this.keyCode] = false;
+        for(let control of this.controls) {
+            if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
+                control.onReleased();
+        }
     }
 
     // when it's dragged update the sliders
@@ -366,10 +377,10 @@ class Game extends p5 {
         }
     }
 
-    mousePressed() {
+    mousePressed(e: MouseEvent) {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
         if(this.currentUi !== undefined) {
-            this.currentUi.mousePressed();
+            this.currentUi.mousePressed(e.button);
             return;// asjgsadkjfgIISUSUEUE
         }
         if (
