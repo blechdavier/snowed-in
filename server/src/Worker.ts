@@ -2,12 +2,13 @@ import * as WorkerPool  from 'workerpool'
 import { Promise } from 'workerpool';
 import SimplexNoise from 'simplex-noise';
 import { TileType } from '../../api/Tile';
+import { WorldTiles } from './game/World';
 
 export type Tasks = {
     exec<T extends (...args: any[]) => any>(
         method: "generate",
         params: [number, number, string?],
-    ): Promise<{tiles: number[], backgroundTiles: number[], spawnPosition: {x: number, y: number}}>;
+    ): Promise<{tiles: WorldTiles, spawnPosition: {x: number, y: number}}>;
 }
 
 WorkerPool.worker({
@@ -15,7 +16,6 @@ WorkerPool.worker({
     generate: (width: number, height: number, seed?: string) => {
 
         const tiles: TileType[] = []
-        const backgroundTiles: TileType[] = []
         let spawnPosition: {x: number, y: number}
 
         // Create a new perlin noise map with an optional seed
@@ -36,29 +36,6 @@ WorkerPool.worker({
                         }
                     } else {
                         tiles[y * width + x] = TileType.Air;
-                    }
-                }
-            }
-
-            for (let i = 0; i < height; i++) {
-                // i will be the y position of background tiles being generated
-                for (let j = 0; j < width; j++) {
-                    // j is x position
-                    // if this tiles and its eight surrounding tiles are below the height of the terrain (at one point could be a tiles of snow, ice, etc.), then add a background tiles there.
-                    if (
-                        belowTerrainHeight(j - 1, i - 1, noise) &&
-                        belowTerrainHeight(j - 1, i, noise) &&
-                        belowTerrainHeight(j - 1, i + 1, noise) &&
-                        belowTerrainHeight(j, i - 1, noise) &&
-                        belowTerrainHeight(j, i, noise) &&
-                        belowTerrainHeight(j, i + 1, noise) &&
-                        belowTerrainHeight(j + 1, i - 1, noise) &&
-                        belowTerrainHeight(j + 1, i, noise) &&
-                        belowTerrainHeight(j + 1, i + 1, noise)
-                    ) {
-                        backgroundTiles[i * width + j] = TileType.Snow;
-                    } else {
-                        backgroundTiles[i * width + j] = TileType.Air;
                     }
                 }
             }
@@ -100,7 +77,7 @@ WorkerPool.worker({
                 }
             }
         }
-        return {tiles: tiles, backgroundTiles: backgroundTiles, spawnPosition: spawnPosition}
+        return {tiles: tiles, spawnPosition: spawnPosition}
     },
 })
 

@@ -5,8 +5,7 @@ import { pool } from '../Main';
 
 export class World {
     // World
-    tiles: (TileType | string)[] = []
-    backgroundTiles: (TileType | string)[] = []
+    tiles: WorldTiles = new WorldTiles()
 
     tileEntities: {[id: string]: TileEntity} = {}
 
@@ -23,20 +22,17 @@ export class World {
         this.seed = seed;
         // Initialize the tiles sets
         this.tiles = new Array(this.width * this.height);
-        this.backgroundTiles = new Array(this.width * this.height);
     }
 
     async generate() {
         // Queue a world generate task
         const tiles: {
-            tiles: number[];
-            backgroundTiles: number[];
+            tiles: WorldTiles;
             spawnPosition: { x: number; y: number };
         } = await pool.exec('generate', [this.width, this.height, this.seed]);
 
         // Set the world to the generated world
         this.tiles = tiles.tiles;
-        this.backgroundTiles = tiles.backgroundTiles;
         this.spawnPosition = tiles.spawnPosition;
         console.log((Math.round(this.width) / 2) + (Math.round(this.height) / 2) * this.width)
         this.tiles[(Math.round(this.width) / 2) + (Math.round(this.height) / 2) * this.width] = TileType.Air
@@ -44,6 +40,10 @@ export class World {
         const tileEntity = new T1Drill(this, Math.round(this.width) / 2, Math.round(this.height) / 2, uuidv4())
         console.log(tileEntity)
     }
+}
+
+export class WorldTiles extends Array<(TileType | string)> {
+
 }
 
 

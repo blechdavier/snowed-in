@@ -17,7 +17,7 @@ export abstract class Entity {
 
     abstract getData(): EntityData;
 
-    get(): EntityPayload {
+    getPayload(): EntityPayload {
         return {
             id: this.id.toString(),
             ...this.getData()

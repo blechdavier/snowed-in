@@ -1,3 +1,5 @@
+import { InventoryPayload } from './Inventory';
+
 export enum Entities {
     LocalPlayer,
     Player,
@@ -10,7 +12,7 @@ type DataPairs<T, K extends keyof T = keyof T> =
         : never;
 
 export interface EntitiesData {
-    [Entities.LocalPlayer]: {name: string, x: number, y: number}
+    [Entities.LocalPlayer]: {name: string, x: number, y: number, inventory: InventoryPayload}
     [Entities.Player]: {name: string};
     [Entities.Item]: {dateCreated: string};
 }

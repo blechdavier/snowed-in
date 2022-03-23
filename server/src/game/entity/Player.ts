@@ -1,5 +1,6 @@
 import { Entity } from './Entity';
 import { Entities, EntityData, EntityPayload } from '../../../../api/Entity';
+import { Inventory } from '../inventory/Inventory';
 
 export class Player extends Entity {
     userId: string
@@ -7,6 +8,7 @@ export class Player extends Entity {
 
     socketId: string
 
+    inventory: Inventory = new Inventory()
     breakingTile: { start: number, tileIndex: number}
 
     constructor(
@@ -34,7 +36,7 @@ export class Player extends Entity {
         return {
             id: this.id,
             type: Entities.LocalPlayer,
-            data: {name: this.name, x: this.x, y: this.y}
+            data: {name: this.name, inventory: this.inventory.getPayload(), x: this.x, y: this.y}
         }
     }
 }

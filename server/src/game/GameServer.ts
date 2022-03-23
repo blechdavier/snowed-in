@@ -107,7 +107,7 @@ export class GameServer {
         // Initialize the client with all the entities
         const entities: EntityPayload[] = [];
         Object.entries(this.players).forEach(([id, player]) => {
-            if (player.socketId !== undefined && id !== user.userId) entities.push(player.get());
+            if (player.socketId !== undefined && id !== user.userId) entities.push(player.getPayload());
         });
 
         // Initialize the client with all the entities
@@ -127,7 +127,7 @@ export class GameServer {
             user.getLocal()
         );
 
-        socket.broadcast.emit('entityCreate', user.get());
+        socket.broadcast.emit('entityCreate', user.getPayload());
 
         // Update player
         {
