@@ -1,8 +1,5 @@
 import p5, { Shader } from 'p5'
 
-import Audio from 'ts-audio';
-
-
 import World from './world/World';
 
 import {
@@ -10,6 +7,7 @@ import {
     Fonts,
     ItemsAssets,
     loadAssets,
+    PlayerAnimations,
     UiAssets,
     WorldAssets,
 } from './assets/Assets';
@@ -22,6 +20,7 @@ import { NetManager } from './websocket/NetManager';
 import { ClientEvents, ServerEvents } from '../../api/API';
 import ItemStack from './world/items/ItemStack';
 import { Control } from './input/Control';
+import { ColorParticle } from './world/particles/ColorParticle';
 
 /*
 ///INFORMATION
@@ -118,19 +117,31 @@ class Game extends p5 {
     // the keycode for the key that does the action
     controls: Control[] = [
         new Control("Walk Right", true, 68, ()=>{
-            //if(this.currentUi!==undefined)
-            //return
-            //localPlayer.rightButton = true
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.rightButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.rightButton = false;
         }),// right
         new Control("Walk Left", true, 65, ()=>{
-            //if(this.currentUi!==undefined)
-            //return
-            //localPlayer.leftButton = true
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.leftButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.leftButton = false;
         }),// left
         new Control("Jump", true, 87, ()=>{
-            //if(this.currentUi!==undefined)
-            //return
-            //localPlayer.jumpButton = true
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.jumpButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.jumpButton = false;
         }),// jump
         new Control("Pause", true, 27, ()=>{
             //if inventory open{
@@ -145,6 +156,7 @@ class Game extends p5 {
             //if ui open return;
             //if inventory closed open inventory
             //else close inventory
+            console.log("inventory has not been implemented yet");
         }),// inventory
         new Control("Hotbar 1", true, 49, ()=>{
             this.selectedSlot = 0;
@@ -175,9 +187,9 @@ class Game extends p5 {
         }),// hot bar 9
     ];
 
-    canvas: p5.Renderer;
-    skyLayer: p5.Graphics;
-    skyShader: p5.Shader;
+    canvas: p5.Renderer;//the canvas for the game
+    skyLayer: p5.Graphics;//a p5.Graphics object that the shader is drawn onto.  this isn't the best way to do this, but the main game canvas isn't WEBGL, and it's too much work to change that
+    skyShader: p5.Shader;//the shader that draws the sky (the path for this is in the public folder)
 
     world: World;
 
@@ -194,6 +206,8 @@ class Game extends p5 {
     skyToggle: boolean;
     particleMultiplier: number;
 
+    particles: (ColorParticle/*|FootstepParticle*/)[];
+
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
         this.connection = connection;
@@ -204,7 +218,7 @@ class Game extends p5 {
 
     preload() {
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts, AudioAssets);
+        loadAssets(this, UiAssets, ItemsAssets, WorldAssets, Fonts, AudioAssets, PlayerAnimations);
         console.log('Asset loading completed');
         this.skyShader = this.loadShader("assets/shaders/basic.vert", "assets/shaders/sky.frag");
     }
@@ -244,6 +258,11 @@ class Game extends p5 {
 
         // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
+        AudioAssets.music.titleScreen.playSound();
+        this.particleMultiplier = 1;
+        this.skyToggle = true;
+        this.skyMod = 2;
+        this.particles = [];
     }
 
     draw() {
@@ -326,7 +345,23 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        this.currentUi.render(this, this.upscaleSize);
+        //delete any particles that have gotten too old
+        for(let i = 0; i<this.particles.length; i++) {
+            if (this.particles[i].age>this.particles[i].lifespan) {
+                this.particles.splice(i, 1)
+                i--;
+            }
+        }
+
+        //no outline on particles
+        this.noStroke();
+        //draw all of the particles
+        for(let particle of this.particles) {
+            particle.render(this, this.upscaleSize);
+        }
+
+        if(this.currentUi !== undefined)
+            this.currentUi.render(this, this.upscaleSize);
 
         // console.timeEnd("frame");
     }
@@ -530,6 +565,9 @@ class Game extends p5 {
     }
 
     doTick() {
+        for(let particle of this.particles) {
+            particle.tick();
+        }
         if(this.world.player === undefined)
             return
         this.world.player.keyboardInput();

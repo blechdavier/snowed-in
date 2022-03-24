@@ -9,9 +9,9 @@ import AudioResource from './resources/AudioResource';
 interface AssetGroup {
     [name: string]:
     | {
-        [name: string]: Resource | AssetGroup | AudioResourceGroup | AudioResource;
+        [name: string]: Resource | AssetGroup | AudioResourceGroup | AudioResource | ImageResource[];
     }
-    | Resource;
+    | Resource | AssetGroup | AudioResourceGroup | AudioResource | ImageResource[];
 }
 
 // Ui related assets
@@ -423,14 +423,29 @@ const Keys = {
         "PA1", // [253]
         "WIN OEM CLEAR", // [254]
         "TOGGLE TOUCHPAD" // [255]
-      ]// https://stackoverflow.com/questions/1772179/get-character-value-from-keycode-in-javascript-then-trim
+    ]// https://stackoverflow.com/questions/1772179/get-character-value-from-keycode-in-javascript-then-trim
 }
 
 const AudioAssets = {
     ui: {
-        inventoryClack: new AudioResourceGroup([new AudioResource('assets/sounds/clack1.mp3'), new AudioResource('assets/sounds/clack2.mp3'), new AudioResource('assets/sounds/clack3.mp3')])
+        inventoryClack: new AudioResourceGroup([new AudioResource('assets/sounds/sfx/ui/clack1.mp3'), new AudioResource('assets/sounds/sfx/ui/clack2.mp3'), new AudioResource('assets/sounds/sfx/ui/clack3.mp3')])
+    },
+    music: {
+        titleScreen: new AudioResource('assets/sounds/music/TitleScreen.mp3')
     }
 }
+
+type AnimationFrame<T extends Record<string, ImageResource[]>> = keyof T
+
+// const animations = <T extends Record<string, ImageResource[]>>(data: T): T => data
+
+const PlayerAnimations = {
+    idle: [
+        new ImageResource('assets/textures/player/character.png')
+    ]
+}
+
+let frame: AnimationFrame<typeof PlayerAnimations> = 'idle'
 
 
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
@@ -440,7 +455,7 @@ const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
 
 };
 
-function searchGroup(assetGroup: AssetGroup | Resource | AudioResource | AudioResourceGroup, sketch: P5) {
+function searchGroup(assetGroup: AssetGroup | Resource | AudioResource | AudioResourceGroup | ImageResource[], sketch: P5) {
     if (assetGroup instanceof Resource) {
         console.log(`Loading asset ${assetGroup.path}`);
         assetGroup.loadResource(sketch);
@@ -451,4 +466,4 @@ function searchGroup(assetGroup: AssetGroup | Resource | AudioResource | AudioRe
     });
 }
 
-export { AudioAssets, UiAssets, ItemsAssets, WorldAssets, Fonts, Keys, loadAssets };
+export { AudioAssets, UiAssets, ItemsAssets, WorldAssets, Fonts, Keys, PlayerAnimations, AnimationFrame, loadAssets };

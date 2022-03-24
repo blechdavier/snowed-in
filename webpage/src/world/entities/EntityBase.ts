@@ -121,13 +121,13 @@ class EntityBase {
 
         // loop through all the possible tiles the physics box could be intersecting with
         for (
-            let i = game.floor(game.min(this.x, this.x + this.xVel));
-            i < game.ceil(game.max(this.x, this.x + this.xVel) + this.w);
+            let i = Math.floor(game.min(this.x, this.x + this.xVel));
+            i < Math.ceil(game.max(this.x, this.x + this.xVel) + this.w);
             i++
         ) {
             for (
-                let j = game.floor(game.min(this.y, this.y + this.yVel));
-                j < game.ceil(game.max(this.y, this.y + this.yVel) + this.h);
+                let j = Math.floor(game.min(this.y, this.y + this.yVel));
+                j < Math.ceil(game.max(this.y, this.y + this.yVel) + this.h);
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
@@ -192,14 +192,14 @@ class EntityBase {
 
             // loop through all the possible tiles the physics box could be intersecting with
             for (
-                let i = game.floor(game.min(this.x, this.x + this.slideX));
-                i < game.ceil(game.max(this.x, this.x + this.slideX) + this.w);
+                let i = Math.floor(game.min(this.x, this.x + this.slideX));
+                i < Math.ceil(game.max(this.x, this.x + this.slideX) + this.w);
                 i++
             ) {
                 for (
-                    let j = game.floor(game.min(this.y, this.y + this.slideY));
+                    let j = Math.floor(game.min(this.y, this.y + this.slideY));
                     j <
-                    game.ceil(game.max(this.y, this.y + this.slideY) + this.h);
+                    Math.ceil(game.max(this.y, this.y + this.slideY) + this.h);
                     j++
                 ) {
                     // if the current tile isn't air (value 0), then continue with the collision detection
