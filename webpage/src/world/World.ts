@@ -18,12 +18,9 @@ class World implements Tickable, Renderable {
     height: number; // height of the world in tiles
 
     tileLayer: P5.Graphics; // Tile layer graphic
-    backTileLayer: P5.Graphics; // Background tiles layer graphic
 
-    backTileLayerOffsetWidth: number; // what is this exactly xavier...
-    backTileLayerOffsetHeight: number; // what is this exactly xavier...
 
-    worldTiles: (TileType | string)[]; // number for each tiles in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+    worldTiles: (TileType)[]; // number for each tiles in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
 
     player: PlayerLocal;
 
@@ -34,7 +31,7 @@ class World implements Tickable, Renderable {
     constructor(
         width: number,
         height: number,
-        tiles: (TileType | string)[]
+        tiles: (TileType)[]
     ) {
         // Initialize the world with the tiles and dimensions from the server
         this.width = width;
@@ -51,16 +48,6 @@ class World implements Tickable, Renderable {
             this.width * game.TILE_WIDTH,
             this.height * game.TILE_HEIGHT
         );
-        this.backTileLayer = game.createGraphics(
-            this.width * game.TILE_WIDTH,
-            this.height * game.TILE_HEIGHT
-        );
-
-        // calculate these variables:
-        this.backTileLayerOffsetWidth =
-            (game.TILE_WIDTH - game.BACK_TILE_WIDTH) / 2; // calculated in the setup function, this variable is the number of pixels left of a tiles to draw a background tiles from at the same position
-        this.backTileLayerOffsetHeight =
-            (game.TILE_HEIGHT - game.BACK_TILE_HEIGHT) / 2; // calculated in the setup function, this variable is the number of pixels above a tiles to draw a background tiles from at the same position
 
         this.loadWorld();
     }
@@ -71,18 +58,6 @@ class World implements Tickable, Renderable {
     }
 
     render(target: p5, upscaleSize: number) {
-        // draw the background tiles layer onto the screen
-        target.image(
-            this.backTileLayer,
-            0,
-            0,
-            game.width,
-            game.height,
-            game.interpolatedCamX * game.TILE_WIDTH,
-            game.interpolatedCamY * game.TILE_WIDTH,
-            game.width / upscaleSize,
-            game.height / upscaleSize
-        );
 
         // draw the tiles layer onto the screen
         target.image(
@@ -98,6 +73,19 @@ class World implements Tickable, Renderable {
         );
 
         this.renderPlayers(target, upscaleSize);
+
+        target.stroke(0);
+        target.strokeWeight(4);
+        target.noFill();
+        target.rect(target.width-this.width, 0, this.width, this.height);
+
+        target.image(
+            this.tileLayer,
+            target.width-this.width,
+            0,
+            this.width,
+            this.height
+        );
     }
 
     updatePlayers(snapshot: Snapshot) {
@@ -181,7 +169,7 @@ class World implements Tickable, Renderable {
                     continue;
                 }
 
-                if (tileVal !== TileType.Air) {
+                if (tileVal !== TileType.Air && tileVal !== TileType.TileEntity) {
                     // Draw the correct image for the tiles onto the tiles layer
                     const tile: Tile = WorldTiles[tileVal];
 

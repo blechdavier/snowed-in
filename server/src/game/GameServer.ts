@@ -51,7 +51,7 @@ export class GameServer {
 
     async start() {
         // Generate world
-        this.world = new World(512, 64);
+        this.world = new World(512, 256);
         await this.world.generate();
 
         // Server ticks per second

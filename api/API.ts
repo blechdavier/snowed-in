@@ -14,7 +14,7 @@ export interface ServerEvents {
     worldLoad: (
         width: number,
         height: number,
-        tiles: (TileType | string)[],
+        tiles: (TileType)[],
         tileEntities: TileEntityPayload[],
         entities: EntityPayload[],
         player: EntityPayload<Entities.LocalPlayer>
@@ -25,7 +25,7 @@ export interface ServerEvents {
     worldUpdate: (
         updatedTiles: {
             tileIndex: number;
-            tile: TileType | string;
+            tile: TileType;
         }[]
     ) => void;
     /**

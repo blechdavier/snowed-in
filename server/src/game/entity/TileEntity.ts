@@ -52,7 +52,7 @@ export abstract class TileEntity {
         this.coveredTiles = updatedTiles
 
         updatedTiles.forEach(index => {
-            this.world.tiles[index] = this.id
+            this.world.tiles[index] = TileType.TileEntity;
         })
         this.world.tileEntities[this.id] = this
     }

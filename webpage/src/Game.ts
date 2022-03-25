@@ -1,4 +1,4 @@
-import p5, { Shader } from 'p5'
+import p5, { Color, Shader } from 'p5'
 
 import World from './world/World';
 
@@ -21,6 +21,8 @@ import { ClientEvents, ServerEvents } from '../../api/API';
 import ItemStack from './world/items/ItemStack';
 import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
+import { WorldTiles } from './world/WorldTiles';
+import { TileType } from '../../api/Tile';
 
 /*
 ///INFORMATION
@@ -76,7 +78,7 @@ craftables
 
 class Game extends p5 {
     worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
-    worldHeight: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldHeight: number = 256; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
     TILE_WIDTH: number = 8; // width of a tiles in pixels
     TILE_HEIGHT: number = 8; // height of a tiles in pixels
@@ -91,6 +93,7 @@ class Game extends p5 {
     pCamY: number = 0; // last frame's y of the camera
     interpolatedCamX: number = 0; // interpolated position of the camera
     interpolatedCamY: number = 0; // interpolated position of the camera
+    screenshakeAmount: number = 0; // amount of screenshake happening at the current moment
 
     // tick management
     msSinceTick: number = 0; // this is the running counter of how many milliseconds it has been since the last tick.  The game can then
@@ -267,11 +270,12 @@ class Game extends p5 {
 
     draw() {
         if (this.frameCount===2) {
-            this.skyShader.setUniform("screenDimensions", [this.skyLayer.width/this.upscaleSize, this.skyLayer.height/this.upscaleSize]);
+            this.skyShader.setUniform("screenDimensions", [this.width/this.upscaleSize, this.height/this.upscaleSize]);
+            console.log(WorldAssets.shaderResources.skyImage.image);
+            this.skyShader.setUniform("skyImage", WorldAssets.shaderResources.skyImage.image);
         }
         // do the tick calculations
         this.doTicks();
-
 
 
         // update mouse position
@@ -293,6 +297,25 @@ class Game extends p5 {
 
         // render the player, all items, etc.  Basically any physicsRect or particle
         this.renderEntities();
+
+        //delete any particles that have gotten too old
+        for(let i = 0; i<this.particles.length; i++) {
+            if (this.particles[i].age>this.particles[i].lifespan) {
+                this.particles.splice(i, 1)
+                i--;
+            }
+        }
+
+        //no outline on particles
+        this.noStroke();
+        //draw all of the particles
+        for(let particle of this.particles) {
+            particle.render(this, this.upscaleSize);
+        }
+
+        this.tint(255, 100);
+        UiAssets.vignette.render(this, 0, 0, this.width, this.height);
+        this.noTint();
 
         // draw the hot bar
         this.noStroke();
@@ -345,20 +368,6 @@ class Game extends p5 {
         // draw the cursor
         this.drawCursor();
 
-        //delete any particles that have gotten too old
-        for(let i = 0; i<this.particles.length; i++) {
-            if (this.particles[i].age>this.particles[i].lifespan) {
-                this.particles.splice(i, 1)
-                i--;
-            }
-        }
-
-        //no outline on particles
-        this.noStroke();
-        //draw all of the particles
-        for(let particle of this.particles) {
-            particle.render(this, this.upscaleSize);
-        }
 
         if(this.currentUi !== undefined)
             this.currentUi.render(this, this.upscaleSize);
@@ -368,7 +377,8 @@ class Game extends p5 {
 
     windowResized() {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
-        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize, this.windowHeight/this.upscaleSize]);
+        this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
+        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize*2, this.windowHeight/this.upscaleSize*2]);
 
         // go for a scale of <48 tiles screen
         this.upscaleSize = Math.min(
@@ -453,11 +463,19 @@ class Game extends p5 {
             )
                 return;
 
+            for(let i = 0; i<10*this.particleMultiplier; i++) {
+                let idx: number = this.world.width * this.worldMouseY + this.worldMouseX;
+                let tile = this.world.worldTiles[idx];
+                if(typeof tile !== "string" ) {
+                    this.particles.push(new ColorParticle(WorldTiles[tile].color, 1/4*Math.random(), 15, this.worldMouseX+0.5, this.worldMouseY+0.5, (Math.random()-0.5)/5, -Math.random()/5, true));
+                }
+            }
             this.connection.emit(
                 'worldBreakStart',
                 this.world.width * this.worldMouseY + this.worldMouseX
             );
             this.connection.emit('worldBreakFinish');
+            this.screenshakeAmount = 0.5;
             /*
             const tiles: Tile =
                 WorldTiles[
@@ -534,9 +552,9 @@ class Game extends p5 {
 
     moveCamera() {
         this.interpolatedCamX =
-            this.pCamX + (this.camX - this.pCamX) * this.amountSinceLastTick;
+            this.pCamX + (this.camX - this.pCamX) * this.amountSinceLastTick + (this.noise(this.millis()/200)-0.5)*this.screenshakeAmount;
         this.interpolatedCamY =
-            this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
+            this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick + (this.noise(0, this.millis()/200)-0.5)*this.screenshakeAmount;
     }
 
     doTicks() {
@@ -588,6 +606,8 @@ class Game extends p5 {
             this.world.player.yVel * 20;
         this.camX = (desiredCamX + this.camX * 24) / 25;
         this.camY = (desiredCamY + this.camY * 24) / 25;
+
+        this.screenshakeAmount *= 0.8;
 
         if (this.camX < 0) {
             this.camX = 0;

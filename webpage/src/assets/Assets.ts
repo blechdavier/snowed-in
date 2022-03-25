@@ -25,7 +25,8 @@ const UiAssets = {
     button_selected: new ImageResource('assets/textures/ui/button1.png'),
     slider_bar: new ImageResource('assets/textures/ui/sliderBar.png'),
     slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png'),
-    title_image: new ImageResource('assets/textures/ui/snowedinBUMP.png')
+    title_image: new ImageResource('assets/textures/ui/snowedinBUMP.png'),
+    vignette: new ImageResource('assets/textures/ui/vignette-export.png'),
 };
 
 // Item related assets
@@ -52,8 +53,10 @@ const ItemsAssets = {
 
 // World related assets
 const WorldAssets = {
-    background: {
-        snow: new ImageResource('assets/textures/world/background/snow.png'),
+    shaderResources: {
+        skyImage: new ImageResource(
+            'assets/textures/shader_resources/snowTexture.png'
+        ),
     },
     middleground: {
         tileset_ice: new TileResource(
@@ -71,7 +74,28 @@ const WorldAssets = {
             8
         ),
         tileset_dirt: new TileResource(
-            'assets/textures/world/middleground/tileset_snow.png',
+            'assets/textures/world/middleground/tileset_dirt0.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone0: new TileResource(
+            'assets/textures/world/middleground/stone0.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone1: new TileResource(
+            'assets/textures/world/middleground/stone1.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone2: new TileResource(
+            'assets/textures/world/middleground/stone2.png',
             16,
             1,
             8,

@@ -5,6 +5,8 @@ import { Entities, EntityPayload } from '../../../../api/Entity';
 import { ColorParticle } from '../particles/ColorParticle'
 import { PlayerAnimations, UiAssets, AnimationFrame } from '../../assets/Assets';
 import ImageResource from '../../assets/resources/ImageResource';
+import { TileType } from '../../../../api/Tile';
+import { Tile, WorldTiles } from '../WorldTiles';
 
 class PlayerLocal extends ServerEntity {
 
@@ -37,8 +39,11 @@ class PlayerLocal extends ServerEntity {
     leftButton: boolean;
     jumpButton: boolean;
 
-    currentAnimation: AnimationFrame<typeof PlayerAnimations>;
+    currentAnimation: AnimationFrame<typeof PlayerAnimations> = "idle";
     animFrame: number = 0;
+
+    topCollision: (typeof WorldTiles[TileType.Air]) = WorldTiles[TileType.Air];//hacky
+    bottomCollision: (typeof WorldTiles[TileType.Air]) = WorldTiles[TileType.Air];
 
     constructor(
         data: EntityPayload<Entities.LocalPlayer>
@@ -60,43 +65,39 @@ class PlayerLocal extends ServerEntity {
         this.leftButton = false;
         this.rightButton = false;
         this.jumpButton = false;
-
-        this.currentAnimation = "idle";
     }
 
     render(target: p5, upscaleSize: number): void {
 
-        console.log(`animation ${this.currentAnimation}, frame ${this.animFrame} makes `+PlayerAnimations[this.currentAnimation][this.animFrame]);
-        console.log(PlayerAnimations);
-        console.log(PlayerAnimations[this.currentAnimation]);
         PlayerAnimations[this.currentAnimation][this.animFrame].render
-        (
-            target,
-            (this.interpolatedX * game.TILE_WIDTH -
-                game.interpolatedCamX * game.TILE_WIDTH) *
-            upscaleSize,
-            (this.interpolatedY * game.TILE_HEIGHT -
-                game.interpolatedCamY * game.TILE_HEIGHT) *
-            upscaleSize,
-            this.width * upscaleSize * game.TILE_WIDTH,
-            this.height * upscaleSize * game.TILE_HEIGHT
-        );
+            (
+                target,
+                (this.interpolatedX * game.TILE_WIDTH -
+                    game.interpolatedCamX * game.TILE_WIDTH) *
+                upscaleSize,
+                (this.interpolatedY * game.TILE_HEIGHT -
+                    game.interpolatedCamY * game.TILE_HEIGHT) *
+                upscaleSize,
+                this.width * upscaleSize * game.TILE_WIDTH,
+                this.height * upscaleSize * game.TILE_HEIGHT
+            );
     }
 
     updateData(data: EntityPayload): void {
-        if(data.type === Entities.Player)
+        if (data.type === Entities.Player)
             this.name = data.data.name;
     }
 
     keyboardInput() {
-        
+
         this.xVel +=
-            0.02 * (+this.rightButton-+this.leftButton);
+            0.02 * (+this.rightButton - +this.leftButton);
         if (
             this.grounded && this.jumpButton
         ) {
-            for(let i = 0; i<10*game.particleMultiplier; i++) {
-                game.particles.push(new ColorParticle("#cafafc", 1/8+Math.random()/8, 20, this.x+this.width*Math.random(), this.y+this.height, 0.2*(Math.random()-0.5), 0.2*-Math.random()));
+            game.screenshakeAmount = 0.5;
+            for (let i = 0; i < 10 * game.particleMultiplier; i++) {
+                game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
             }
             this.yVel = -1.5;
         }
@@ -108,22 +109,28 @@ class PlayerLocal extends ServerEntity {
         this.pXVel = this.xVel;
         this.pYVel = this.yVel;
 
-        this.xVel -=
-            (Math.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * this.width) /
-            this.mass;
+        if (this.bottomCollision === undefined) {
+            this.xVel -=
+                (Math.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * this.width) / //apply air resistance
+                this.mass;
+        } else {
+            this.xVel -=
+                (Math.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * (this.bottomCollision.friction) * this.width) / //apply air resistance and ground friction
+                this.mass;
+        }
         this.yVel += game.GRAVITY_SPEED;
         this.yVel -=
             (Math.abs(this.yVel) * this.yVel * game.DRAG_COEFFICIENT * this.height) /
             this.mass;
         //if on the ground, make walking particles
-        if(this.grounded) {
+        if (this.grounded) {
             //footsteps
-            for(let i = 0; i<randomlyToInt(Math.abs(this.xVel)*game.particleMultiplier/2); i++) {
-                game.particles.push(new ColorParticle("#bbbbbb45", 1/4+Math.random()/8, 50, this.x+this.width/2+i/game.particleMultiplier, this.y+this.height, 0, 0, false));
+            for (let i = 0; i < randomlyToInt(Math.abs(this.xVel) * game.particleMultiplier / 2); i++) {
+                game.particles.push(new ColorParticle("#bbbbbb45", 1 / 4 + Math.random() / 8, 50, this.x + this.width / 2 + i / game.particleMultiplier, this.y + this.height, 0, 0, false));
             }
             //dust
-            for(let i = 0; i<randomlyToInt(Math.abs(this.xVel)*game.particleMultiplier/2); i++) {
-                game.particles.push(new ColorParticle("#cafafc", 1/8+Math.random()/8, 10, this.x+this.width/2, this.y+this.height, 0.2*-this.xVel+0.2*(Math.random()-0.5), 0.2*-Math.random(), true));
+            for (let i = 0; i < randomlyToInt(Math.abs(this.xVel) * game.particleMultiplier / 2); i++) {
+                game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
         }
     }
@@ -155,6 +162,8 @@ class PlayerLocal extends ServerEntity {
     }
 
     applyVelocityAndCollide() {
+        this.topCollision = WorldTiles[TileType.Air];
+        this.bottomCollision = WorldTiles[TileType.Air];
         this.pX = this.x;
         this.pY = this.y;
 
@@ -173,6 +182,8 @@ class PlayerLocal extends ServerEntity {
         // set the closest collision to one infinitely far away.
         this.closestCollision = [1, 0, Infinity];
 
+        let mostlyGoingHorizontally: boolean;
+
         // loop through all the possible tiles the physics box could be intersecting with
         for (
             let i = Math.floor(game.min(this.x, this.x + this.xVel));
@@ -185,7 +196,8 @@ class PlayerLocal extends ServerEntity {
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
-                if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
+                let currentBlock: TileType = game.world.worldTiles[j * game.worldWidth + i];
+                if (currentBlock != 0) {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -197,11 +209,35 @@ class PlayerLocal extends ServerEntity {
                         this.xVel,
                         this.yVel
                     );
+                    mostlyGoingHorizontally = Math.abs(this.xVel) > Math.abs(this.yVel);
                     if (
-                        this.collisionData !== false &&
-                        this.closestCollision[2] > this.collisionData[2]
-                    ) {
-                        this.closestCollision = this.collisionData;
+                        this.collisionData !== false) {//a collision happened
+                        if (
+                            this.closestCollision[2] > this.collisionData[2]
+                        ) {
+                            this.closestCollision = this.collisionData;//honestly this entire collision system is a mess but it work so so what
+                            if (this.closestCollision[0] === 0) {
+                                 
+                                if (this.closestCollision[1] === 1) {
+                                    this.topCollision = WorldTiles[currentBlock];
+                                }
+                                else {
+                                    this.bottomCollision = WorldTiles[currentBlock];
+                                }
+                            }
+                        } else if (this.closestCollision[2] === this.collisionData[2] && mostlyGoingHorizontally === (this.closestCollision[0] === 0)) {
+                            this.closestCollision = this.collisionData;
+                            if (this.closestCollision[0] === 0) {
+                                 
+                                if (this.closestCollision[1] === 1) {
+                                    this.topCollision = WorldTiles[currentBlock];
+                                }
+                                else {
+                                    this.bottomCollision = WorldTiles[currentBlock];
+                                }
+                            }
+                        }
+
                     }
                 }
             }
@@ -215,23 +251,25 @@ class PlayerLocal extends ServerEntity {
             this.y += this.yVel * this.closestCollision[2];
             // the collision happened either on the top or bottom
             if (this.closestCollision[0] === 0) {
-                this.yVel = 0; // set the y velocity to 0 because the object has run into a wall on its top or bottom
-                this.slideX = this.xVel * (1 - this.closestCollision[2]); // this is the remaining distance to slide after the collision
-                this.slideY = 0; // it doesn't slide in the y direction because there's a wall \(.-.)/
                 if (this.closestCollision[1] === -1) {
                     this.grounded = true;
                     // if it collided on the higher side, it must be touching the ground. (higher y is down)
-                    if(!this.pGrounded) {//if it isn't grounded yet, it must be colliding with the ground for the first time, so summon particles
-                        for(let i = 0; i<5*game.particleMultiplier; i++) {
-                            game.particles.push(new ColorParticle("#cafafc", 1/8+Math.random()/8, 20, this.x+this.width*Math.random(), this.y+this.height, 0.2*(Math.random()-0.5), 0.2*-Math.random()));
+                    if (!this.pGrounded) {//if it isn't grounded yet, it must be colliding with the ground for the first time, so summon particles
+                        game.screenshakeAmount = Math.abs(this.yVel * 0.75);
+                        for (let i = 0; i < 5 * game.particleMultiplier; i++) {
+                            game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
                         }
                     }
                 }
                 else {
-                    for(let i = 0; i<5*game.particleMultiplier; i++) {//ceiling collision particles
-                        game.particles.push(new ColorParticle("#cafafc", 1/8+Math.random()/8, 20, this.x+this.width*Math.random(), this.y, 0.2*(Math.random()-0.5), 0.2*-Math.random()));
+                    game.screenshakeAmount = Math.abs(this.yVel * 0.75);
+                    for (let i = 0; i < 5 * game.particleMultiplier; i++) {//ceiling collision particles
+                        game.particles.push(new ColorParticle(this.topCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
                     }
                 }
+                this.yVel = 0; // set the y velocity to 0 because the object has run into a wall on its top or bottom
+                this.slideX = this.xVel * (1 - this.closestCollision[2]); // this is the remaining distance to slide after the collision
+                this.slideY = 0; // it doesn't slide in the y direction because there's a wall \(.-.)/
             } else {
                 this.xVel = 0; // set the x velocity to 0 because wall go oof
                 this.slideX = 0; // it doesn't slide in the x direction because there's a wall /(._.)\
@@ -257,8 +295,9 @@ class PlayerLocal extends ServerEntity {
                     Math.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
-                    // if the current tile isn't air (value 0), then continue with the collision detection
-                    if (game.world.worldTiles[j * game.worldWidth + i] !== 0) {
+                    let currentBlock: TileType = game.world.worldTiles[j * game.worldWidth + i];
+                    // if the current tile isn't air, then continue with the collision detection
+                    if (currentBlock !== TileType.Air) {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,
@@ -275,6 +314,15 @@ class PlayerLocal extends ServerEntity {
                             this.closestCollision[2] > this.collisionData[2]
                         ) {
                             this.closestCollision = this.collisionData;
+                            if (this.closestCollision[0] === 0) {
+                                 
+                                if (this.closestCollision[1] === 1) {
+                                    this.topCollision = WorldTiles[currentBlock];
+                                }
+                                else {
+                                    this.bottomCollision = WorldTiles[currentBlock];
+                                }
+                            }
                         }
                     }
                 }
@@ -330,8 +378,12 @@ export = PlayerLocal;
 
 
 function randomlyToInt(f: number) {
-    if(Math.random()>f-Math.floor(f)) {
-        return(Math.floor(f));
+    if (Math.random() > f - Math.floor(f)) {
+        return (Math.floor(f));
     }
-    return(Math.ceil(f));
+    return (Math.ceil(f));
+}
+
+function axisAlignedDistance(x1: number, y1: number, x2: number, y2: number) {
+    return abs(x1 - x2) + abs(y1 - y2);
 }

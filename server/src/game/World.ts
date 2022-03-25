@@ -42,7 +42,7 @@ export class World {
     }
 }
 
-export class WorldTiles extends Array<(TileType | string)> {
+export class WorldTiles extends Array<(TileType)> {
 
 }
 
