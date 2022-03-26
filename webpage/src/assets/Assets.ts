@@ -55,7 +55,7 @@ const ItemsAssets = {
 const WorldAssets = {
     shaderResources: {
         skyImage: new ImageResource(
-            'assets/textures/shader_resources/snowTexture.png'
+            'assets/textures/shader_resources/poissonsnow.png'
         ),
     },
     middleground: {
