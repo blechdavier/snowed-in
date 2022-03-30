@@ -24,6 +24,7 @@ import { ColorParticle } from './world/particles/ColorParticle';
 import { WorldTiles } from './world/WorldTiles';
 import { TileType } from '../../api/Tile';
 
+
 /*
 ///INFORMATION
 //Starting a game
@@ -74,7 +75,9 @@ right click stack to pick up ceil(half of it)
 right click when picked up to add 1 if 0 or match
 craftables
 
+
 */
+
 
 class Game extends p5 {
     worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -93,6 +96,8 @@ class Game extends p5 {
     pCamY: number = 0; // last frame's y of the camera
     interpolatedCamX: number = 0; // interpolated position of the camera
     interpolatedCamY: number = 0; // interpolated position of the camera
+    desiredCamX: number = 0; // desired position of the camera
+    desiredCamY: number = 0; // desired position of the camera
     screenshakeAmount: number = 0; // amount of screenshake happening at the current moment
 
     // tick management
@@ -269,9 +274,11 @@ class Game extends p5 {
     }
 
     draw() {
+        for(let i = 0; i<40*this.particleMultiplier; i++) {
+            //this.particles.push(new ColorParticle("#eb5834", 1/4, 10, this.worldMouseX+Math.random(), this.worldMouseY+Math.random(), Math.random()-0.5, Math.random()/4-0.5, false));
+        }
         if (this.frameCount===2) {
             this.skyShader.setUniform("screenDimensions", [this.width/this.upscaleSize, this.height/this.upscaleSize]);
-            console.log(WorldAssets.shaderResources.skyImage.image);
             this.skyShader.setUniform("skyImage", WorldAssets.shaderResources.skyImage.image);
         }
         // do the tick calculations
@@ -382,8 +389,8 @@ class Game extends p5 {
 
         // go for a scale of <48 tiles screen
         this.upscaleSize = Math.min(
-            this.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
-            this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
+            Math.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
+            Math.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
 
         this.currentUi.windowUpdate();
@@ -436,7 +443,7 @@ class Game extends p5 {
             this.mouseY > 2 * this.upscaleSize &&
             this.mouseY < 18 * this.upscaleSize
         ) {
-            const clickedSlot: number = this.floor(
+            const clickedSlot: number = Math.floor(
                 (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
             );
 
@@ -465,10 +472,8 @@ class Game extends p5 {
 
             for(let i = 0; i<10*this.particleMultiplier; i++) {
                 let idx: number = this.world.width * this.worldMouseY + this.worldMouseX;
-                let tile = this.world.worldTiles[idx];
-                if(typeof tile !== "string" ) {
-                    this.particles.push(new ColorParticle(WorldTiles[tile].color, 1/4*Math.random(), 15, this.worldMouseX+0.5, this.worldMouseY+0.5, (Math.random()-0.5)/5, -Math.random()/5, true));
-                }
+                let tile: TileType = this.world.worldTiles[idx];
+                this.particles.push(new ColorParticle(WorldTiles[tile].color, 1/4*Math.random(), 15, this.worldMouseX+0.5, this.worldMouseY+0.5, (Math.random()-0.5)/5, -Math.random()/5, true));
             }
             this.connection.emit(
                 'worldBreakStart',
@@ -520,7 +525,7 @@ class Game extends p5 {
         if(this.currentUi !== undefined) {
             this.currentUi.mouseReleased();
         }
-        const releasedSlot: number = this.floor(
+        const releasedSlot: number = Math.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );
 
@@ -594,18 +599,18 @@ class Game extends p5 {
 
         this.pCamX = this.camX;
         this.pCamY = this.camY;
-        const desiredCamX =
+        this.desiredCamX =
             this.world.player.x +
             this.world.player.width / 2 -
             this.width / 2 / this.TILE_WIDTH / this.upscaleSize +
             this.world.player.xVel * 40;
-        const desiredCamY =
+        this.desiredCamY =
             this.world.player.y +
-            this.world.player.height / 2 -
+            this.world.player.height/2 -
             this.height / 2 / this.TILE_HEIGHT / this.upscaleSize +
             this.world.player.yVel * 20;
-        this.camX = (desiredCamX + this.camX * 24) / 25;
-        this.camY = (desiredCamY + this.camY * 24) / 25;
+        this.camX = (this.desiredCamX + this.camX * 24) / 25;
+        this.camY = (this.desiredCamY + this.camY * 24) / 25;
 
         this.screenshakeAmount *= 0.8;
 
@@ -647,10 +652,10 @@ class Game extends p5 {
 
     uiFrameRect(x: number, y: number, w: number, h: number) {
         // set the coords and dimensions to round to the nearest un-upscaled pixel
-        x = this.round(x / this.upscaleSize) * this.upscaleSize;
-        y = this.round(y / this.upscaleSize) * this.upscaleSize;
-        w = this.round(w / this.upscaleSize) * this.upscaleSize;
-        h = this.round(h / this.upscaleSize) * this.upscaleSize;
+        x = Math.round(x / this.upscaleSize) * this.upscaleSize;
+        y = Math.round(y / this.upscaleSize) * this.upscaleSize;
+        w = Math.round(w / this.upscaleSize) * this.upscaleSize;
+        h = Math.round(h / this.upscaleSize) * this.upscaleSize;
 
         // corners
         UiAssets.ui_frame.renderPartial(
@@ -951,12 +956,12 @@ class Game extends p5 {
 
     updateMouse() {
         // world mouse x and y variables hold the mouse position in world tiles.  0, 0 is top left
-        this.worldMouseX = this.floor(
+        this.worldMouseX = Math.floor(
             (this.interpolatedCamX * this.TILE_WIDTH +
                 this.mouseX / this.upscaleSize) /
                 this.TILE_WIDTH
         );
-        this.worldMouseY = this.floor(
+        this.worldMouseY = Math.floor(
             (this.interpolatedCamY * this.TILE_HEIGHT +
                 this.mouseY / this.upscaleSize) /
                 this.TILE_HEIGHT

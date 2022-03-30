@@ -1,6 +1,18 @@
 export enum TileEntities {
     Tier1Drill,
-    Tier2Drill
+    Tier2Drill,
+    Tier3Drill,
+    Tier4Drill,
+    Tier5Drill,
+    LiveTree,
+    DeadTree,
+    Tier1WoodHarvester,
+    Tier2WoodHarvester,
+    Tier3WoodHarvester,
+    Tier4WoodHarvester,
+    Tier5WoodHarvester,
+    Campfire,
+    Workbench
 }
 
 type DataPairs<T, K extends keyof T = keyof T> =

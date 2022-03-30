@@ -1,12 +1,11 @@
 import game from '../../Main';
 import { ServerEntity } from './ServerEntity';
-import p5, { Color } from 'p5';
 import { Entities, EntityPayload } from '../../../../api/Entity';
 import { ColorParticle } from '../particles/ColorParticle'
 import { PlayerAnimations, UiAssets, AnimationFrame } from '../../assets/Assets';
-import ImageResource from '../../assets/resources/ImageResource';
 import { TileType } from '../../../../api/Tile';
-import { Tile, WorldTiles } from '../WorldTiles';
+import { WorldTiles } from '../WorldTiles';
+import Game from '../../Game';
 
 class PlayerLocal extends ServerEntity {
 
@@ -67,7 +66,7 @@ class PlayerLocal extends ServerEntity {
         this.jumpButton = false;
     }
 
-    render(target: p5, upscaleSize: number): void {
+    render(target: Game, upscaleSize: number): void {
 
         PlayerAnimations[this.currentAnimation][this.animFrame].render
             (
@@ -80,6 +79,14 @@ class PlayerLocal extends ServerEntity {
                 upscaleSize,
                 this.width * upscaleSize * game.TILE_WIDTH,
                 this.height * upscaleSize * game.TILE_HEIGHT
+            );
+            PlayerAnimations[this.currentAnimation][this.animFrame].renderWorldspaceReflection
+            (
+                target,
+                this.interpolatedX,
+                this.interpolatedY+this.height,
+                this.width,
+                this.height
             );
     }
 

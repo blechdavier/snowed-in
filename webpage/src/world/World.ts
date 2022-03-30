@@ -57,19 +57,18 @@ class World implements Tickable, Renderable {
             game.connection.emit('playerUpdate', this.player.x, this.player.y);
     }
 
-    render(target: p5, upscaleSize: number) {
-
+    render(target: Game, upscaleSize: number) {
         // draw the tiles layer onto the screen
         target.image(
             this.tileLayer,
             0,
             0,
-            game.width,
-            game.height,
-            game.interpolatedCamX * game.TILE_WIDTH,
-            game.interpolatedCamY * game.TILE_WIDTH,
-            game.width / upscaleSize,
-            game.height / upscaleSize
+            (game.width/upscaleSize)*upscaleSize,
+            (game.height/upscaleSize)*upscaleSize,
+            (game.interpolatedCamX * game.TILE_WIDTH),
+            (game.interpolatedCamY * game.TILE_WIDTH),
+            (game.width / upscaleSize),
+            (game.height / upscaleSize)
         );
 
         this.renderPlayers(target, upscaleSize);
@@ -121,7 +120,7 @@ class World implements Tickable, Renderable {
         this.drawTile(tileIndex + 1);
     }
 
-    renderPlayers(target: p5, upscaleSize: number) {
+    renderPlayers(target: Game, upscaleSize: number) {
         // Calculate the interpolated position of all updated entities
         const positionStates: { [id: string]: { x: number; y: number } } = {};
         try {

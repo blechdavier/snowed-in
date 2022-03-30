@@ -1,5 +1,6 @@
 import TileResource from './resources/TileResource';
 import ImageResource from './resources/ImageResource';
+import ReflectableImageResource from './resources/ReflectedImageResource';
 import FontResource from './resources/FontResource';
 import Resource from './resources/Resource';
 import AudioResourceGroup from './resources/AudioResourceGroup';
@@ -81,21 +82,70 @@ const WorldAssets = {
             8
         ),
         tileset_stone0: new TileResource(
-            'assets/textures/world/middleground/stone0.png',
+            'assets/textures/world/middleground/tileset_stone0.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone1: new TileResource(
-            'assets/textures/world/middleground/stone1.png',
+            'assets/textures/world/middleground/tileset_stone1.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone2: new TileResource(
-            'assets/textures/world/middleground/stone2.png',
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone3: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone4: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone5: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone6: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone7: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone8: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
+            16,
+            1,
+            8,
+            8
+        ),
+        tileset_stone9: new TileResource(
+            'assets/textures/world/middleground/tileset_stone2.png',
             16,
             1,
             8,
@@ -111,6 +161,23 @@ const WorldAssets = {
             8
         ),
     },
+    tileEntities: {
+        entity_t1drill: [
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill1.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill2.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill3.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill4.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill5.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill6.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill7.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill8.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill9.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill10.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill11.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill12.png'),
+            new ImageResource('assets/textures/world/tileEntities/RustyDrill13.png')
+        ]
+    }
 };
 
 const Fonts = {
@@ -185,6 +252,79 @@ const Fonts = {
         "-": 4,
         ":": 2,
         " ": 2
+    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
+
+    big: new FontResource('assets/textures/ui/fontBig.png', {
+        "0": 14,
+        "1": 14,
+        "2": 14,
+        "3": 12,
+        "4": 12,
+        "5": 12,
+        "6": 12,
+        "7": 14,
+        "8": 14,
+        "9": 12,
+        "A": 12,
+        "B": 14,
+        "C": 14,
+        "D": 12,
+        "E": 14,
+        "F": 12,
+        "G": 14,
+        "H": 14,
+        "I": 14,
+        "J": 16,
+        "K": 12,
+        "L": 12,
+        "M": 16,
+        "N": 16,
+        "O": 16,
+        "P": 18,
+        "Q": 16,
+        "R": 14,
+        "S": 14,
+        "T": 16,
+        "U": 16,
+        "V": 16,
+        "W": 20,
+        "X": 16,
+        "Y": 16,
+        "Z": 18,
+        "a": 14,
+        "b": 14,
+        "c": 12,
+        "d": 14,
+        "e": 12,
+        "f": 12,
+        "g": 12,
+        "h": 12,
+        "i": 10,
+        "j": 12,
+        "k": 10,
+        "l": 10,
+        "m": 16,
+        "n": 10,
+        "o": 10,
+        "p": 10,
+        "q": 14,
+        "r": 10,
+        "s": 8,
+        "t": 10,
+        "u": 10,
+        "v": 10,
+        "w": 14,
+        "x": 12,
+        "y": 10,
+        "z": 10,
+        "!": 8,
+        ".": 4,
+        ",": 4,
+        "?": 12,
+        "_": 12,
+        "-": 8,
+        ":": 4,
+        " ": 4
     }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
 
 };
@@ -465,11 +605,9 @@ type AnimationFrame<T extends Record<string, ImageResource[]>> = keyof T
 
 const PlayerAnimations = {
     idle: [
-        new ImageResource('assets/textures/player/character.png')
+        new ReflectableImageResource('assets/textures/player/character.png'),
     ]
 }
-
-let frame: AnimationFrame<typeof PlayerAnimations> = 'idle'
 
 
 const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {

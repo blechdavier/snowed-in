@@ -134,19 +134,19 @@ function typeOfStone(x: number, y: number, noise: SimplexNoise) {
     } else if (hardness < 110) {
         return TileType.Stone2;
     } else if (hardness < 135) {
-        return TileType.Stone2;
+        return TileType.Stone3;
     } else if (hardness < 155) {
-        return TileType.Stone2;
+        return TileType.Stone4;
     } else if (hardness < 170) {
-        return TileType.Stone2;
+        return TileType.Stone5;
     } else if (hardness < 180) {
-        return TileType.Stone2;
+        return TileType.Stone6;
     } else if (hardness < 187) {
-        return TileType.Stone2;
+        return TileType.Stone7;
     } else if (hardness < 195) {
-        return TileType.Stone2;
+        return TileType.Stone8;
     } else {
-        return TileType.Stone2;
+        return TileType.Stone9;
     }
 
 }
