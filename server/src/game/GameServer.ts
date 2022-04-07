@@ -13,6 +13,7 @@ import { TileEntityPayload } from '../../../api/TileEntity';
 import { EntityPayload } from '../../../api/Entity';
 import { TileType } from '../../../api/Tile';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 export class GameServer {
     id: string;
@@ -163,6 +164,7 @@ export class GameServer {
                         tile: this.world.tiles[brokenTile.tileIndex],
                     },
                 ]);
+                this.save();//shitty way of doing this
             });
         }
 
@@ -175,6 +177,15 @@ export class GameServer {
             this.room.emit('entityDelete', user.id.toString());
 
             user.socketId = undefined;
+        });
+    }
+
+    async save() {
+        const data = this.world.tiles.toString();
+        const id = "asdf1234randomstuffhere"
+        fs.writeFile(`save ${id}.txt`, data, (err) => {
+            if (err) throw err;
+            console.log('The file has been saved!');
         });
     }
 }

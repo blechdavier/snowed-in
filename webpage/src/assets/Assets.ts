@@ -103,49 +103,49 @@ const WorldAssets = {
             8
         ),
         tileset_stone3: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone3.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone4: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone4.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone5: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone5.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone6: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone6.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone7: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone7.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone8: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone8.png',
             16,
             1,
             8,
             8
         ),
         tileset_stone9: new TileResource(
-            'assets/textures/world/middleground/tileset_stone2.png',
+            'assets/textures/world/middleground/tileset_stone9.png',
             16,
             1,
             8,

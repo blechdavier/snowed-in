@@ -72,7 +72,7 @@ export const WorldTiles: Record<TileType | string, Tile | undefined> = {
         texture: WorldAssets.middleground.tileset_stone2,
         connected: true,
         anyConnection: true,
-        color: "#31323b",
+        color: "#31323b",//TODO change these colors to be more accurate
         friction: 3,
         reflectivity: 17
     },

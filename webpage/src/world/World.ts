@@ -1,6 +1,5 @@
 import game from '../Main';
 import P5 from 'p5';
-import p5 from 'p5';
 import ImageResource from '../assets/resources/ImageResource';
 import TileResource from '../assets/resources/TileResource';
 import Tickable from '../interfaces/Tickable';

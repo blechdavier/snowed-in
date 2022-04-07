@@ -1,9 +1,8 @@
 import Resource from "./Resource";
 import P5 from 'p5';
-import {WorldTiles} from '../../world/WorldTiles'
-import { TileType } from "../../../../api/Tile";
 import Game from "../../Game";
-import { WorldAssets } from "../Assets";
+import { WorldTiles } from '../../world/WorldTiles'
+import { TileType } from "../../../../api/Tile"
 
 export = class ReflectableImageResource extends Resource {
 
@@ -20,7 +19,8 @@ export = class ReflectableImageResource extends Resource {
     }
 
     render(target: any, x: number, y: number, width: number, height: number) {
-        // Verify that the tiles has been loaded
+        //console.log(WorldTiles);
+        // Verify that the image has been loaded
         if (this.image === undefined)
             throw new Error(
                 `Tried to render image before loading it: ${this.path}`
@@ -59,13 +59,12 @@ export = class ReflectableImageResource extends Resource {
         //loop through every tile it passes through
         for(let i = Math.floor(x); i<x+width; i++) {
             for(let j = Math.floor(y); j<y+height; j++) {
-                // console.log(target.world);
                 // console.log(target.world.worldTiles);
-                let currentBlock: TileType = target.world.worldTiles[j * target.worldWidth + i];
-                if(currentBlock === undefined || currentBlock === TileType.Air || currentBlock === TileType.TileEntity) {//the reference to TileEntity can be removed as soon as the better system is in place
+                let currentBlock: number = target.world.worldTiles[j * target.worldWidth + i];
+                if(currentBlock === undefined || currentBlock == TileType.Air || currentBlock == TileType.TileEntity) {//the reference to TileEntity can be removed as soon as the better system is in place
                     continue;
                 }
-                target.tint(255, 50);//make it somewhat translucent based on the reflectivity of the tile
+                target.tint(255, 150);//TODO make it somewhat translucent based on the reflectivity of the tile
                 target.image(
                     this.reflection,
                     (i * target.TILE_WIDTH -
