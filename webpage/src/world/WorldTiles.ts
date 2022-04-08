@@ -13,7 +13,7 @@ export interface Tile {
     reflectivity: number;
 }
 
-export const WorldTiles: Record<TileType | string, Tile | undefined> = {
+export const WorldTiles: Record<TileType, Tile | undefined> = {
     [TileType.Air]: undefined,
     [TileType.TileEntity]: {
         name: 'TileEntity',

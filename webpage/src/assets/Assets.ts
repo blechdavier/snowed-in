@@ -596,6 +596,9 @@ const AudioAssets = {
     },
     music: {
         titleScreen: new AudioResource('assets/sounds/music/TitleScreen.mp3')
+    },
+    ambient: {
+        winter1: new AudioResource('assets/sounds/sfx/ambient/65813__pcaeldries__countrysidewinterevening02.wav')
     }
 }
 

@@ -256,7 +256,7 @@ class Game extends p5 {
         // go for a scale of <64 tiles wide screen
         this.windowResized();
 
-        // remove texture interpolation
+        // remove texture interpolation (enable point filtering for images)
         this.noSmooth();
 
         // the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
@@ -266,7 +266,7 @@ class Game extends p5 {
 
         // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
-        AudioAssets.music.titleScreen.playSound();
+        AudioAssets.ambient.winter1.playSound();
         this.particleMultiplier = 1;
         this.skyToggle = true;
         this.skyMod = 2;
