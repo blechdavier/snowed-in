@@ -23,6 +23,7 @@ export class ImageResource extends Resource {
         target.image(this.image, x, y, width, height);
     }
 
+
     renderPartial(
         target: any,
         x: number,

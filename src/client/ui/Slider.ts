@@ -1,3 +1,4 @@
+import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
 import { Renderable } from '../interfaces/Renderable';
 import { UiAssets } from '../assets/Assets';
@@ -10,13 +11,12 @@ export class Slider implements Renderable {
     min: number
     max: number
     step: number
+    onChanged: Function
     x: number
     y: number
     w: number
     h: number
     beingEdited: boolean
-
-    onChanged: Function
 
     constructor(
         font: FontResource,

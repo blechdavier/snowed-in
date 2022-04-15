@@ -1,19 +1,76 @@
-import p5 from 'p5';
+import p5, { Shader } from 'p5'
 
-import { World } from './world/World';
+import Audio from 'ts-audio';
 
-import { Fonts, ItemAssets, loadAssets, UiAssets, WorldAssets } from './assets/Assets';
+
+import World from './world/World';
+
+import {
+    Fonts,
+    ItemsAssets,
+    loadAssets,
+    UiAssets,
+    WorldAssets,
+} from './assets/Assets';
 import { MainMenu } from './ui/screens/MainMenu';
-import { io, Socket } from 'socket.io-client';
-import { UiScreen } from './ui/UiScreen';
-import { NetManager } from './NetManager';
+import { Socket } from 'socket.io-client';
+import UiScreen from './ui/UiScreen';
+import { PauseMenu } from './ui/screens/PauseMenu';
+import { NetManager } from './websocket/NetManager';
 
+import { ClientEvents, ServerEvents } from '../../api/API';
+import ItemStack from './world/items/ItemStack';
+
+/*
+///INFORMATION
+//Starting a game
+Press Live Server to start the game
+or
+Type npm run prestart to start the game.
+//TODO
+When something in the todo section, either delete it and mark what was done in the description -
+- when pushing, or just mark it like this
+(example: Create a nuclear explosion -- X)
+///GENERAL TODO:
+
+//Audio
+sounds
+music
+NPC's
+
+//Visual
+Update snow textures
+Update GUI textures
+player character
+item lore implemented
+
+//Gameplay
+finish item management
+pause menu
+Hunger, heat, etc system
+item creation
+item use
+Parent Workbench
+
+//Objects
+dirt
+stone
+workbench
+backpack (used as chest)
+
+//Polish
+better world generation
+font consistency
+fix cursor input lag (separate cursor and animation images)
+fix stuck on side of block bug
+fix collide with sides of map bug
+ */
 import { ClientEvents, ServerEvents } from '../global/Events';
 import { TileType } from '../global/Tile';
 
 export class Game extends p5 {
     worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
-    worldHeight: number = 64; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
+    worldHeight: number = 256; // height of the world in tiles  <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
 
     TILE_WIDTH: number = 8; // width of a tiles in pixels
     TILE_HEIGHT: number = 8; // height of a tiles in pixels
@@ -26,6 +83,9 @@ export class Game extends p5 {
     pCamY: number = 0; // last frame's y of the camera
     interpolatedCamX: number = 0; // interpolated position of the camera
     interpolatedCamY: number = 0; // interpolated position of the camera
+    desiredCamX: number = 0; // desired position of the camera
+    desiredCamY: number = 0; // desired position of the camera
+    screenshakeAmount: number = 0; // amount of screenshake happening at the current moment
 
     // tick management
     msSinceTick: number = 0; // this is the running counter of how many milliseconds it has been since the last tick.  The game can then
@@ -48,26 +108,81 @@ export class Game extends p5 {
     keys: boolean[] = [];
 
     // the keycode for the key that does the action
-    controls = [
-        68, // right
-        65, // left
-        87, // jump
-        27, // settings
-        69, // items?
-        49, // hot bar 1
-        50, // hot bar 2
-        51, // hot bar 3
-        52, // hot bar 4
-        53, // hot bar 5
-        54, // hot bar 6
-        55, // hot bar 7
-        56, // hot bar 8
-        57, // hot bar 9
+    controls: Control[] = [
+        new Control("Walk Right", true, 68, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.rightButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.rightButton = false;
+        }),// right
+        new Control("Walk Left", true, 65, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.leftButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.leftButton = false;
+        }),// left
+        new Control("Jump", true, 87, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.jumpButton = true;
+        }, ()=>{
+            if(this.currentUi!==undefined)
+                return;
+            this.world.player.jumpButton = false;
+        }),// jump
+        new Control("Pause", true, 27, ()=>{
+            //if inventory open{
+            //close inventory
+            //return;}
+            if(this.currentUi===undefined)
+                this.currentUi = new PauseMenu(Fonts.title);
+            else
+                this.currentUi = undefined;
+        }),// settings
+        new Control("Inventory", true, 69, ()=>{
+            //if ui open return;
+            //if inventory closed open inventory
+            //else close inventory
+            console.log("inventory has not been implemented yet");
+        }),// inventory
+        new Control("Hotbar 1", true, 49, ()=>{
+            this.selectedSlot = 0;
+        }),// hot bar 1
+        new Control("Hotbar 2", true, 49, ()=>{
+            this.selectedSlot = 1;
+        }),// hot bar 2
+        new Control("Hotbar 3", true, 49, ()=>{
+            this.selectedSlot = 2;
+        }),// hot bar 3
+        new Control("Hotbar 4", true, 49, ()=>{
+            this.selectedSlot = 3;
+        }),// hot bar 4
+        new Control("Hotbar 5", true, 49, ()=>{
+            this.selectedSlot = 4;
+        }),// hot bar 5
+        new Control("Hotbar 6", true, 49, ()=>{
+            this.selectedSlot = 5;
+        }),// hot bar 6
+        new Control("Hotbar 7", true, 49, ()=>{
+            this.selectedSlot = 6;
+        }),// hot bar 7
+        new Control("Hotbar 8", true, 49, ()=>{
+            this.selectedSlot = 7;
+        }),// hot bar 8
+        new Control("Hotbar 9", true, 49, ()=>{
+            this.selectedSlot = 8;
+        }),// hot bar 9
     ];
 
-    canvas: p5.Renderer;
-    skyLayer: p5.Graphics;
-    skyShader: p5.Shader;
+    canvas: p5.Renderer;//the canvas for the game
+    skyLayer: p5.Graphics;//a p5.Graphics object that the shader is drawn onto.  this isn't the best way to do this, but the main game canvas isn't WEBGL, and it's too much work to change that
+    skyShader: p5.Shader;//the shader that draws the sky (the path for this is in the public folder)
 
     world: World;
 
@@ -77,8 +192,14 @@ export class Game extends p5 {
 
     netManager: NetManager;
 
+    //changeable options from menus
     serverVisibility: string;
     worldBumpiness: number;
+    skyMod: number;
+    skyToggle: boolean;
+    particleMultiplier: number;
+
+    particles: (ColorParticle/*|FootstepParticle*/)[];
 
     constructor(connection: Socket) {
         super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -124,7 +245,7 @@ export class Game extends p5 {
         // go for a scale of <64 tiles wide screen
         this.windowResized();
 
-        // remove texture interpolation
+        // remove texture interpolation (enable point filtering for images)
         this.noSmooth();
 
         // the highest keycode is 255, which is "Toggle Touchpad", according to keycode.info
@@ -134,17 +255,24 @@ export class Game extends p5 {
 
         // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
+        AudioAssets.ambient.winter1.playSound();
+        this.particleMultiplier = 1;
+        this.skyToggle = true;
+        this.skyMod = 2;
+        this.particles = [];
     }
 
     draw() {
-        if (this.frameCount === 2) {
-            this.skyShader.setUniform('screenDimensions', [
-                this.skyLayer.width / this.upscaleSize,
-                this.skyLayer.height / this.upscaleSize,
-            ]);
+        for(let i = 0; i<40*this.particleMultiplier; i++) {
+            //this.particles.push(new ColorParticle("#eb5834", 1/4, 10, this.worldMouseX+Math.random(), this.worldMouseY+Math.random(), Math.random()-0.5, Math.random()/4-0.5, false));
+        }
+        if (this.frameCount===2) {
+            this.skyShader.setUniform("screenDimensions", [this.width/this.upscaleSize, this.height/this.upscaleSize]);
+            this.skyShader.setUniform("skyImage", WorldAssets.shaderResources.skyImage.image);
         }
         // do the tick calculations
         this.doTicks();
+
 
         // update mouse position
         this.updateMouse();
@@ -168,6 +296,25 @@ export class Game extends p5 {
 
         // render the player, all items, etc.  Basically any physicsRect or particle
         this.renderEntities();
+
+        //delete any particles that have gotten too old
+        for(let i = 0; i<this.particles.length; i++) {
+            if (this.particles[i].age>this.particles[i].lifespan) {
+                this.particles.splice(i, 1)
+                i--;
+            }
+        }
+
+        //no outline on particles
+        this.noStroke();
+        //draw all of the particles
+        for(let particle of this.particles) {
+            particle.render(this, this.upscaleSize);
+        }
+
+        this.tint(255, 100);
+        UiAssets.vignette.render(this, 0, 0, this.width, this.height);
+        this.noTint();
 
         // draw the hot bar
         if (this.world !== undefined) {
@@ -236,6 +383,9 @@ export class Game extends p5 {
             this.drawCursor();
         }
 
+
+        if(this.currentUi !== undefined)
+            this.currentUi.render(this, this.upscaleSize);
         if(this.currentUi !== undefined)
         this.currentUi.render(this, this.upscaleSize);
 
@@ -244,37 +394,33 @@ export class Game extends p5 {
 
     windowResized() {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
+        this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
+        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize*2, this.windowHeight/this.upscaleSize*2]);
 
         // go for a scale of <48 tiles screen
         this.upscaleSize = Math.min(
-            this.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
-            this.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
+            Math.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
+            Math.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
 
         if(this.currentUi !== undefined)
             this.currentUi.windowUpdate();
     }
 
-    keyPressed() {
+    keyPressed(event: KeyboardEvent) {
         this.keys[this.keyCode] = true;
-        if (this.controls.includes(this.keyCode)) {
-            // hot bar slots
-            for (let i = 0; i < 12; i++) {
-                if (this.keyCode === this.controls[i + 5]) {
-                    this.world.inventory.selectedSlot = i;
-                    return;
-                }
-            }
-
-            if (this.keyCode === this.controls[4]) {
-                console.log('Inventory opened');
-            }
-
+        for(let control of this.controls) {
+            if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
+                control.onPressed();
         }
     }
 
-    keyReleased() {
+    keyReleased(event: KeyboardEvent) {
         this.keys[this.keyCode] = false;
+        for(let control of this.controls) {
+            if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
+                control.onReleased();
+        }
     }
 
     // when it's dragged update the sliders
@@ -300,12 +446,11 @@ export class Game extends p5 {
         }
     }
 
-    mousePressed() {
+    mousePressed(e: MouseEvent) {
         // image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
-
-        if (this.currentUi !== undefined) {
-            this.currentUi.mousePressed();
-            return; // asjgsadkjfgIISUSUEUE
+        if(this.currentUi !== undefined) {
+            this.currentUi.mousePressed(e.button);
+            return;// asjgsadkjfgIISUSUEUE
         }
 
         if(this.world === undefined)
@@ -319,7 +464,7 @@ export class Game extends p5 {
             this.mouseY > 2 * this.upscaleSize &&
             this.mouseY < 18 * this.upscaleSize
         ) {
-            const clickedSlot: number = this.floor(
+            const clickedSlot: number = Math.floor(
                 (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
             );
 
@@ -344,7 +489,7 @@ export class Game extends p5 {
         if(this.currentUi !== undefined) {
             this.currentUi.mouseReleased();
         }
-        const releasedSlot: number = this.floor(
+        const releasedSlot: number = Math.floor(
             (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
         );
 
@@ -378,9 +523,9 @@ export class Game extends p5 {
 
     moveCamera() {
         this.interpolatedCamX =
-            this.pCamX + (this.camX - this.pCamX) * this.amountSinceLastTick;
+            this.pCamX + (this.camX - this.pCamX) * this.amountSinceLastTick + (this.noise(this.millis()/200)-0.5)*this.screenshakeAmount;
         this.interpolatedCamY =
-            this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick;
+            this.pCamY + (this.camY - this.pCamY) * this.amountSinceLastTick + (this.noise(0, this.millis()/200)-0.5)*this.screenshakeAmount;
     }
 
     doTicks() {
@@ -409,6 +554,11 @@ export class Game extends p5 {
     }
 
     doTick() {
+        for(let particle of this.particles) {
+            particle.tick();
+        }
+        if(this.world.player === undefined)
+            return
         if (this.world.player === undefined) return;
         this.world.player.keyboardInput();
         this.world.player.applyGravityAndDrag();
@@ -416,18 +566,20 @@ export class Game extends p5 {
 
         this.pCamX = this.camX;
         this.pCamY = this.camY;
-        const desiredCamX =
+        this.desiredCamX =
             this.world.player.x +
             this.world.player.width / 2 -
             this.width / 2 / this.TILE_WIDTH / this.upscaleSize +
             this.world.player.xVel * 40;
-        const desiredCamY =
+        this.desiredCamY =
             this.world.player.y +
-            this.world.player.height / 2 -
+            this.world.player.height/2 -
             this.height / 2 / this.TILE_HEIGHT / this.upscaleSize +
             this.world.player.yVel * 20;
-        this.camX = (desiredCamX + this.camX * 24) / 25;
-        this.camY = (desiredCamY + this.camY * 24) / 25;
+        this.camX = (this.desiredCamX + this.camX * 24) / 25;
+        this.camY = (this.desiredCamY + this.camY * 24) / 25;
+
+        this.screenshakeAmount *= 0.8;
 
         if (this.camX < 0) {
             this.camX = 0;
@@ -448,6 +600,7 @@ export class Game extends p5 {
                 this.height / this.upscaleSize / this.TILE_HEIGHT;
         }
 
+
         // for (const item of this.items) {
         //     item.goTowardsPlayer();
         //     item.combineWithNearItems();
@@ -461,6 +614,121 @@ export class Game extends p5 {
         //         i--;
         //     }
         // }
+    }
+
+    uiFrameRect(x: number, y: number, w: number, h: number) {
+        // set the coords and dimensions to round to the nearest un-upscaled pixel
+        x = Math.round(x / this.upscaleSize) * this.upscaleSize;
+        y = Math.round(y / this.upscaleSize) * this.upscaleSize;
+        w = Math.round(w / this.upscaleSize) * this.upscaleSize;
+        h = Math.round(h / this.upscaleSize) * this.upscaleSize;
+
+        // corners
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            0,
+            0,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            8,
+            0,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y + h - 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            0,
+            8,
+            7,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y + h - 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            8,
+            8,
+            7,
+            7
+        );
+
+        // top and bottom
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y,
+            w - 14 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7,
+            0,
+            1,
+            7
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y + h - 7 * this.upscaleSize,
+            w - 14 * this.upscaleSize,
+            7 * this.upscaleSize,
+            7,
+            8,
+            1,
+            7
+        );
+
+        // left and right
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x,
+            y + 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            0,
+            7,
+            7,
+            1
+        );
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + w - 7 * this.upscaleSize,
+            y + 7 * this.upscaleSize,
+            7 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            8,
+            7,
+            7,
+            1
+        );
+
+        // center
+        UiAssets.ui_frame.renderPartial(
+            this,
+            x + 7 * this.upscaleSize,
+            y + 7 * this.upscaleSize,
+            w - 14 * this.upscaleSize,
+            h - 14 * this.upscaleSize,
+            7,
+            7,
+            1,
+            1
+        );
     }
 
     /*
@@ -573,6 +841,8 @@ export class Game extends p5 {
         //     this.world.player.width * this.upscaleSize * this.TILE_WIDTH,
         //     this.world.player.height * this.upscaleSize * this.TILE_HEIGHT
         // );
+
+
         // for (const item of this.items) {
         //     item.findInterpolatedCoordinates();
         //
@@ -655,12 +925,12 @@ export class Game extends p5 {
 
     updateMouse() {
         // world mouse x and y variables hold the mouse position in world tiles.  0, 0 is top left
-        this.worldMouseX = this.floor(
+        this.worldMouseX = Math.floor(
             (this.interpolatedCamX * this.TILE_WIDTH +
                 this.mouseX / this.upscaleSize) /
                 this.TILE_WIDTH
         );
-        this.worldMouseY = this.floor(
+        this.worldMouseY = Math.floor(
             (this.interpolatedCamY * this.TILE_HEIGHT +
                 this.mouseY / this.upscaleSize) /
                 this.TILE_HEIGHT

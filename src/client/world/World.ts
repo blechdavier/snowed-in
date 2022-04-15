@@ -1,3 +1,4 @@
+import game from '../Main';
 import P5 from 'p5';
 import { ImageResource } from '../assets/resources/ImageResource';
 import { Tickable } from '../interfaces/Tickable';
@@ -58,15 +59,28 @@ export class World implements Tickable, Renderable {
             this.tileLayer,
             0,
             0,
-            game.width,
-            game.height,
-            game.interpolatedCamX * game.TILE_WIDTH,
-            game.interpolatedCamY * game.TILE_WIDTH,
-            game.width / upscaleSize,
-            game.height / upscaleSize
+            (game.width/upscaleSize)*upscaleSize,
+            (game.height/upscaleSize)*upscaleSize,
+            (game.interpolatedCamX * game.TILE_WIDTH),
+            (game.interpolatedCamY * game.TILE_WIDTH),
+            (game.width / upscaleSize),
+            (game.height / upscaleSize)
         );
 
         this.renderPlayers(target, upscaleSize);
+
+        target.stroke(0);
+        target.strokeWeight(4);
+        target.noFill();
+        target.rect(target.width-this.width, 0, this.width, this.height);
+
+        target.image(
+            this.tileLayer,
+            target.width-this.width,
+            0,
+            this.width,
+            this.height
+        );
     }
 
     updatePlayers(snapshot: Snapshot) {
@@ -278,3 +292,4 @@ export class World implements Tickable, Renderable {
         }
     }
 }
+export = World;

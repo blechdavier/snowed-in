@@ -4,6 +4,8 @@ import { UiFrame } from '../UiFrame';
 import { Button } from '../Button';
 import { FontResource } from '../../assets/resources/FontResource';
 import { MainMenu } from './MainMenu';
+import { VideoSettingsMenu } from './VideoSettingsMenu';
+import { ControlsMenu } from './ControlsMenu';
 import { game } from '../../Game';
 
 export class OptionsMenu extends UiScreen {
@@ -16,11 +18,11 @@ export class OptionsMenu extends UiScreen {
         this.buttons = [
             new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, () => {
                 console.log("video settings");
-                game.currentUi = undefined;
+                game.currentUi = new VideoSettingsMenu(font);
             }),
             new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, () => {
                 console.log("control menu");
-                game.currentUi = undefined;
+                game.currentUi = new ControlsMenu(font);
             }),
             new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
                 console.log("audio menu");
