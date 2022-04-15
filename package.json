@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "webpack -c ./webpage/webpack.config.js",
-    "start": "ts-node-dev --respawn -P server/tsconfig.json server/src/Main.ts "
+    "build": "webpack -c src/client/webpack.config.js",
+    "start": "ts-node-dev --respawn -P src/server/tsconfig.json src/server/Main.ts"
   },
   "author": "Numericly",
   "license": "ISC",
@@ -13,7 +13,6 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/p5": "^1.4.1",
     "@types/uuid": "^8.3.4",
-    "@types/workerpool": "^6.1.0",
     "@types/ws": "^8.2.2",
     "p5": "^1.4.1",
     "prettier": "^2.5.1",
@@ -29,7 +28,6 @@
   "dependencies": {
     "@geckos.io/snapshot-interpolation": "^1.1.0",
     "@types/node-forge": "^1.0.0",
-    "chalk": "4.1.2",
     "events": "^3.3.0",
     "express": "^4.17.2",
     "jsonwebtoken": "^8.5.1",
@@ -38,13 +36,11 @@
     "simplex-noise": "^3.0.1",
     "socket.io": "^4.4.1",
     "speed-measure-webpack-plugin": "^1.5.0",
+    "threads": "^1.7.0",
     "ts-audio": "^0.6.1",
     "ts-node": "^10.4.0",
     "typed-emitter": "^2.1.0",
     "uuid": "^8.3.2",
-    "uuid-int": "^3.1.0",
-    "webpack-obfuscator": "^3.5.1",
-    "workerpool": "^6.2.0",
     "ws": "^8.4.2"
   }
 }

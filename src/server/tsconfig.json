@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"watch": true,
+		"module": "node12",
+		"esModuleInterop": true,
+		"target": "ES6",
+		"noImplicitAny": true,
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"strictNullChecks": true,
+		"sourceMap": true,
+		"strict": true,
+		"lib": ["es6", "dom"]
+	},
+	"include": ["./**/*", "../global/**/*"]
+}

@@ -1,6 +1,14 @@
 {
-  "trailingComma": "es5",
-  "tabWidth": 4,
+  "$schema": "http://json.schemastore.org/prettierrc",
+  "useTabs": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "arrowParens": "avoid",
+  "quoteProps": "consistent",
   "semi": true,
-  "singleQuote": true
+  "tabWidth": 4,
+  "jsxBracketSameLine": false,
+  "jsxSingleQuote": false,
+  "htmlWhitespaceSensitivity": "ignore"
 }

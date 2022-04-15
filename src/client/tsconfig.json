@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "watch": true,
+        "module": "es2022",
+        "esModuleInterop": true,
+        "target": "es6",
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "lib": ["es6", "dom"]
+    },
+    "include": ["./**/*", "../global/**/*", "../../node_modules/@types/p5/global.d.ts"],
+    "exclude": ["../server/**/*"]
+}
