@@ -402,6 +402,19 @@ class Game extends p5 {
             if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
                 control.onPressed();
         }
+        if(this.currentUi!==undefined) {
+            for(let i of this.currentUi.inputBoxes) {
+                if(i.listening) {
+                    console.log("test3");
+                    i.listening = false;
+                    this.controls[i.index].keyCode = event.keyCode;
+                    this.controls[i.index].keyboard = false;
+                    i.value = event.keyCode;
+                    i.keyboard = true;
+                    i.image = UiAssets.button_unselected;
+                }
+            }
+        }
     }
 
     keyReleased(event: KeyboardEvent) {
@@ -422,9 +435,16 @@ class Game extends p5 {
     }
 
     mouseMoved() {
-        if(this.currentUi !== undefined && this.currentUi.buttons !== undefined) {
-            for(const i of this.currentUi.buttons) {
-                i.updateMouseOver(this.mouseX, this.mouseY);
+        if(this.currentUi !== undefined) {
+            if(this.currentUi.buttons!==undefined) {
+                for(const i of this.currentUi.buttons) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
+            }
+            if(this.currentUi.inputBoxes!==undefined) {
+                for(const i of this.currentUi.inputBoxes) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
             }
         }
     }

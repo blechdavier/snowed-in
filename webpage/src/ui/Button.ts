@@ -80,7 +80,7 @@ class Button implements Renderable {
     onPressed() {
         this.onPressedCustom();
         console.log("button pressed");
-        AudioAssets.ui.inventoryClack.playRandom();
+        //AudioAssets.ui.inventoryClack.playRandom();
     }
 
 }

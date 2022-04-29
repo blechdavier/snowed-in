@@ -60,7 +60,7 @@ export class ControlsMenu extends UiScreen {
         this.frame.x = game.width / 2 - 200 / 2 * game.upscaleSize;// center the frame in the center of the screen
         this.frame.y = game.height / 2 - 56 * game.upscaleSize;
         this.frame.w = 200 * game.upscaleSize;
-        this.frame.h = 48 * game.upscaleSize;
+        this.frame.h = 148 * game.upscaleSize;
 
         // set the positions of the button
         for (let i = 0; i < 1; i++) {
@@ -72,10 +72,10 @@ export class ControlsMenu extends UiScreen {
         }
 
         // set the positions of all the input boxes
-        for (let i = 0; i < 4; i++) {
-            this.inputBoxes[i].x = game.width / 2 - 192 / 2 * game.upscaleSize;
+        for (let i = 0; i < this.inputBoxes.length; i++) {
+            this.inputBoxes[i].x = game.width / 2 - 168 / 2 * game.upscaleSize;
             this.inputBoxes[i].y = game.height / 2 + 20 * i * game.upscaleSize;
-            this.inputBoxes[i].w = 192 * game.upscaleSize;
+            this.inputBoxes[i].w = 168 * game.upscaleSize;
             this.inputBoxes[i].h = 16 * game.upscaleSize;
             console.log(this.inputBoxes[i]);
         }

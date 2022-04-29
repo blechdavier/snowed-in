@@ -1,0 +1,62 @@
+Materials:
+10 stone lower level -> 1 stone higher level
+10 wood lower level -> 1 wood higher level
+10 metal lower level -> 1 metal higher level
+1 sand -> 1 glass
+
+Progression:
+10 wood -> crafting bench
+10 wood + 10 scrap/tin/aluminum/steel/titanium -> pickaxe/axe
+10 scrap + 10 stone 1 -> rusty drill
+10 tin + 10 stone 3 -> drill 2
+10 aluminum + 10 stone 5 -> drill 3
+10 steel + 10 stone 7 -> drill 4
+10 titanium + 10 stone 9 -> drill 5
+10 scrap + 10 wood 1 -> chainsaw on a propeller
+10 tin + 10 wood 3 -> drone 2
+10 aluminum + 10 wood 5 -> drone 3
+10 steel + 10 wood 7 -> drone 4
+10 titanium + 10 wood 9 -> drone 5
+
+Decoration:
+3 dirt + 1 seed -> potted plant
+10 glass + 3 dirt + 1 seed + 1 wood tier 5 -> terrarium (wait's gif with a house and tree in a glass case)
+
+
+
+BREAKING:
+ Hand:
+  - stone 1
+  - scrap
+  - wood 1
+  - tree
+  - any decoration item
+ Scrap Pickaxe:
+  - stone 2
+  - stone 3
+  - tin
+ Tin Pickaxe
+  - stone 4
+  - stone 5
+  - aluminum
+ Aluminum Pickaxe
+  - stone 6
+  - stone 7
+  - steel
+ Steel Pickaxe
+  - stone 8
+  - stone 9
+  - titanium
+ Titanium Pickaxe
+  - stone 10
+ 
+ Scrap Axe
+  - wood 2, 3
+ Tin Axe
+  - wood 4, 5
+ Aluminum Axe
+  - wood 6, 7
+ Steel Axe
+  - wood 8, 9
+ Titanium Axe
+  - wood 10

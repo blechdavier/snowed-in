@@ -1,0 +1,42 @@
+start
+- crafting bench 
+- storage hub
+
+storage hub (maybe called storage vault)
+- upgrades
+- capacity (is the limitation of capacity in stacks or in item total)
+    - item total -> stored in an array format: [item1count, item2count, item3count, etc...]
+    - stacks -> or could be an array of ItemStacks
+
+drone ai
+- update every tick
+- searching
+    - loop through every tree in the world?? seems expensive
+    - if closest tree distance>some number of tiles, destination is storage hub
+    - destinationCoords: [x, y]; destination: Number;  this number is the index in the world.worldTiles array that the destination can be found at
+- cutting
+    - if this.inventory full, destination is storage hub
+    - if this.world.worldTiles[destination].woodCount === 0 && if this.world.worldTiles[destination].seedCount === 0, drone.state = searching
+- waiting for storage hub to be empty
+- returning to storage hub
+- depositing (do in one frame why the hell not)
+
+- probably needs to have a boolean called destinationIsTree to avoid checking the woodCount of the storage hub
+
+
+drill ai
+- update every 5 ticks?
+- in an ore deposit, loop through every tile of air and for each, if a random number is more than 0.95, add a tile of that ore
+- if the drill's range (maybe a circle stored in a list on the object for simplicity) includes a tile of a metal it can break, check the storage hub if it can accept it, and break it if it can
+
+
+ladders (tile)
+- controls have no acceleration or jumping (textures done, not a tileset yet) (not important)
+
+
+TODO make the arrows of the controls menu left and right instead of up and down to make it seem more fluid UX
+- add page counter label text
+
+maybe try adding mobile support (not that important)
+- joystick
+- click hotbar slot to switch (good to do anyway probably)
