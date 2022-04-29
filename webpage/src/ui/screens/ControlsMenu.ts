@@ -7,13 +7,17 @@ import FontResource from '../../assets/resources/FontResource';
 import { OptionsMenu } from './OptionsMenu';
 import InputBox from '../InputBox';
 import { Control } from '../../input/Control'
+import ImageResource from '../../assets/resources/ImageResource';
 
 export class ControlsMenu extends UiScreen {
+
+    fade: ImageResource
 
     constructor(font: FontResource) {
         super();
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
+        this.fade = 
 
         // make some buttons with default positions
         this.buttons = [
@@ -53,6 +57,8 @@ export class ControlsMenu extends UiScreen {
         this.inputBoxes.forEach(inputBox => {
             inputBox.render(target, upscaleSize);
         });
+
+        
     }
 
     windowUpdate() {

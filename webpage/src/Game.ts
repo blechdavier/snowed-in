@@ -320,9 +320,11 @@ class Game extends p5 {
             particle.render(this, this.upscaleSize);
         }
 
-        this.tint(255, 100);
+        this.smooth();//enable image lerp
+        this.tint(255, 100);//make image translucent
         UiAssets.vignette.render(this, 0, 0, this.width, this.height);
         this.noTint();
+        this.noSmooth();
 
         // draw the hot bar
         this.noStroke();

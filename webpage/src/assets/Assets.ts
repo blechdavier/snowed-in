@@ -346,8 +346,10 @@ const Fonts = {
         "_": 12,
         "-": 8,
         ":": 4,
+        "↑": 7,
+        "↓": 7,
         " ": 4
-    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: "),
+    }, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-:↑↓ "),
 
 };
 
