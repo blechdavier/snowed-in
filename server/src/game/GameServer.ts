@@ -164,7 +164,6 @@ export class GameServer {
                         tile: this.world.tiles[brokenTile.tileIndex],
                     },
                 ]);
-                this.save();//shitty way of doing this
             });
         }
 

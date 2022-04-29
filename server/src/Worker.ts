@@ -48,30 +48,55 @@ WorkerPool.worker({
             }
         }
 
-        //generate caves
-        {
-            for (let c = 0; c < 10; c++) {
-                let startX: number = Math.random() * width;
-                let startY: number = Math.random() * height;
-                for (let i = 0; i < height; i++) {
-                    if (tiles[width * (Math.round(startY) + i) + Math.round(startX)] !== TileType.Air) {
-                        startY += i;
-                        break;
-                    }
+        //generate snow
+
+        for (let x = 0; x < width; x++) {
+            let y: number = 0;
+            while(y<height && tiles[y * width + x]===TileType.Air) {
+                y++;
+            }
+            if(y>=height)
+                continue;//if the tile that's being changed is below the world, give up before any issues happen
+            if(tiles[y * width + x]===TileType.Ice) {//ice
+                //make sure the top of the world isn't being modified
+                while(y>0 && belowIceLakeSnowHeight(x, y, noise)) {
+                    y--;
+                    tiles[y * width + x] = TileType.Snow;
                 }
-                for (let k = 0; k < 1; k += 0.00333333333334) {
-                    let r: number = -25*((k-0.5)*(k-0.5))+6.25;
-                    //console.log(`cave iteration at x: ${startX}, y: ${startY} with radius: ${r}`);
-                    startX += (noise.noise2D(startX / 25, startY / 25)) * r*2;
-                    startY += (noise.noise2D(startY / 5, startX / 5)) * r;
-                    for (let i = -Math.floor(r); i < Math.ceil(r); i++) {
-                        for (let j = -Math.floor(r); j < Math.ceil(r); j++) {
-                            tiles[width * (Math.round(startY) + j) + Math.round(startX) + i] = TileType.Air;
-                        }
-                    }
+            }
+            else {//not ice
+                //make sure the top of the world isn't being modified
+                while(y>0 && belowSnowHeight(x, y, noise)) {
+                    y--;
+                    tiles[y * width + x] = TileType.Snow;
                 }
             }
         }
+
+        // //generate caves
+        // {
+        //     for (let c = 0; c < 10; c++) {
+        //         let startX: number = Math.random() * width;
+        //         let startY: number = Math.random() * height;
+        //         for (let i = 0; i < height; i++) {
+        //             if (tiles[width * (Math.round(startY) + i) + Math.round(startX)] !== TileType.Air) {
+        //                 startY += i;
+        //                 break;
+        //             }
+        //         }
+        //         for (let k = 0; k < 1; k += 0.00333333333334) {
+        //             let r: number = -25*((k-0.5)*(k-0.5))+6.25;
+        //             //console.log(`cave iteration at x: ${startX}, y: ${startY} with radius: ${r}`);
+        //             startX += (noise.noise2D(startX / 25, startY / 25)) * r*2;
+        //             startY += (noise.noise2D(startY / 5, startX / 5)) * r;
+        //             for (let i = -Math.floor(r); i < Math.ceil(r); i++) {
+        //                 for (let j = -Math.floor(r); j < Math.ceil(r); j++) {
+        //                     tiles[width * (Math.round(startY) + j) + Math.round(startX) + i] = TileType.Air;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         // Find spawn position
         {
@@ -114,7 +139,7 @@ WorkerPool.worker({
 })
 
 function belowSnowHeight(x: number, y: number, noise: SimplexNoise) {
-    return fractalNoise(x / 3, noise) * 30 + 25 < y || 35 < y;
+    return fractalNoise(x / 3, noise) * 30 + 25 < y;
 }
 
 function belowDirtHeight(x: number, y: number, noise: SimplexNoise) {
@@ -152,7 +177,11 @@ function typeOfStone(x: number, y: number, noise: SimplexNoise) {
 }
 
 function belowIceHeight(x: number, y: number, noise: SimplexNoise) {
-    return (36 < y || noise.noise2D(x / 50, y / 50) > 0.8) && belowSnowHeight(x, y - 1, noise);
+    return 36 < y;
+}
+
+function belowIceLakeSnowHeight(x: number, y: number, noise: SimplexNoise) {
+    return fractalNoise(x / 3, noise) * 80 + 16 < y
 }
 
 function sharpenedNoise(x: number, noise: SimplexNoise) {

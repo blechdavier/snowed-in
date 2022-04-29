@@ -28,6 +28,7 @@ const UiAssets = {
     slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png'),
     title_image: new ImageResource('assets/textures/ui/snowedinBUMP.png'),
     vignette: new ImageResource('assets/textures/ui/vignette-export.png'),
+    fade: new ImageResource('assets/textures/ui/uiFade.png'),
 };
 
 // Item related assets
