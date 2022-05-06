@@ -38,6 +38,7 @@ export abstract class UiScreen implements Renderable {
             }
         }
         if(this.inputBoxes !== undefined) {
+            //console.log(this.inputBoxes);
             // loop through all the input boxes and interact with them accordingly
             for(const i of this.inputBoxes) {
                 if(i.mouseIsOver) {

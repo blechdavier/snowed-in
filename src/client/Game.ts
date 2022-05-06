@@ -313,9 +313,11 @@ export class Game extends p5 {
             particle.render(this, this.upscaleSize);
         }
 
-        this.tint(255, 100);
+        this.smooth();//enable image lerp
+        this.tint(255, 100);//make image translucent
         UiAssets.vignette.render(this, 0, 0, this.width, this.height);
         this.noTint();
+        this.noSmooth();
 
         // draw the hot bar
         if (this.world !== undefined) {
@@ -414,6 +416,19 @@ export class Game extends p5 {
             if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
                 control.onPressed();
         }
+        if(this.currentUi!==undefined) {
+            for(let i of this.currentUi.inputBoxes) {
+                if(i.listening) {
+                    console.log("test3");
+                    i.listening = false;
+                    this.controls[i.index].keyCode = event.keyCode;
+                    this.controls[i.index].keyboard = false;
+                    i.value = event.keyCode;
+                    i.keyboard = true;
+                    i.image = UiAssets.button_unselected;
+                }
+            }
+        }
     }
 
     keyReleased(event: KeyboardEvent) {
@@ -437,12 +452,16 @@ export class Game extends p5 {
     }
 
     mouseMoved() {
-        if (
-            this.currentUi !== undefined &&
-            this.currentUi.buttons !== undefined
-        ) {
-            for (const i of this.currentUi.buttons) {
-                i.updateMouseOver(this.mouseX, this.mouseY);
+        if(this.currentUi !== undefined) {
+            if(this.currentUi.buttons!==undefined) {
+                for(const i of this.currentUi.buttons) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
+            }
+            if(this.currentUi.inputBoxes!==undefined) {
+                for(const i of this.currentUi.inputBoxes) {
+                    i.updateMouseOver(this.mouseX, this.mouseY);
+                }
             }
         }
     }
@@ -879,7 +898,6 @@ export class Game extends p5 {
         // }
     }
 
-    /*
     pickUpItem(itemStack: ItemStack): boolean {
         for (let i = 0; i < this.hotBar.length; i++) {
             const item = this.hotBar[i];
@@ -913,8 +931,6 @@ export class Game extends p5 {
         );
         return false;
     }
-
-     */
 
     mouseExited() {
         this.mouseOn = false;
@@ -961,6 +977,7 @@ export class Game extends p5 {
         }
     }
 }
+export = Game
 
 const connection = io({
     auth: { token: window.localStorage.getItem('token') },
