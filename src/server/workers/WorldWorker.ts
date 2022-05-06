@@ -89,6 +89,36 @@ const workerData = {
 	//     }
 	// }
 
+	// generate trees
+	console.log("tried to tree? generated")
+	for(let t = 0; t<width; t++) {
+		let x = Math.floor(Math.random()*width);
+		for(let i = 0; i<height-1; i++) {
+			if((tiles[(i+1) * width + x + 1] === TileType.Dirt || tiles[(i+1) * width + x + 1] === TileType.Snow) && (tiles[(i+1) * width + x + 2] === TileType.Dirt || tiles[(i+1) * width + x + 2] === TileType.Snow)) {
+				let isOpen = true;
+				for(let j = 0; j<4; j++) {
+					for(let k = 0; k<6; k++) {
+						//console.log(`tested block ${x+j}, ${i-k} for block ${x}, ${i}`);
+						if(!inWorld(x+j, i-k, width, height) || tiles[(i-k) * width + x + j] !== TileType.Air) {
+							isOpen = false;
+							//break;
+						}
+					}
+					//if(!isOpen)//break out of this loop if there isn't enough room to save time
+						//break;
+				}
+				console.log("tree would have been generated")
+				if(isOpen) {
+					console.log("tree generated")
+					tiles[i * width + x] = TileType.Stone0
+					tiles[(i-6) * width + x] = TileType.Dirt
+					tiles[i * width + x+3] = TileType.Dirt
+					tiles[(i-6) * width + x+3] = TileType.Dirt
+				}
+				break;
+			}
+		}
+	}
 	// Find spawn position
 	{
 		spawnPosition = {
@@ -103,19 +133,19 @@ const workerData = {
 expose(workerData);
 
 function belowSnowHeight(x: number, y: number, noise: SimplexNoise) {
-return fractalNoise(x / 3, noise) * 30 + 25 < y;
+return fractalNoise(x / 3, noise) * 30 + 50 < y;
 }
 
 function belowDirtHeight(x: number, y: number, noise: SimplexNoise) {
-return fractalNoise(x / 3, noise) * 30 + 32 < y;
+return fractalNoise(x / 3, noise) * 30 + 57 < y;
 } 
 
 function belowStoneHeight(x: number, y: number, noise: SimplexNoise) {
-return fractalNoise(x / 3, noise) * 30 + 40 < y && noise.noise2D(x / 50, y / 50) > -0.8;
+return fractalNoise(x / 3, noise) * 30 + 65 < y && noise.noise2D(x / 50, y / 50) > -0.8;
 }
 
 function typeOfStone(x: number, y: number, noise: SimplexNoise) {
-let hardness: number = y + noise.noise2D(x / 3, y / 3) * 5;
+let hardness: number = y - 25 + noise.noise2D(x / 3, y / 3) * 5;
 if (hardness < 50) {
 	return TileType.Stone0;
 } else if (hardness < 80) {
@@ -141,11 +171,11 @@ if (hardness < 50) {
 }
 
 function belowIceHeight(x: number, y: number, noise: SimplexNoise) {
-return 36 < y;
+return 61 < y;
 }
 
 function belowIceLakeSnowHeight(x: number, y: number, noise: SimplexNoise) {
-return fractalNoise(x / 3, noise) * 80 + 16 < y
+return fractalNoise(x / 3, noise) * 80 + 41 < y
 }
 
 function sharpenedNoise(x: number, noise: SimplexNoise) {
@@ -154,4 +184,8 @@ return noise.noise2D(x, 0) * 3 - noise.noise2D(x + 0.2, 0) - noise.noise2D(x - 0
 
 function fractalNoise(x: number, noise: SimplexNoise) {
 return noise.noise2D(x / 54, 0) * 0.5 + noise.noise2D(x / 21, 100) * 0.2 + noise.noise2D(x / 12, 200) * 0.2 + noise.noise2D(x / 5, 300) * 0.1;
+}
+
+function inWorld(x: number, y:number, w: number, h:number) {
+	return x>0 && y>0 && x<w && y<h
 }
