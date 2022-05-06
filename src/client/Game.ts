@@ -898,6 +898,7 @@ export class Game extends p5 {
         // }
     }
 
+    /*
     pickUpItem(itemStack: ItemStack): boolean {
         for (let i = 0; i < this.hotBar.length; i++) {
             const item = this.hotBar[i];
@@ -931,6 +932,8 @@ export class Game extends p5 {
         );
         return false;
     }
+
+     */
 
     mouseExited() {
         this.mouseOn = false;
@@ -977,7 +980,6 @@ export class Game extends p5 {
         }
     }
 }
-export = Game
 
 const connection = io({
     auth: { token: window.localStorage.getItem('token') },
