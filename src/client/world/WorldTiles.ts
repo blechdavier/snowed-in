@@ -17,7 +17,7 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
     [TileType.Air]: undefined,
     [TileType.Snow]: {
         name: 'snow',
-        texture: WorldAssets[TileType.Snow],
+        texture: WorldAssets.middleground.tileset_snow,
         connected: true,
         anyConnection: true,
         color: "#cafafc",
@@ -26,7 +26,7 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
     },
     [TileType.Ice]: {
         name: 'ice',
-        texture: WorldAssets[TileType.Ice],
+        texture: WorldAssets.middleground.tileset_ice,
         connected: true,
         anyConnection: true,
         color: "#76adc4",

@@ -1,6 +1,6 @@
-import ImageResource from './ImageResource';
+import { ImageResource } from './ImageResource';
 
-class VariatedTileResource extends ImageResource {
+export class VariatedTileResource extends ImageResource {
     // The width and height of the tiles set
     width: number;
     height: number;
@@ -82,5 +82,3 @@ class VariatedTileResource extends ImageResource {
         );
     }
 }
-
-export = VariatedTileResource;

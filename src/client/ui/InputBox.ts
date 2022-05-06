@@ -1,10 +1,10 @@
-import Renderable from '../interfaces/Renderable';
+import { Renderable } from '../interfaces/Renderable';
 import p5 from 'p5';
 import { Keys, UiAssets } from '../assets/Assets';
-import ImageResource from '../assets/resources/ImageResource';
-import FontResource from '../assets/resources/FontResource';
+import { ImageResource } from '../assets/resources/ImageResource';
+import { FontResource } from '../assets/resources/FontResource';
 
-class InputBox implements Renderable {
+export class InputBox implements Renderable {
 
     font: FontResource
     txt: string
@@ -102,5 +102,3 @@ class InputBox implements Renderable {
     }
 
 }
-
-export = InputBox;

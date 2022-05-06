@@ -1,13 +1,12 @@
 import p5 from 'p5';
-import { ServerEntity } from '../world/entities/ServerEntity';
 import { Entities, EntityPayload } from '../../global/Entity';
 import { game } from '../Game';
-import { ServerEntity } from './ServerEntity';
-import { ColorParticle } from '../particles/ColorParticle'
-import { PlayerAnimations, UiAssets, AnimationFrame } from '../../assets/Assets';
-import { TileType } from '../../../../api/Tile';
-import { WorldTiles } from '../WorldTiles';
-import Game from '../../Game';
+import { ServerEntity } from '../world/entities/ServerEntity';
+// import { ColorParticle } from '../world/';
+import { AnimationFrame, PlayerAnimations } from '../assets/Assets';
+import { TileType } from '../../global/Tile';
+import { WorldTiles } from '../world/WorldTiles';
+import { ColorParticle } from '../world/particles/ColorParticle';
 
 export class PlayerLocal extends ServerEntity {
     // Constant data
@@ -99,7 +98,6 @@ export class PlayerLocal extends ServerEntity {
             );
             PlayerAnimations[this.currentAnimation][this.animFrame].renderWorldspaceReflection
             (
-                target,
                 this.interpolatedX,
                 this.interpolatedY+this.height,
                 this.width,
@@ -120,7 +118,8 @@ export class PlayerLocal extends ServerEntity {
         ) {
             game.screenshakeAmount = 0.5;
             for (let i = 0; i < 10 * game.particleMultiplier; i++) {
-                game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
+                if(this.bottomCollision !== undefined)
+                    game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
             }
             this.yVel = -1.5;
         }
@@ -150,9 +149,11 @@ export class PlayerLocal extends ServerEntity {
             //footsteps
             for (let i = 0; i < randomlyToInt(Math.abs(this.xVel) * game.particleMultiplier / 2); i++) {
                 game.particles.push(new ColorParticle("#bbbbbb45", 1 / 4 + Math.random() / 8, 50, this.x + this.width / 2 + i / game.particleMultiplier, this.y + this.height, 0, 0, false));
+
             }
             //dust
             for (let i = 0; i < randomlyToInt(Math.abs(this.xVel) * game.particleMultiplier / 2); i++) {
+                if(this.bottomCollision !== undefined)
                 game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
         }
@@ -219,8 +220,8 @@ export class PlayerLocal extends ServerEntity {
                 j++
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
-                let currentBlock: TileType = game.world.worldTiles[j * game.worldWidth + i];
-                if (currentBlock != 0) {
+                let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
+                if (currentBlock !== TileType.Air && typeof currentBlock !== 'string') {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -280,14 +281,16 @@ export class PlayerLocal extends ServerEntity {
                     if (!this.pGrounded) {//if it isn't grounded yet, it must be colliding with the ground for the first time, so summon particles
                         game.screenshakeAmount = Math.abs(this.yVel * 0.75);
                         for (let i = 0; i < 5 * game.particleMultiplier; i++) {
-                            game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
+                            if(this.bottomCollision !== undefined)
+                                game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
                         }
                     }
                 }
                 else {
                     game.screenshakeAmount = Math.abs(this.yVel * 0.75);
                     for (let i = 0; i < 5 * game.particleMultiplier; i++) {//ceiling collision particles
-                        game.particles.push(new ColorParticle(this.topCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
+                        if(this.topCollision !== undefined)
+                            game.particles.push(new ColorParticle(this.topCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
                     }
                 }
                 this.yVel = 0; // set the y velocity to 0 because the object has run into a wall on its top or bottom
@@ -318,9 +321,9 @@ export class PlayerLocal extends ServerEntity {
                     Math.ceil(game.max(this.y, this.y + this.slideY) + this.height);
                     j++
                 ) {
-                    let currentBlock: TileType = game.world.worldTiles[j * game.worldWidth + i];
+                    let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
                     // if the current tile isn't air, then continue with the collision detection
-                    if (currentBlock !== TileType.Air) {
+                    if (currentBlock !== TileType.Air && typeof currentBlock !== "string") {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,

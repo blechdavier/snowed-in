@@ -3,23 +3,23 @@ import p5, { Shader } from 'p5'
 import Audio from 'ts-audio';
 
 
-import World from './world/World';
+import { World } from './world/World';
 
 import {
+    AudioAssets,
     Fonts,
-    ItemsAssets,
+    ItemAssets,
     loadAssets,
     UiAssets,
     WorldAssets,
 } from './assets/Assets';
 import { MainMenu } from './ui/screens/MainMenu';
-import { Socket } from 'socket.io-client';
-import UiScreen from './ui/UiScreen';
+import { io, Socket } from 'socket.io-client';
+import { UiScreen } from './ui/UiScreen';
 import { PauseMenu } from './ui/screens/PauseMenu';
-import { NetManager } from './websocket/NetManager';
+import { NetManager } from './NetManager';
 
-import { ClientEvents, ServerEvents } from '../../api/API';
-import ItemStack from './world/items/ItemStack';
+import { ClientEvents, ServerEvents } from '../global/Events'
 
 /*
 ///INFORMATION
@@ -65,8 +65,9 @@ fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
  */
-import { ClientEvents, ServerEvents } from '../global/Events';
 import { TileType } from '../global/Tile';
+import { Control } from './input/Control';
+import { ColorParticle } from './world/particles/ColorParticle';
 
 export class Game extends p5 {
     worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -152,31 +153,31 @@ export class Game extends p5 {
             console.log("inventory has not been implemented yet");
         }),// inventory
         new Control("Hotbar 1", true, 49, ()=>{
-            this.selectedSlot = 0;
+            this.world.inventory.selectedSlot = 0;
         }),// hot bar 1
-        new Control("Hotbar 2", true, 49, ()=>{
-            this.selectedSlot = 1;
+        new Control("Hotbar 2", true, 50, ()=>{
+            this.world.inventory.selectedSlot = 1;
         }),// hot bar 2
-        new Control("Hotbar 3", true, 49, ()=>{
-            this.selectedSlot = 2;
+        new Control("Hotbar 3", true, 51, ()=>{
+            this.world.inventory.selectedSlot = 2;
         }),// hot bar 3
-        new Control("Hotbar 4", true, 49, ()=>{
-            this.selectedSlot = 3;
+        new Control("Hotbar 4", true, 52, ()=>{
+            this.world.inventory.selectedSlot = 3;
         }),// hot bar 4
-        new Control("Hotbar 5", true, 49, ()=>{
-            this.selectedSlot = 4;
+        new Control("Hotbar 5", true, 53, ()=>{
+            this.world.inventory.selectedSlot = 4;
         }),// hot bar 5
-        new Control("Hotbar 6", true, 49, ()=>{
-            this.selectedSlot = 5;
+        new Control("Hotbar 6", true, 54, ()=>{
+            this.world.inventory.selectedSlot = 5;
         }),// hot bar 6
-        new Control("Hotbar 7", true, 49, ()=>{
-            this.selectedSlot = 6;
+        new Control("Hotbar 7", true, 55, ()=>{
+            this.world.inventory.selectedSlot = 6;
         }),// hot bar 7
-        new Control("Hotbar 8", true, 49, ()=>{
-            this.selectedSlot = 7;
+        new Control("Hotbar 8", true, 56, ()=>{
+            this.world.inventory.selectedSlot = 7;
         }),// hot bar 8
-        new Control("Hotbar 9", true, 49, ()=>{
-            this.selectedSlot = 8;
+        new Control("Hotbar 9", true, 57, ()=>{
+            this.world.inventory.selectedSlot = 8;
         }),// hot bar 9
     ];
 

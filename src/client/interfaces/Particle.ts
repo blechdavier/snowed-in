@@ -1,6 +1,6 @@
 import P5 from 'p5';
 
-interface Particle {
+export interface Particle {
     age: number;
     lifespan: number;
     x: number;
@@ -11,4 +11,3 @@ interface Particle {
     tick(): void;
 }
 
-export = Particle

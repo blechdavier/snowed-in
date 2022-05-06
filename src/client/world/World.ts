@@ -1,6 +1,4 @@
-import game from '../Main';
 import P5 from 'p5';
-import { ImageResource } from '../assets/resources/ImageResource';
 import { Tickable } from '../interfaces/Tickable';
 import { Renderable } from '../interfaces/Renderable';
 import { game, Game } from '../Game';
@@ -292,4 +290,3 @@ export class World implements Tickable, Renderable {
         }
     }
 }
-export = World;

@@ -4,7 +4,7 @@ import { Button } from './Button';
 import { Slider } from './Slider';
 import { UiFrame } from './UiFrame';
 import { game } from '../Game';
-import InputBox from './InputBox';
+import { InputBox } from './InputBox';
 import { UiAssets } from '../assets/Assets';
 
 

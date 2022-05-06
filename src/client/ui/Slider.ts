@@ -1,4 +1,3 @@
-import Renderable from '../interfaces/Renderable';
 import p5 from 'p5';
 import { Renderable } from '../interfaces/Renderable';
 import { UiAssets } from '../assets/Assets';

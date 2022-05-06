@@ -1,8 +1,8 @@
-import game from "../../Main";
-import Particle from "../../interfaces/Particle";
+import { game } from "../../Game";
+import { Particle } from "../../interfaces/Particle";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
-export class ColorParticle implements Particle {
+export class FireParticle implements Particle {
     color: string
     x: number;
     y: number;
