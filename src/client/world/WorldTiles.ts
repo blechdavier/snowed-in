@@ -2,6 +2,7 @@ import { ImageResource } from '../assets/resources/ImageResource';
 import { WorldAssets } from '../assets/Assets';
 import { TileResource } from '../assets/resources/TileResource';
 import { TileType } from '../../global/Tile';
+import { TileEntities } from '../../global/TileEntity';
 
 export type Tile = {
     name: string;
@@ -11,6 +12,10 @@ export type Tile = {
     color: string;
     friction: number;
     reflectivity: number;
+}
+
+export type TileEntityRenderData = {
+    texture: ImageResource | TileResource;
 }
 
 export const WorldTiles: Record<TileType, Tile | undefined> = {
@@ -133,3 +138,12 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         reflectivity: 31
     },
 };
+
+export const TileEntitiesRenderData: Record<TileEntities, TileEntityRenderData> = {
+    [TileEntities.Tier1Drill]: {
+        texture: undefined
+    },
+    [TileEntities.Tier2Drill]: {
+        texture: undefined
+    }
+}

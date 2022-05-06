@@ -9,6 +9,7 @@ import { Entity, Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
 import { WorldTiles } from './WorldTiles';
 import { TileType } from '../../global/Tile';
 import { Inventory } from '../player/Inventory';
+import { TileEntityPayload } from '../../global/TileEntity';
 
 export class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -23,6 +24,8 @@ export class World implements Tickable, Renderable {
     inventory: Inventory
 
     entities: { [id: string]: ServerEntity } = {};
+
+    tileEntities: { [id: string]: TileEntityPayload }
 
     snapshotInterpolation: SnapshotInterpolation;
 
@@ -234,7 +237,13 @@ export class World implements Tickable, Renderable {
             const tileVal = this.worldTiles[tileIndex];
 
             if (typeof tileVal === 'string') {
-                console.log('Tried to draw: ' + tileVal);
+
+                const topLeft = Math.min(...this.tileEntities[tileVal].coveredTiles);
+                if(tileIndex === topLeft) {
+
+                } else {
+                    console.log(`Already rendered ${tileVal}`)
+                }
                 return;
             }
 
