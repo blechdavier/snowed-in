@@ -8,7 +8,7 @@ import { OptionsMenu } from './OptionsMenu';
 
 export class VideoSettingsMenu extends UiScreen {
 
-	constructor(font: FontResource) {
+	constructor(font: FontResource, titleFont: FontResource) {
 		super();
 		// make the frame with some default values.  These will later be changed to fit the screen size.
 		this.frame = new UiFrame(0, 0, 0, 0);
@@ -84,7 +84,7 @@ export class VideoSettingsMenu extends UiScreen {
 			}),
 			new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
 				console.log("main menu");
-				game.currentUi = new OptionsMenu(font);
+				game.currentUi = new OptionsMenu(font, titleFont);
 			})
 		];
 		// update the size of the elements based on the initial screen size

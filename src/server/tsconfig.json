@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"watch": true,
-		"module": "node12",
+		"module": "commonjs",
 		"esModuleInterop": true,
 		"target": "ES6",
 		"noImplicitAny": true,

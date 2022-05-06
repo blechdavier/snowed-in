@@ -6,12 +6,13 @@ export class FontResource extends ImageResource {
 
     alphabet_soup: {[letter: string]: {x: number, y: number, w: number, h: number}} = {}
 
-    constructor(path: string, characterData: {[letter: string]: number}, characterOrder: string) {
+    constructor(path: string, characterData: {[letter: string]: number}, characterOrder: string, fontHeight: number) {
         super(path);
         let runningTotal = 0
         for(let i = 0; i<characterOrder.length; i++) {
-            this.alphabet_soup[characterOrder[i]] = { x: runningTotal, y: 0, w: characterData[characterOrder[i]], h: 12 };
-            runningTotal += characterData[characterOrder[i]] + 1;
+            this.alphabet_soup[characterOrder[i]] = {x: runningTotal, y: 0, w: characterData[characterOrder[i]], h: fontHeight}
+            runningTotal += characterData[characterOrder[i]] + 1
+            // console.log(characterOrder[i]+": "+characterData[characterOrder[i]]);
         }
     }
 

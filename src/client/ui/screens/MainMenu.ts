@@ -10,7 +10,7 @@ import { game } from '../../Game';
 
 export class MainMenu extends UiScreen {
 
-    constructor(font: FontResource) {
+    constructor(font: FontResource, titleFont: FontResource) {
         super();
 
         // make the frame with some default values.  These will later be changed to fit the screen size.
@@ -24,7 +24,7 @@ export class MainMenu extends UiScreen {
             }),
             new Button(font, "New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, () => {
                 console.log("new game");
-                game.currentUi = new WorldCreationMenu(font);
+                game.currentUi = new WorldCreationMenu(font, titleFont);
             }),
             new Button(font, "Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, () => {
                 console.log("join game");
@@ -32,7 +32,7 @@ export class MainMenu extends UiScreen {
             }),
             new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () =>{
                 console.log("options");
-                game.currentUi = new OptionsMenu(font);
+                game.currentUi = new OptionsMenu(font, titleFont);
             })
         ];
 

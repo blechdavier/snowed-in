@@ -6,7 +6,7 @@ Materials:
 
 Progression:
 10 wood -> crafting bench
-10 wood + 10 scrap/tin/aluminum/steel/titanium -> pickaxe/axe
+10 wood highest tier possible + 10 scrap/tin/aluminum/steel/titanium -> pickaxe/axe
 10 scrap + 10 stone 1 -> rusty drill
 10 tin + 10 stone 3 -> drill 2
 10 aluminum + 10 stone 5 -> drill 3

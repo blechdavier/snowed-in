@@ -9,10 +9,13 @@ import { game } from '../../Game';
 
 export class WorldOptionsMenu extends UiScreen {
 
-    constructor(font: FontResource) {
+    constructor(font: FontResource, titleFont: FontResource) {
         super();
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
+
+        this.titleFont = titleFont
+
         // make some buttons with default positions
         if(game.worldBumpiness === undefined)
             game.worldBumpiness = 1;
@@ -46,7 +49,7 @@ export class WorldOptionsMenu extends UiScreen {
             }),
             new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
                 console.log("main menu");
-                game.currentUi = new WorldCreationMenu(font);
+                game.currentUi = new WorldCreationMenu(font, titleFont);
             })
         ];
         this.sliders = [
@@ -75,6 +78,8 @@ export class WorldOptionsMenu extends UiScreen {
         this.sliders.forEach(slider => {
             slider.render(target, upscaleSize);
         });
+
+        this.titleFont.drawText(target, "World Options", this.frame.x + 30*game.upscaleSize, this.frame.y + 16*game.upscaleSize)
     }
 
     windowUpdate() {

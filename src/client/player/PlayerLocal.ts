@@ -390,10 +390,7 @@ export class PlayerLocal extends ServerEntity {
             this.xVel = 0;
         }
 
-        if (this.y < 0) {
-            this.y = 0;
-            this.yVel = 0;
-        } else if (this.y + this.height > game.worldHeight) {
+        if (this.y + this.height > game.worldHeight) {
             this.y = game.worldHeight - this.height;
             this.yVel = 0;
             this.grounded = true;

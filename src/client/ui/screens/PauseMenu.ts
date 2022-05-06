@@ -9,22 +9,24 @@ import { game } from '../../Game';
 
 export class PauseMenu extends UiScreen {
 
-    constructor(font: FontResource) {
+    constructor(font: FontResource, titleFont: FontResource) {
         super();
 
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
 
-        // make 4 buttons with default positions
+        this.titleFont = titleFont;
+
+        // make 4 buttons with default positSions
         this.buttons = [
             new Button(font, "Resume game", "Go back to the game.", 0, 0, 0, 0, () => {
                 game.currentUi = undefined;
             }),
             new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () => {
-                game.currentUi = new OptionsMenu(font);
+                game.currentUi = new OptionsMenu(font, titleFont);
             }),
             new Button(font, "Leave game", "Go back to Main Menu", 0, 0, 0, 0, () => {
-                game.currentUi = new MainMenu(font);
+                game.currentUi = new MainMenu(font, titleFont);
             })
         ];
 
@@ -43,14 +45,16 @@ export class PauseMenu extends UiScreen {
             item.render(target, upscaleSize);
         }
 
+        this.titleFont.drawText(target, "Paused", this.frame.x + 54*game.upscaleSize, this.frame.y + 16*game.upscaleSize)
+
     }
 
     windowUpdate() {
         // set the position of the frame
-        this.frame.x = game.width/2-256/2*game.upscaleSize;// center the frame in the middle of the screen
+        this.frame.x = game.width/2-200/2*game.upscaleSize;// center the frame in the middle of the screen
         this.frame.y = game.height/2-72*game.upscaleSize;
-        this.frame.w = 256*game.upscaleSize;
-        this.frame.h = 64*game.upscaleSize;
+        this.frame.w = 200*game.upscaleSize;
+        this.frame.h = 54*game.upscaleSize;
 
         // set the positions of all the buttons
         for(let i = 0; i<3; i++) {

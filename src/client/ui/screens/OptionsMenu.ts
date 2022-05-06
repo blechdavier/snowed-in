@@ -10,19 +10,20 @@ import { game } from '../../Game';
 
 export class OptionsMenu extends UiScreen {
 
-    constructor(font: FontResource) {
+    constructor(font: FontResource, titleFont: FontResource) {
         super();
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
+        this.titleFont = titleFont;
         // make some buttons with default positions
         this.buttons = [
             new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, () => {
                 console.log("video settings");
-                game.currentUi = new VideoSettingsMenu(font);
+                game.currentUi = new VideoSettingsMenu(font, titleFont);
             }),
             new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, () => {
                 console.log("control menu");
-                game.currentUi = new ControlsMenu(font);
+                game.currentUi = new ControlsMenu(font, titleFont);
             }),
             new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
                 console.log("audio menu");
@@ -30,7 +31,7 @@ export class OptionsMenu extends UiScreen {
             }),
             new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
                 console.log("main menu");
-                game.currentUi = new MainMenu(font);
+                game.currentUi = new MainMenu(font, titleFont);
             })
         ];
         // update the size of the elements based on the initial screen size
@@ -46,6 +47,8 @@ export class OptionsMenu extends UiScreen {
         this.buttons.forEach(button => {
             button.render(target, upscaleSize);
         });
+
+        this.titleFont.drawText(target, "Options", this.frame.x + 54*game.upscaleSize, this.frame.y + 16*game.upscaleSize)
     }
 
     windowUpdate() {

@@ -10,6 +10,7 @@ import {
     Fonts,
     ItemAssets,
     loadAssets,
+    PlayerAnimations,
     UiAssets,
     WorldAssets,
 } from './assets/Assets';
@@ -142,7 +143,7 @@ export class Game extends p5 {
             //close inventory
             //return;}
             if(this.currentUi===undefined)
-                this.currentUi = new PauseMenu(Fonts.title);
+                this.currentUi = new PauseMenu(Fonts.title, Fonts.big);
             else
                 this.currentUi = undefined;
         }),// settings
@@ -213,7 +214,7 @@ export class Game extends p5 {
     preload() {
         console.log(this)
         console.log('Loading assets');
-        loadAssets(this, UiAssets, ItemAssets, WorldAssets, Fonts);
+        loadAssets(this, UiAssets, ItemAssets, WorldAssets, Fonts, PlayerAnimations);
         console.log('Asset loading completed');
         this.skyShader = this.loadShader(
             'assets/shaders/basic.vert',
@@ -222,6 +223,7 @@ export class Game extends p5 {
     }
 
     setup() {
+        console.log("setup called")
         // make a canvas that fills the whole screen (a canvas is what is drawn to in p5.js, as well as lots of other JS rendering libraries)
         this.canvas = this.createCanvas(this.windowWidth, this.windowHeight);
         this.canvas.mouseOut(this.mouseExited);
@@ -229,7 +231,7 @@ export class Game extends p5 {
 
         this.skyLayer = this.createGraphics(this.width, this.height, 'webgl');
 
-        this.currentUi = new MainMenu(Fonts.title);
+        this.currentUi = new MainMenu(Fonts.title, Fonts.big);
 
         // Tick
         setInterval(() => {
@@ -256,7 +258,7 @@ export class Game extends p5 {
 
         // set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
         this.frameRate(Infinity);
-        AudioAssets.ambient.winter1.playSound();
+        // AudioAssets.ambient.winter1.playSound();
         this.particleMultiplier = 1;
         this.skyToggle = true;
         this.skyMod = 2;
@@ -416,7 +418,7 @@ export class Game extends p5 {
             if(control.keyboard && control.keyCode===event.keyCode)//event.keyCode is deprecated but i don't care
                 control.onPressed();
         }
-        if(this.currentUi!==undefined) {
+        if(this.currentUi!==undefined && this.currentUi.inputBoxes!==undefined) {
             for(let i of this.currentUi.inputBoxes) {
                 if(i.listening) {
                     console.log("test3");
@@ -539,6 +541,14 @@ export class Game extends p5 {
         }
 
          */
+    }
+
+    mouseWheel(event: any) {//mouseEvent apparently doesn't have a delta property sooooo idk what to do sorry for the any type
+        if(this.currentUi !== undefined && this.currentUi.scroll !== undefined) {
+            this.currentUi.scroll += event.delta/10;
+            this.currentUi.scroll = this.constrain(this.currentUi.scroll, this.currentUi.minScroll, this.currentUi.maxScroll)
+            console.log(`Scroll: ${this.currentUi.scroll}, Min: ${this.currentUi.minScroll}, Max: ${this.currentUi.maxScroll}`);
+        }
     }
 
     moveCamera() {

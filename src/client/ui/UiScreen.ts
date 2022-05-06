@@ -6,6 +6,7 @@ import { UiFrame } from './UiFrame';
 import { game } from '../Game';
 import { InputBox } from './InputBox';
 import { UiAssets } from '../assets/Assets';
+import { FontResource } from '../assets/resources/FontResource';
 
 
 export abstract class UiScreen implements Renderable {
@@ -13,8 +14,14 @@ export abstract class UiScreen implements Renderable {
     buttons: Button[];
     sliders: Slider[];
     inputBoxes: InputBox[];
+    scroll?: number;
+    minScroll: number = 0;
+    maxScroll: number = 0;
 
     frame: UiFrame
+
+
+    titleFont: FontResource
 
     abstract render(target: p5, upscaleSize: number): void;
 
