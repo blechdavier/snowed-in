@@ -16,6 +16,8 @@ export enum TileType {
 	Tin,
 	Aluminum,
 	Gold,
+	Titanium,
+	Grape,
 	// Wood0,
 	// Wood1,
 	// Wood2,

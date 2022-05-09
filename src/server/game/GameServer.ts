@@ -251,8 +251,18 @@ export class GameServer {
 						return;
 					}
 					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
+					if(typeof brokenTileInstance !== 'string' && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
+						setTimeout(() => {
+							if(this.world === undefined)  return;
+							this.world.tiles[brokenTile.tileIndex] = brokenTileInstance;
+							this.room.emit('worldUpdate', [
+								{ tileIndex: brokenTile.tileIndex, tile: brokenTileInstance },
+							]);
+						}, 10000)
+					}
 					if(typeof(brokenTileInstance) === 'number') {
 						let update = user.inventory.attemptPickUp(WorldTiles[brokenTileInstance]?.itemDrop || ItemType.SnowBlock)//if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
+						socket.emit('inventoryUpdate', update)
 					}
 
 					this.world.tiles[brokenTile.tileIndex] = TileType.Air;

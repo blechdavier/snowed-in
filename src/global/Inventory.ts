@@ -34,6 +34,9 @@ export enum ItemType {
 	Stone9Block,
 	TinBlock,
 	AluminumBlock,
+	GoldBlock,
+	TitaniumBlock,
+	GrapeBlock,
 }
 
 export type ItemStack = {
@@ -101,6 +104,18 @@ export const Items = itemTypeData({
 	[ItemType.AluminumBlock]: {
 		type: ItemCategories.Tile,
 		placedTile: TileType.Aluminum,
+	},
+	[ItemType.GoldBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Gold,
+	},
+	[ItemType.TitaniumBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Titanium,
+	},
+	[ItemType.GrapeBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Grape,
 	},
 });
 

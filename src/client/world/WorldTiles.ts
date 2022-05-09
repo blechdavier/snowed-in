@@ -165,6 +165,24 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         friction: 3,
         reflectivity: 21
     },
+    [TileType.Titanium]: {
+        name: 'gold ore',
+        texture: WorldAssets.middleground.tileset_titanium,
+        connected: true,
+        anyConnection: false,
+        color: "#31323b",
+        friction: 3,
+        reflectivity: 25
+    },
+    [TileType.Grape]: {
+        name: 'gold ore',
+        texture: WorldAssets.middleground.tileset_grape,
+        connected: true,
+        anyConnection: false,
+        color: "#31323b",
+        friction: 3,
+        reflectivity: 29
+    },
 };
 
 // export const TileEntitiesRenderData: Record<TileEntities, TileEntityRenderData> = {

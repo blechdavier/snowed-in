@@ -53,7 +53,13 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         itemDrop: ItemType.AluminumBlock
     },
     [TileType.Gold]: {
-        itemDrop: ItemType.AluminumBlock
+        itemDrop: ItemType.GoldBlock
+    },
+    [TileType.Titanium]: {
+        itemDrop: ItemType.TitaniumBlock
+    },
+    [TileType.Grape]: {
+        itemDrop: ItemType.GrapeBlock
     },
 };
 

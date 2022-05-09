@@ -82,6 +82,15 @@ export const ItemAssets: Record<ItemType, ImageResource> = {
 	[ItemType.AluminumBlock]: new ImageResource(
 		'assets/textures/items/block_aluminum.png',
 	),
+	[ItemType.GoldBlock]: new ImageResource(
+		'assets/textures/items/block_gold.png',
+	),
+	[ItemType.TitaniumBlock]: new ImageResource(
+		'assets/textures/items/block_titanium.png',
+	),
+	[ItemType.GrapeBlock]: new ImageResource(
+		'assets/textures/items/block_grape.png',
+	),
 };
 
 // Ui related assets
@@ -214,6 +223,20 @@ export const WorldAssets = {
 		),
 		tileset_gold: new TileResource(
 			'assets/textures/world/middleground/tileset_gold.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_titanium: new TileResource(
+			'assets/textures/world/middleground/tileset_titanium.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_grape: new TileResource(
+			'assets/textures/world/middleground/tileset_grape.png',
 			16,
 			1,
 			8,
