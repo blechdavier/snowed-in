@@ -166,7 +166,7 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         reflectivity: 21
     },
     [TileType.Titanium]: {
-        name: 'gold ore',
+        name: 'titanium ore',
         texture: WorldAssets.middleground.tileset_titanium,
         connected: true,
         anyConnection: false,
@@ -175,13 +175,103 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         reflectivity: 25
     },
     [TileType.Grape]: {
-        name: 'gold ore',
+        name: 'grape ore',
         texture: WorldAssets.middleground.tileset_grape,
         connected: true,
         anyConnection: false,
         color: "#31323b",
         friction: 3,
         reflectivity: 29
+    },
+    [TileType.Wood0]: {
+        name: 'raw wood',
+        texture: WorldAssets.middleground.tileset_wood0,
+        connected: false,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood1]: {
+        name: 'wood tier 1',
+        texture: WorldAssets.middleground.tileset_wood1,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood2]: {
+        name: 'wood tier 2',
+        texture: WorldAssets.middleground.tileset_wood2,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood3]: {
+        name: 'wood tier 3',
+        texture: WorldAssets.middleground.tileset_wood3,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood4]: {
+        name: 'wood tier 4',
+        texture: WorldAssets.middleground.tileset_wood4,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood5]: {
+        name: 'wood tier 5',
+        texture: WorldAssets.middleground.tileset_wood5,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood6]: {
+        name: 'wood tier 6',
+        texture: WorldAssets.middleground.tileset_wood6,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood7]: {
+        name: 'wood tier 7',
+        texture: WorldAssets.middleground.tileset_wood7,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood8]: {
+        name: 'wood tier 8',
+        texture: WorldAssets.middleground.tileset_wood8,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
+    },
+    [TileType.Wood9]: {
+        name: 'wood tier 9',
+        texture: WorldAssets.middleground.tileset_wood9,
+        connected: true,
+        anyConnection: true,
+        color: "#a77145",
+        friction: 3,
+        reflectivity: 5
     },
 };
 

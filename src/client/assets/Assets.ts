@@ -91,6 +91,36 @@ export const ItemAssets: Record<ItemType, ImageResource> = {
 	[ItemType.GrapeBlock]: new ImageResource(
 		'assets/textures/items/block_grape.png',
 	),
+	[ItemType.Wood0Block]: new ImageResource(
+		'assets/textures/items/block_wood0.png',
+	),
+	[ItemType.Wood1Block]: new ImageResource(
+		'assets/textures/items/block_wood1.png',
+	),
+	[ItemType.Wood2Block]: new ImageResource(
+		'assets/textures/items/block_wood2.png',
+	),
+	[ItemType.Wood3Block]: new ImageResource(
+		'assets/textures/items/block_wood3.png',
+	),
+	[ItemType.Wood4Block]: new ImageResource(
+		'assets/textures/items/block_wood4.png',
+	),
+	[ItemType.Wood5Block]: new ImageResource(
+		'assets/textures/items/block_wood5.png',
+	),
+	[ItemType.Wood6Block]: new ImageResource(
+		'assets/textures/items/block_wood6.png',
+	),
+	[ItemType.Wood7Block]: new ImageResource(
+		'assets/textures/items/block_wood7.png',
+	),
+	[ItemType.Wood8Block]: new ImageResource(
+		'assets/textures/items/block_wood8.png',
+	),
+	[ItemType.Wood9Block]: new ImageResource(
+		'assets/textures/items/block_wood9.png',
+	),
 };
 
 // Ui related assets
@@ -106,6 +136,7 @@ export const UiAssets = {
 	slider_handle: new ImageResource('assets/textures/ui/sliderHandle.png'),
 	title_image: new ImageResource('assets/textures/ui/snowedinBUMP.png'),
 	vignette: new ImageResource('assets/textures/ui/vignette-export.png'),
+	selected_tile: new ImageResource('assets/textures/ui/selectedtile.png'),
 };
 
 // World related assets
@@ -237,6 +268,76 @@ export const WorldAssets = {
 		),
 		tileset_grape: new TileResource(
 			'assets/textures/world/middleground/tileset_grape.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood0: new TileResource(
+			'assets/textures/world/middleground/wood0.png',
+			1,
+			1,
+			8,
+			8,
+		),
+		tileset_wood1: new TileResource(
+			'assets/textures/world/middleground/tileset_wood1.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood2: new TileResource(
+			'assets/textures/world/middleground/tileset_wood2.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood3: new TileResource(
+			'assets/textures/world/middleground/tileset_wood3.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood4: new TileResource(
+			'assets/textures/world/middleground/tileset_wood4.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood5: new TileResource(
+			'assets/textures/world/middleground/tileset_wood5.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood6: new TileResource(
+			'assets/textures/world/middleground/tileset_wood6.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood7: new TileResource(
+			'assets/textures/world/middleground/tileset_wood7.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood8: new TileResource(
+			'assets/textures/world/middleground/tileset_wood8.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_wood9: new TileResource(
+			'assets/textures/world/middleground/tileset_wood9.png',
 			16,
 			1,
 			8,

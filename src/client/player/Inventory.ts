@@ -53,7 +53,14 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 				game.world.width * y + x
 					] !== TileType.Air
 			) {
-				//console.error('Not air');
+				console.info('Placing');
+				game.connection.emit(
+					'worldBreakStart',
+					game.world.width * y + x
+				);
+				game.connection.emit(
+					'worldBreakFinish'
+				);
 				return;
 			}
 			console.info('Placing');
@@ -65,5 +72,6 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 			);
 		}
 	},
-	[ItemCategories.Resource]: {}
+	[ItemCategories.Resource]: {},
+	[ItemCategories.Tool]: {},
 }

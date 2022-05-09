@@ -11,11 +11,13 @@ const itemTypeData = <D, T extends Record<ItemType, DataPairs<CategoryData>>>(
 export enum ItemCategories {
 	Tile,
 	Resource,
+	Tool,
 }
 
 export type CategoryData = {
-	[ItemCategories.Tile]: { placedTile: TileType };
+	[ItemCategories.Tile]: { placedTile: TileType, maxStackSize?: number};
 	[ItemCategories.Resource]: {};
+	[ItemCategories.Tool]: { breakableTiles: TileType[]};
 };
 
 export enum ItemType {
@@ -37,6 +39,16 @@ export enum ItemType {
 	GoldBlock,
 	TitaniumBlock,
 	GrapeBlock,
+	Wood0Block,
+	Wood1Block,
+	Wood2Block,
+	Wood3Block,
+	Wood4Block,
+	Wood5Block,
+	Wood6Block,
+	Wood7Block,
+	Wood8Block,
+	Wood9Block,
 }
 
 export type ItemStack = {
@@ -117,6 +129,50 @@ export const Items = itemTypeData({
 		type: ItemCategories.Tile,
 		placedTile: TileType.Grape,
 	},
+	[ItemType.Wood0Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood0,
+	},
+	[ItemType.Wood1Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood1,
+	},
+	[ItemType.Wood2Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood2,
+	},
+	[ItemType.Wood3Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood3,
+	},
+	[ItemType.Wood4Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood4,
+	},
+	[ItemType.Wood5Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood5,
+	},
+	[ItemType.Wood6Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood6,
+	},
+	[ItemType.Wood7Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood7,
+	},
+	[ItemType.Wood8Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood8,
+	},
+	[ItemType.Wood9Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Wood9,
+	},
+	// [ItemType.TinPickaxe]: {
+	// 	type: ItemCategories.Tool,
+	// 	breakableTiles: [TileType.Snow, TileType.Ice, TileType.Dirt, TileType.Wood0, TileType.Stone0, TileType.Stone1, TileType.Tin, TileType.Aluminum]
+	// }
 });
 
 export type InventoryUpdatePayload = {
