@@ -253,7 +253,6 @@ export class GameServer {
 					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
 					if(typeof(brokenTileInstance) === 'number') {
 						let update = user.inventory.attemptPickUp(WorldTiles[brokenTileInstance]?.itemDrop || ItemType.SnowBlock)//if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
-						4
 					}
 
 					this.world.tiles[brokenTile.tileIndex] = TileType.Air;
