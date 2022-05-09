@@ -6,6 +6,7 @@ import { ClientEvents, ServerEvents } from '../../global/Events';
 import { io, UserData } from '../Main';
 import { Player } from './entity/Player';
 import { World } from './World';
+import { WorldTiles } from './WorldTiles'
 import { TileEntityPayload } from '../../global/TileEntity';
 import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
@@ -242,6 +243,17 @@ export class GameServer {
 							`Player ${user.name} attempted to break a non-existent tile`,
 						);
 						return;
+					}
+					if (this.world.tiles[brokenTile.tileIndex] === TileType.Air) {
+						console.error(
+							`Player ${user.name} attempted to break an air tile`,
+						);
+						return;
+					}
+					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
+					if(typeof(brokenTileInstance) === 'number') {
+						let update = user.inventory.attemptPickUp(WorldTiles[brokenTileInstance]?.itemDrop || ItemType.SnowBlock)//if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
+						4
 					}
 
 					this.world.tiles[brokenTile.tileIndex] = TileType.Air;

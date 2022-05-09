@@ -90,7 +90,7 @@ const workerData = {
 	// }
 
 	// generate trees
-	console.log("tried to tree? generated")
+	//console.log("tried to tree? generated")
 	for(let t = 0; t<width; t++) {
 		let x = Math.floor(Math.random()*width);
 		for(let i = 0; i<height-1; i++) {
@@ -107,9 +107,9 @@ const workerData = {
 					//if(!isOpen)//break out of this loop if there isn't enough room to save time
 						//break;
 				}
-				console.log("tree would have been generated")
+				//console.log("tree would have been generated")
 				if(isOpen) {
-					console.log("tree generated")
+					//console.log("tree generated")
 					tiles[i * width + x] = TileType.Stone0
 					tiles[(i-6) * width + x] = TileType.Dirt
 					tiles[i * width + x+3] = TileType.Dirt
@@ -126,6 +126,7 @@ const workerData = {
 			y: 0,
 		};
 	}
+	console.log("Finished World Generation")
 	return { tiles: tiles, spawnPosition: spawnPosition }
 	},
 };
@@ -145,12 +146,18 @@ return fractalNoise(x / 3, noise) * 30 + 65 < y && noise.noise2D(x / 50, y / 50)
 }
 
 function typeOfStone(x: number, y: number, noise: SimplexNoise) {
-let hardness: number = y - 25 + noise.noise2D(x / 3, y / 3) * 5;
+let hardness: number = y - 35 + noise.noise2D(x / 3, y / 3) * 5;
 if (hardness < 50) {
+	if(noise.noise2D(x/15, y/15)>0.8) {
+		console.log("generated tin")
+		return TileType.Tin}
 	return TileType.Stone0;
 } else if (hardness < 80) {
 	return TileType.Stone1;
 } else if (hardness < 110) {
+	if(noise.noise2D(x/15, y/15)>0.8) {
+		console.log("generated aluminum")
+		return TileType.Aluminum}
 	return TileType.Stone2;
 } else if (hardness < 135) {
 	return TileType.Stone3;

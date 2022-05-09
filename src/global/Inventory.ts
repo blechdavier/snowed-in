@@ -21,6 +21,19 @@ export type CategoryData = {
 export enum ItemType {
 	SnowBlock,
 	IceBlock,
+	DirtBlock,
+	Stone0Block,
+	Stone1Block,
+	Stone2Block,
+	Stone3Block,
+	Stone4Block,
+	Stone5Block,
+	Stone6Block,
+	Stone7Block,
+	Stone8Block,
+	Stone9Block,
+	TinBlock,
+	AluminumBlock,
 }
 
 export type ItemStack = {
@@ -36,6 +49,58 @@ export const Items = itemTypeData({
 	[ItemType.IceBlock]: {
 		type: ItemCategories.Tile,
 		placedTile: TileType.Ice,
+	},
+	[ItemType.DirtBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Dirt,
+	},
+	[ItemType.Stone0Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone0,
+	},
+	[ItemType.Stone1Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone1,
+	},
+	[ItemType.Stone2Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone2,
+	},
+	[ItemType.Stone3Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone3,
+	},
+	[ItemType.Stone4Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone4,
+	},
+	[ItemType.Stone5Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone5,
+	},
+	[ItemType.Stone6Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone6,
+	},
+	[ItemType.Stone7Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone7,
+	},
+	[ItemType.Stone8Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone8,
+	},
+	[ItemType.Stone9Block]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Stone9,
+	},
+	[ItemType.TinBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Tin,
+	},
+	[ItemType.AluminumBlock]: {
+		type: ItemCategories.Tile,
+		placedTile: TileType.Aluminum,
 	},
 });
 

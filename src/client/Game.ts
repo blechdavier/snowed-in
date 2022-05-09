@@ -269,8 +269,8 @@ export class Game extends p5 {
         for(let i = 0; i<40*this.particleMultiplier; i++) {
             //this.particles.push(new ColorParticle("#eb5834", 1/4, 10, this.worldMouseX+Math.random(), this.worldMouseY+Math.random(), Math.random()-0.5, Math.random()/4-0.5, false));
         }
-        if (this.frameCount===2) {
-            this.skyShader.setUniform("screenDimensions", [this.width/this.upscaleSize, this.height/this.upscaleSize]);
+        if (this.frameCount===2) {//has to be done on the second frame for some reason?
+            this.skyShader.setUniform("screenDimensions", [this.width/this.upscaleSize*2, this.height/this.upscaleSize*2]);
             this.skyShader.setUniform("skyImage", WorldAssets.shaderResources.skyImage.image);
         }
         // do the tick calculations
@@ -316,7 +316,7 @@ export class Game extends p5 {
         }
 
         this.smooth();//enable image lerp
-        this.tint(255, 100);//make image translucent
+        this.tint(255, 150);//make image translucent
         UiAssets.vignette.render(this, 0, 0, this.width, this.height);
         this.noTint();
         this.noSmooth();
@@ -400,13 +400,14 @@ export class Game extends p5 {
     windowResized() {
         this.resizeCanvas(this.windowWidth, this.windowHeight);
         this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
-        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize*2, this.windowHeight/this.upscaleSize*2]);
 
         // go for a scale of <48 tiles screen
         this.upscaleSize = Math.min(
             Math.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
             Math.ceil(this.windowHeight / 48 / this.TILE_HEIGHT)
         );
+
+        this.skyShader.setUniform("screenDimensions", [this.windowWidth/this.upscaleSize*2, this.windowHeight/this.upscaleSize*2]);
 
         if(this.currentUi !== undefined)
             this.currentUi.windowUpdate();

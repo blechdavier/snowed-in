@@ -43,6 +43,45 @@ export const ItemAssets: Record<ItemType, ImageResource> = {
 	[ItemType.IceBlock]: new ImageResource(
 		'assets/textures/items/block_ice.png',
 	),
+	[ItemType.DirtBlock]: new ImageResource(
+		'assets/textures/items/block_dirt.png',
+	),
+	[ItemType.Stone0Block]: new ImageResource(
+		'assets/textures/items/block_stone0.png',
+	),
+	[ItemType.Stone1Block]: new ImageResource(
+		'assets/textures/items/block_stone1.png',
+	),
+	[ItemType.Stone2Block]: new ImageResource(
+		'assets/textures/items/block_stone2.png',
+	),
+	[ItemType.Stone3Block]: new ImageResource(
+		'assets/textures/items/block_stone3.png',
+	),
+	[ItemType.Stone4Block]: new ImageResource(
+		'assets/textures/items/block_stone4.png',
+	),
+	[ItemType.Stone5Block]: new ImageResource(
+		'assets/textures/items/block_stone5.png',
+	),
+	[ItemType.Stone6Block]: new ImageResource(
+		'assets/textures/items/block_stone6.png',
+	),
+	[ItemType.Stone7Block]: new ImageResource(
+		'assets/textures/items/block_stone7.png',
+	),
+	[ItemType.Stone8Block]: new ImageResource(
+		'assets/textures/items/block_stone8.png',
+	),
+	[ItemType.Stone9Block]: new ImageResource(
+		'assets/textures/items/block_stone9.png',
+	),
+	[ItemType.TinBlock]: new ImageResource(
+		'assets/textures/items/block_tin.png',
+	),
+	[ItemType.AluminumBlock]: new ImageResource(
+		'assets/textures/items/block_aluminum.png',
+	),
 };
 
 // Ui related assets
@@ -154,6 +193,20 @@ export const WorldAssets = {
 		),
 		tileset_stone9: new TileResource(
 			'assets/textures/world/middleground/tileset_stone9.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_tin: new TileResource(
+			'assets/textures/world/middleground/tileset_tin.png',
+			16,
+			1,
+			8,
+			8,
+		),
+		tileset_aluminum: new TileResource(
+			'assets/textures/world/middleground/tileset_aluminum.png',
 			16,
 			1,
 			8,

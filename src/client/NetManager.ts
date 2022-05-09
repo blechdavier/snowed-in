@@ -65,6 +65,7 @@ export class NetManager {
                 if (this.game.world === undefined) return;
 
                 updates.forEach((update) => {
+                    console.log(update)
                     this.game.world.inventory.items[update.slot] = update.item;
                 });
             });

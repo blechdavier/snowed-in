@@ -3,6 +3,7 @@ import { WorldAssets } from '../assets/Assets';
 import { TileResource } from '../assets/resources/TileResource';
 import { TileType } from '../../global/Tile';
 import { TileEntities } from '../../global/TileEntity';
+import { ItemType } from '../../global/Inventory';
 
 export type Tile = {
     name: string;
@@ -137,13 +138,31 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         friction: 3,
         reflectivity: 31
     },
+    [TileType.Tin]: {
+        name: 'tin ore',
+        texture: WorldAssets.middleground.tileset_tin,
+        connected: true,
+        anyConnection: false,
+        color: "#31323b",
+        friction: 3,
+        reflectivity: 10
+    },
+    [TileType.Aluminum]: {
+        name: 'tin ore',
+        texture: WorldAssets.middleground.tileset_aluminum,
+        connected: true,
+        anyConnection: false,
+        color: "#31323b",
+        friction: 3,
+        reflectivity: 10
+    },
 };
 
-export const TileEntitiesRenderData: Record<TileEntities, TileEntityRenderData> = {
-    [TileEntities.Tier1Drill]: {
-        texture: undefined
-    },
-    [TileEntities.Tier2Drill]: {
-        texture: undefined
-    }
-}
+// export const TileEntitiesRenderData: Record<TileEntities, TileEntityRenderData> = {
+    // [TileEntities.Tier1Drill]: {
+        // texture: undefined
+    // },
+    // [TileEntities.Tier2Drill]: {
+        // texture: undefined
+    // }
+// }

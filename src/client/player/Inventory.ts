@@ -21,7 +21,7 @@ export class Inventory {
 	worldClick(x: number, y: number) {
 		const selectedItem = this.items[this.selectedSlot]
 		if(selectedItem === undefined || selectedItem === null) {
-			console.error("Breaking tile")
+			//console.error("Breaking tile")
 			game.connection.emit(
 				'worldBreakStart',
 				game.world.width * y + x
@@ -53,7 +53,7 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 				game.world.width * y + x
 					] !== TileType.Air
 			) {
-				console.error('Not air');
+				//console.error('Not air');
 				return;
 			}
 			console.info('Placing');
