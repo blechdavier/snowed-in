@@ -212,6 +212,13 @@ export const WorldAssets = {
 			8,
 			8,
 		),
+		tileset_gold: new TileResource(
+			'assets/textures/world/middleground/tileset_gold.png',
+			16,
+			1,
+			8,
+			8,
+		),
 	},
 	foreground: {
 		tileset_pipe: new TileResource(

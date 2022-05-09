@@ -148,29 +148,29 @@ return fractalNoise(x / 3, noise) * 30 + 65 < y && noise.noise2D(x / 50, y / 50)
 function typeOfStone(x: number, y: number, noise: SimplexNoise) {
 let hardness: number = y - 35 + noise.noise2D(x / 3, y / 3) * 5;
 if (hardness < 50) {
-	if(noise.noise2D(x/15, y/15)>0.8) {
-		console.log("generated tin")
-		return TileType.Tin}
+	if(noise.noise2D(x/15, y/15)>0.8)
+		return TileType.Tin
 	return TileType.Stone0;
 } else if (hardness < 80) {
 	return TileType.Stone1;
 } else if (hardness < 110) {
-	if(noise.noise2D(x/15, y/15)>0.8) {
-		console.log("generated aluminum")
-		return TileType.Aluminum}
+	if(noise.noise2D(x/15, y/15)>0.8)
+		return TileType.Aluminum
 	return TileType.Stone2;
 } else if (hardness < 135) {
 	return TileType.Stone3;
 } else if (hardness < 155) {
-	return TileType.Stone4;
+	if(noise.noise2D(x/15, y/15)>0.8)
+		return TileType.Gold
+	return TileType.Stone4;//metal
 } else if (hardness < 170) {
 	return TileType.Stone5;
 } else if (hardness < 180) {
-	return TileType.Stone6;
+	return TileType.Stone6;//steel
 } else if (hardness < 187) {
 	return TileType.Stone7;
 } else if (hardness < 195) {
-	return TileType.Stone8;
+	return TileType.Stone8;//titanium
 } else {
 	return TileType.Stone9;
 }

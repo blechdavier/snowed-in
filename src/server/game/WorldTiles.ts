@@ -52,5 +52,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
     [TileType.Aluminum]: {
         itemDrop: ItemType.AluminumBlock
     },
+    [TileType.Gold]: {
+        itemDrop: ItemType.AluminumBlock
+    },
 };
 

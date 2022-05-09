@@ -148,13 +148,22 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         reflectivity: 10
     },
     [TileType.Aluminum]: {
-        name: 'tin ore',
+        name: 'aluminum ore',
         texture: WorldAssets.middleground.tileset_aluminum,
         connected: true,
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 10
+        reflectivity: 17
+    },
+    [TileType.Gold]: {
+        name: 'gold ore',
+        texture: WorldAssets.middleground.tileset_gold,
+        connected: true,
+        anyConnection: false,
+        color: "#31323b",
+        friction: 3,
+        reflectivity: 21
     },
 };
 
