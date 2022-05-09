@@ -74,25 +74,25 @@ export class PlayerLocal extends ServerEntity {
 
     render(target: p5, upscaleSize: number): void {
 
-        target.rect(
-            (this.interpolatedX * game.TILE_WIDTH -
-                game.interpolatedCamX * game.TILE_WIDTH) *
-                upscaleSize,
-            (this.interpolatedY * game.TILE_HEIGHT -
-                game.interpolatedCamY * game.TILE_HEIGHT) *
-                upscaleSize,
-            this.width * upscaleSize * game.TILE_WIDTH,
-            this.height * upscaleSize * game.TILE_HEIGHT
-        );
+        // target.rect(
+        //     (this.interpolatedX * game.TILE_WIDTH -
+        //         game.interpolatedCamX * game.TILE_WIDTH) *
+        //         upscaleSize,
+        //     (this.interpolatedY * game.TILE_HEIGHT -
+        //         game.interpolatedCamY * game.TILE_HEIGHT) *
+        //         upscaleSize,
+        //     this.width * upscaleSize * game.TILE_WIDTH,
+        //     this.height * upscaleSize * game.TILE_HEIGHT
+        // );
         PlayerAnimations[this.currentAnimation][this.animFrame].render
             (
                 target,
-                (this.interpolatedX * game.TILE_WIDTH -
+                Math.round((this.interpolatedX * game.TILE_WIDTH -
                     game.interpolatedCamX * game.TILE_WIDTH) *
-                upscaleSize,
-                (this.interpolatedY * game.TILE_HEIGHT -
+                upscaleSize),
+                Math.round((this.interpolatedY * game.TILE_HEIGHT -
                     game.interpolatedCamY * game.TILE_HEIGHT) *
-                upscaleSize,
+                upscaleSize),
                 this.width * upscaleSize * game.TILE_WIDTH,
                 this.height * upscaleSize * game.TILE_HEIGHT
             );
