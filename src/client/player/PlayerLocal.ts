@@ -405,7 +405,3 @@ function randomlyToInt(f: number) {
     }
     return (Math.ceil(f));
 }
-
-function axisAlignedDistance(x1: number, y1: number, x2: number, y2: number) {
-    return abs(x1 - x2) + abs(y1 - y2);
-}
