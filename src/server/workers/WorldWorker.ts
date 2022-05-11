@@ -134,8 +134,8 @@ const workerData = {
 			};
 		}
 		console.log('Finished World Generation');
-		console.log("printing object")
-		console.log(world.tileEntities);
+		//console.log("printing object")
+		//console.log(world.tileEntities);
 		return { tiles: world.tiles, spawnPosition: world.spawnPosition, tileEntities: world.tileEntities };
 	},
 };

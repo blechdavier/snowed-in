@@ -125,13 +125,17 @@ export class GameServer {
 			// Initialize the client with all the entities
 			const tileEntities: TileEntityPayload[] = [];
 			Object.entries(this.world.tileEntities).forEach(
-				([id, tileEntity]) => {
+				([, tileEntity]) => {
 					if(tileEntity==undefined) {
 						throw new Error(
-							`tileEntity with id ${id} was undefined`
+							`tileEntity was undefined`
 						)
 					}
-					tileEntities.push(tileEntity.get());
+					tileEntities.push({
+						id: tileEntity.id, 
+						coveredTiles: tileEntity.coveredTiles,
+						payload: tileEntity.payload
+					});
 					/*
 
 					I'm having trouble converting TileEntity type to a corresponding TileEntityPayload

@@ -161,7 +161,7 @@ export class World implements Tickable, Renderable {
                 const tileVal = this.worldTiles[x * this.width + y];
 
                 if (typeof tileVal === 'string') {
-                    console.log(tileVal);
+                    // console.log(tileVal);
                     continue;
                 }
 
@@ -210,6 +210,10 @@ export class World implements Tickable, Renderable {
             const tileVal = this.worldTiles[tileIndex];
 
             if (typeof tileVal === 'string') {
+
+                if(this.tileEntities[tileVal]===undefined) {
+                    console.error("tile entity "+tileVal+" is undefined");
+                }
 
                 const topLeft = Math.min(...this.tileEntities[tileVal].coveredTiles);
                 if(tileIndex === topLeft) {

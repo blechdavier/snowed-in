@@ -2,11 +2,10 @@ import { World } from '../World';
 import {
 	TileEntities,
 	TileEntityData,
-	TileEntityPayload
 } from '../../../global/TileEntity';
 import { TileType } from '../../../global/Tile';
 
-export abstract class TileEntity{
+export class TileEntity{
 	id: string;
 
 	x: number;
@@ -20,6 +19,8 @@ export abstract class TileEntity{
 	coveredTiles: number[] = [];
 
 	image: number | number[]
+
+	payload: TileEntityData = {type_: TileEntities.Tree, data: {woodCount: 0, seedCount: 0}};
 
 	protected constructor(
 		world: World,
@@ -71,40 +72,32 @@ export abstract class TileEntity{
 		delete this.world.tileEntities[this.id];
 	}
 
-	abstract getData(): TileEntityData;
-
-	get(): TileEntityPayload {
-		return {
-			id: this.id,
-			coveredTiles: this.coveredTiles,
-			...this.getData(),
-		};
-	}
-
 }
 
 export class Tree extends TileEntity {
 
-	woodCount: number
-	seedCount: number
+	payload: TileEntityData;
 
 	constructor(world: World, x: number, y: number, id: string) {
-		super(world, 1, 2, x, y, id);
+		super(world, 4, 6, x, y, id);
 		this.image = randint(0, 9);//pick a random of the tree images to be the image
-		this.woodCount = randint(20, 40);
-		this.seedCount = randint(2, 4)
+		this.payload = {type_: TileEntities.Tree, data: {woodCount: randint(20, 40), seedCount: randint(2, 4)}}
 		this.cut();
+		/*
+
+			Error here is caused because it wants the woodCount and seedCount to be in every type of TileEntity at once.
+			For example, woodCount is in Tree, but not Tier1Drill, Tier2Drill, etc.
+			The same goes the other way around.
+			Level or Active can't be set because they're not present in Tree
+
+			I ended up commenting out everything but Tree and Tier1Drill so the errors are easier to read.
+
+		*/
 	}
 
-	getData(): TileEntityData {
-		return {
-			type: TileEntities.Tree,
-			data: { woodCount: this.woodCount, seedCount: this.seedCount},
-		};
-	}
-
-	cut(amount?: number | 1) {
-		console.log("cut "+amount);
+	cut(amount?: number) {
+		if(amount != undefined) amount = 1;
+		console.log("cut "+amount+" times (this function doesn't do anything yet)");
 	}
 }
 

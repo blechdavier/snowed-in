@@ -4,6 +4,7 @@ import { workers } from '../Main';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemStack } from '../../global/Inventory';
 import { Item } from './entity/Item';
+import { TileEntityPayload } from '../../global/TileEntity';
 
 export class World {
 	// World
