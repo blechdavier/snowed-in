@@ -1,7 +1,5 @@
 import p5, { Shader } from 'p5';
 
-import Audio from 'ts-audio';
-
 import { World } from './world/World';
 
 import {
@@ -105,7 +103,7 @@ export class Game extends p5 {
 
 	worldMouseX = 0; // the mouse position in world coordinates
 	worldMouseY = 0; // the mouse position in world coordinates
-    lastCursorMove = Date.now()
+	lastCursorMove = Date.now()
 	mouseOn = true; // is the mouse on the window?
 
 	keys: boolean[] = [];
@@ -216,7 +214,7 @@ export class Game extends p5 {
 	particles: ColorParticle /*|FootstepParticle*/[];
 
 	constructor(connection: Socket) {
-		super(() => {}); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
+		super(() => { }); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
 		this.connection = connection;
 
 		// Initialise the network manager
@@ -224,7 +222,6 @@ export class Game extends p5 {
 	}
 
 	preload() {
-		console.log(this);
 		console.log('Loading assets');
 		loadAssets(
 			this,
@@ -348,9 +345,6 @@ export class Game extends p5 {
 
 		// draw the hot bar
 		if (this.world !== undefined) {
-			this.noStroke();
-			this.textAlign(this.RIGHT, this.BOTTOM);
-			this.textSize(5 * this.upscaleSize);
 			for (let i = 0; i < this.world.inventory.width; i++) {
 				const currentItem = this.world.inventory.items[i];
 
@@ -395,11 +389,12 @@ export class Game extends p5 {
 						8 * this.upscaleSize,
 					);
 
-					this.text(
-						currentItem.quantity,
-						16 * this.upscaleSize + 16 * i * this.upscaleSize,
-						16 * this.upscaleSize,
-					);
+					Fonts.tom_thumb.drawText(this, currentItem.quantity.toString(), (-4 * currentItem.quantity.toString().length + 16 * (i+1.0625)) * this.upscaleSize, 11 * this.upscaleSize)
+					// this.text(
+					// 	currentItem.quantity,
+					// 	16 * this.upscaleSize + 16 * i * this.upscaleSize,
+					// 	16 * this.upscaleSize,
+					// );
 
 					this.noTint();
 				}
@@ -413,6 +408,8 @@ export class Game extends p5 {
 			this.currentUi.render(this, this.upscaleSize);
 		if (this.currentUi !== undefined)
 			this.currentUi.render(this, this.upscaleSize);
+
+		Fonts.tom_thumb.drawText(this, "Snowed In v1.0.0", this.upscaleSize, this.height-6*this.upscaleSize);
 
 		// console.timeEnd("frame");
 	}
@@ -508,8 +505,8 @@ export class Game extends p5 {
 		if (
 			this.mouseX > 2 * this.upscaleSize &&
 			this.mouseX <
-				2 * this.upscaleSize +
-					16 * this.upscaleSize * this.world.inventory.width &&
+			2 * this.upscaleSize +
+			16 * this.upscaleSize * this.world.inventory.width &&
 			this.mouseY > 2 * this.upscaleSize &&
 			this.mouseY < 18 * this.upscaleSize
 		) {
@@ -539,39 +536,39 @@ export class Game extends p5 {
 
 	mouseReleased() {
 		/*
-        if(this.currentUi !== undefined) {
-            this.currentUi.mouseReleased();
-        }
-        const releasedSlot: number = Math.floor(
-            (this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
-        );
+		if(this.currentUi !== undefined) {
+			this.currentUi.mouseReleased();
+		}
+		const releasedSlot: number = Math.floor(
+			(this.mouseX - 2 * this.upscaleSize) / 16 / this.upscaleSize
+		);
 
-        if (this.pickedUpSlot !== -1) {
-            if (
-                this.mouseX > 2 * this.upscaleSize &&
-                this.mouseX <
-                    2 * this.upscaleSize +
-                        16 * this.upscaleSize * this.hotBar.length &&
-                this.mouseY > 2 * this.upscaleSize &&
-                this.mouseY < 18 * this.upscaleSize
-            ) {
-                // Make sure that the slot that the cursor was released was not the slot that was selected
-                if (releasedSlot === this.pickedUpSlot) return;
+		if (this.pickedUpSlot !== -1) {
+			if (
+				this.mouseX > 2 * this.upscaleSize &&
+				this.mouseX <
+					2 * this.upscaleSize +
+						16 * this.upscaleSize * this.hotBar.length &&
+				this.mouseY > 2 * this.upscaleSize &&
+				this.mouseY < 18 * this.upscaleSize
+			) {
+				// Make sure that the slot that the cursor was released was not the slot that was selected
+				if (releasedSlot === this.pickedUpSlot) return;
 
-                // Swap the picked up slot with the slot the mouse was released on
-                [this.hotBar[this.pickedUpSlot], this.hotBar[releasedSlot]] = [
-                    this.hotBar[releasedSlot],
-                    this.hotBar[this.pickedUpSlot],
-                ];
+				// Swap the picked up slot with the slot the mouse was released on
+				[this.hotBar[this.pickedUpSlot], this.hotBar[releasedSlot]] = [
+					this.hotBar[releasedSlot],
+					this.hotBar[this.pickedUpSlot],
+				];
 
-                this.pickedUpSlot = -1;
-            } else {
-                this.hotBar[this.pickedUpSlot] = undefined;
-                this.pickedUpSlot = -1;
-            }
-        }
+				this.pickedUpSlot = -1;
+			} else {
+				this.hotBar[this.pickedUpSlot] = undefined;
+				this.pickedUpSlot = -1;
+			}
+		}
 
-         */
+		 */
 	}
 
 	mouseWheel(event: any) {
@@ -813,9 +810,9 @@ export class Game extends p5 {
   | $$      | $$  | $$| $$  | $$ \____  $$| $$| $$       \____  $$ /$$
   | $$      | $$  | $$|  $$$$$$$ /$$$$$$$/| $$|  $$$$$$$ /$$$$$$$/|__/
   |__/      |__/  |__/ \____  $$|_______/ |__/ \_______/|_______/
-                       /$$  | $$
-                      |  $$$$$$/
-                       \______/
+					   /$$  | $$
+					  |  $$$$$$/
+					   \______/
   */
 
 	// this class holds an axis-aligned rectangle affected by gravity, drag, and collisions with tiles.
@@ -950,41 +947,41 @@ export class Game extends p5 {
 	}
 
 	/*
-    pickUpItem(itemStack: ItemStack): boolean {
-        for (let i = 0; i < this.hotBar.length; i++) {
-            const item = this.hotBar[i];
+	pickUpItem(itemStack: ItemStack): boolean {
+		for (let i = 0; i < this.hotBar.length; i++) {
+			const item = this.hotBar[i];
 
-            // If there are no items in the current slot of the hotBar
-            if (item === undefined) {
-                this.hotBar[i] = itemStack;
-                return true;
-            }
+			// If there are no items in the current slot of the hotBar
+			if (item === undefined) {
+				this.hotBar[i] = itemStack;
+				return true;
+			}
 
-            if (
-                item === itemStack &&
-                item.stackSize < item.maxStackSize
-            ) {
-                const remainingSpace = item.maxStackSize - item.stackSize;
+			if (
+				item === itemStack &&
+				item.stackSize < item.maxStackSize
+			) {
+				const remainingSpace = item.maxStackSize - item.stackSize;
 
-                // Top off the stack with items if it can take more than the stack being added
-                if (remainingSpace >= itemStack.stackSize) {
-                    this.hotBar[i].stackSize =
-                        item.stackSize + itemStack.stackSize;
-                    return true;
-                }
+				// Top off the stack with items if it can take more than the stack being added
+				if (remainingSpace >= itemStack.stackSize) {
+					this.hotBar[i].stackSize =
+						item.stackSize + itemStack.stackSize;
+					return true;
+				}
 
-                itemStack.stackSize -= remainingSpace;
+				itemStack.stackSize -= remainingSpace;
 
-                this.hotBar[i].stackSize = itemStack.maxStackSize;
-            }
-        }
-        console.error(
-            `Could not pickup ${itemStack.stackSize} ${itemStack.name}`
-        );
-        return false;
-    }
+				this.hotBar[i].stackSize = itemStack.maxStackSize;
+			}
+		}
+		console.error(
+			`Could not pickup ${itemStack.stackSize} ${itemStack.name}`
+		);
+		return false;
+	}
 
-     */
+	 */
 
 	mouseExited() {
 		this.mouseOn = false;
@@ -999,12 +996,12 @@ export class Game extends p5 {
 			Math.floor(
 				(this.interpolatedCamX * this.TILE_WIDTH +
 					this.mouseX / this.upscaleSize) /
-					this.TILE_WIDTH,
+				this.TILE_WIDTH,
 			) !== this.worldMouseX ||
 			Math.floor(
 				(this.interpolatedCamY * this.TILE_HEIGHT +
 					this.mouseY / this.upscaleSize) /
-					this.TILE_HEIGHT,
+				this.TILE_HEIGHT,
 			) !== this.worldMouseY
 		) {
 			this.lastCursorMove = Date.now();
@@ -1013,12 +1010,12 @@ export class Game extends p5 {
 		this.worldMouseX = Math.floor(
 			(this.interpolatedCamX * this.TILE_WIDTH +
 				this.mouseX / this.upscaleSize) /
-				this.TILE_WIDTH,
+			this.TILE_WIDTH,
 		);
 		this.worldMouseY = Math.floor(
 			(this.interpolatedCamY * this.TILE_HEIGHT +
 				this.mouseY / this.upscaleSize) /
-				this.TILE_HEIGHT,
+			this.TILE_HEIGHT,
 		);
 	}
 
@@ -1044,26 +1041,26 @@ export class Game extends p5 {
 				this,
 				Math.round(
 					(this.worldMouseX - this.interpolatedCamX) *
-						this.TILE_WIDTH *
-						this.upscaleSize,
+					this.TILE_WIDTH *
+					this.upscaleSize,
 				),
 				Math.round(
 					(this.worldMouseY - this.interpolatedCamY) *
-						this.TILE_HEIGHT *
-						this.upscaleSize,
+					this.TILE_HEIGHT *
+					this.upscaleSize,
 				),
 				this.TILE_WIDTH * this.upscaleSize,
 				this.TILE_HEIGHT * this.upscaleSize,
 			);
-            if(Date.now()-this.lastCursorMove>1000) {
-                let selectedTile = this.world.worldTiles[this.world.width*this.worldMouseY+this.worldMouseX];
-                if(typeof(selectedTile) === 'string') {
-                    this.text("Tile entity: "+selectedTile, this.mouseX, this.mouseY);//JANKY ALERT
-                }
-                else if (WorldTiles[selectedTile] !== undefined) {
-                    this.text((WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
-                }
-            }
+			if (Date.now() - this.lastCursorMove > 1000) {
+				let selectedTile = this.world.worldTiles[this.world.width * this.worldMouseY + this.worldMouseX];
+				if (typeof (selectedTile) === 'string') {
+					this.text("Tile entity: " + selectedTile, this.mouseX, this.mouseY);//JANKY ALERT
+				}
+				else if (WorldTiles[selectedTile] !== undefined) {
+					this.text((WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
+				}
+			}
 		}
 	}
 }

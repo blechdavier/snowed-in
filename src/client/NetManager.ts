@@ -41,6 +41,7 @@ export class NetManager {
                     tileEntities.forEach((tileEntity) => {
                         this.game.world.tileEntities[tileEntity.id] = tileEntity
                     });
+                    console.log(tileEntities);
                 }
             );
         }

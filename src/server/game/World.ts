@@ -1,4 +1,4 @@
-import { T1Drill, TileEntity } from './entity/TileEntity';
+import { Tree, TileEntity } from './entity/TileEntity';
 import { TileType } from '../../global/Tile';
 import { workers } from '../Main';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,11 +31,7 @@ export class World {
 	async generate() {
 		// Set the world to the generated world
 
-		const world = await workers.worldWorker.generateWorld(
-			this.width,
-			this.height,
-			this.seed,
-		);
+		const world = await workers.worldWorker.generateWorld(this);
 
 		this.tiles = Object.setPrototypeOf(
 			{ ...world.tiles, width: this.width, height: this.height },
@@ -43,21 +39,16 @@ export class World {
 		);
 
 		this.spawnPosition = world.spawnPosition;
+		this.tileEntities = world.tileEntities;
 		this.tiles[
 			Math.round(this.width) / 2 +
-				(Math.round(this.height) / 2) * this.width
+			(Math.round(this.height) / 2) * this.width
 		] = TileType.Air;
 		this.tiles[
 			Math.round(this.width) / 2 +
-				(Math.round(this.height) / 2) * this.width +
-				this.width
+			(Math.round(this.height) / 2) * this.width +
+			this.width
 		] = TileType.Air;
-		const tileEntity = new T1Drill(
-			this,
-			Math.round(this.width) / 2,
-			Math.round(this.height) / 2,
-			uuidv4(),
-		);
 	}
 
 	spawnItem(x: number, y: number, item: ItemStack) {
@@ -92,11 +83,3 @@ export class WorldTiles extends Array<TileType | string> {
 		};
 	}
 }
-
-/*
-
-trees
-snow
-dirt/ice
-stone/ore
-*/

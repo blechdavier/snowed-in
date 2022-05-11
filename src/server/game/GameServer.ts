@@ -125,8 +125,21 @@ export class GameServer {
 			// Initialize the client with all the entities
 			const tileEntities: TileEntityPayload[] = [];
 			Object.entries(this.world.tileEntities).forEach(
-				([, tileEntity]) => {
+				([id, tileEntity]) => {
+					if(tileEntity==undefined) {
+						throw new Error(
+							`tileEntity with id ${id} was undefined`
+						)
+					}
 					tileEntities.push(tileEntity.get());
+					/*
+
+					I'm having trouble converting TileEntity type to a corresponding TileEntityPayload
+
+					The .get() method doesn't seem to be working; this might have something to do with the file it's defined in being in the client part of the code
+					It might be hard to move this to global because it references World and TileType, which are both client side things
+
+					*/
 				},
 			);
 

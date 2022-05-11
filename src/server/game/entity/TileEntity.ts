@@ -2,11 +2,11 @@ import { World } from '../World';
 import {
 	TileEntities,
 	TileEntityData,
-	TileEntityPayload,
+	TileEntityPayload
 } from '../../../global/TileEntity';
 import { TileType } from '../../../global/Tile';
 
-export abstract class TileEntity {
+export abstract class TileEntity{
 	id: string;
 
 	x: number;
@@ -19,6 +19,8 @@ export abstract class TileEntity {
 
 	coveredTiles: number[] = [];
 
+	image: number | number[]
+
 	protected constructor(
 		world: World,
 		width: number,
@@ -29,6 +31,8 @@ export abstract class TileEntity {
 	) {
 		this.width = width;
 		this.height = height;
+
+		this.image = -1;
 
 		this.x = x;
 		this.y = y;
@@ -46,7 +50,7 @@ export abstract class TileEntity {
 
 				if (this.world.tiles[worldIndex] !== TileType.Air) {
 					throw new Error(
-						'Could not place tileEntity because there are tiles in the way',
+						'Could not place tileEntity because there are tiles in the way: tileType: '+this.world.tiles[worldIndex]+".",
 					);
 				}
 				updatedTiles.push(worldIndex);
@@ -76,17 +80,48 @@ export abstract class TileEntity {
 			...this.getData(),
 		};
 	}
+
 }
 
-export class T1Drill extends TileEntity {
+export class Tree extends TileEntity {
+
+	woodCount: number
+	seedCount: number
+
 	constructor(world: World, x: number, y: number, id: string) {
 		super(world, 1, 2, x, y, id);
+		this.image = randint(0, 9);//pick a random of the tree images to be the image
+		this.woodCount = randint(20, 40);
+		this.seedCount = randint(2, 4)
+		this.cut();
 	}
 
 	getData(): TileEntityData {
 		return {
-			type: TileEntities.Tier1Drill,
-			data: { level: 0, active: true },
+			type: TileEntities.Tree,
+			data: { woodCount: this.woodCount, seedCount: this.seedCount},
 		};
 	}
+
+	cut(amount?: number | 1) {
+		console.log("cut "+amount);
+	}
+}
+
+// export class T1Drill extends TileEntity {
+// 	constructor(world: World, x: number, y: number, id: string) {
+// 		super(world, 1, 2, x, y, id);
+// 	}
+
+// 	getData(): TileEntityData {
+// 		return {
+// 			type: TileEntities.Tier1Drill,
+// 			data: { level: 0, active: true },
+// 		};
+// 	}
+// }
+
+
+function randint(x1: number, x2: number) {
+	return (Math.floor(x1+Math.random()*(x2+1-x1)))
 }

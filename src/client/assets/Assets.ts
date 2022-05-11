@@ -345,56 +345,80 @@ export const WorldAssets = {
 		),
 	},
 	foreground: {
-		tileset_pipe: new TileResource(
-			'assets/textures/world/foreground/tileset_pipe.png',
-			16,
-			1,
-			8,
-			8,
-		),
+		
 	},
-	tileEntities: {
-		entity_t1drill: [
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill1.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill2.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill3.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill4.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill5.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill6.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill7.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill8.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill9.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill10.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill11.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill12.png',
-			),
-			new ImageResource(
-				'assets/textures/world/tileEntities/Rusty Drill/RustyDrill13.png',
-			),
-		],
+	tileEntities: [
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree1.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree2.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree3.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree4.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree5.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree6.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree7.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree8.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree9.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/Tree10.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill1.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill2.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill3.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill4.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill5.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill6.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill7.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill8.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill9.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill10.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill11.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill12.png',
+		),
+		new ImageResource(
+			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill13.png',
+		),
+	],
+	entities: {
 		entity_t1drone: [
 			new ImageResource(
 				'assets/textures/world/entities/Small Drone/SmallDrone01.png',
@@ -457,7 +481,7 @@ export const WorldAssets = {
 				'assets/textures/world/entities/Small Drone/SmallDrone20.png',
 			),
 		],
-	},
+	}
 };
 
 export const Fonts = {
@@ -617,6 +641,101 @@ export const Fonts = {
 		},
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!.,?_-: ',
 		24,
+	),
+	tom_thumb: new FontResource(
+		'assets/textures/ui/tom_thumb.png',
+		{
+			'A': 3,
+			'B': 3,
+			'C': 3,
+			'D': 3,
+			'E': 3,
+			'F': 3,
+			'G': 3,
+			'H': 3,
+			'I': 3,
+			'J': 3,
+			'K': 3,
+			'L': 3,
+			'M': 3,
+			'N': 3,
+			'O': 3,
+			'P': 3,
+			'Q': 3,
+			'R': 3,
+			'S': 3,
+			'T': 3,
+			'U': 3,
+			'V': 3,
+			'W': 3,
+			'X': 3,
+			'Y': 3,
+			'Z': 3,
+			'a': 3,
+			'b': 3,
+			'c': 3,
+			'd': 3,
+			'e': 3,
+			'f': 3,
+			'g': 3,
+			'h': 3,
+			'i': 3,
+			'j': 3,
+			'k': 3,
+			'l': 3,
+			'm': 3,
+			'n': 3,
+			'o': 3,
+			'p': 3,
+			'q': 3,
+			'r': 3,
+			's': 3,
+			't': 3,
+			'u': 3,
+			'v': 3,
+			'w': 3,
+			'x': 3,
+			'y': 3,
+			'z': 3,
+			'[': 3,
+			'\\': 3,
+			']': 3,
+			'^': 3,
+			' ': 3,
+			'!': 3,
+			'"': 3,
+			'#': 3,
+			'$': 3,
+			'%': 3,
+			'&': 3,
+			"'": 3,
+			'(': 3,
+			')': 3,
+			'*': 3,
+			'+': 3,
+			',': 3,
+			'-': 3,
+			'.': 3,
+			'/': 3,
+			'0': 3,
+			'1': 3,
+			'2': 3,
+			'3': 3,
+			'4': 3,
+			'5': 3,
+			'6': 3,
+			'7': 3,
+			'8': 3,
+			'9': 3,
+			':': 3,
+			';': 3,
+			'<': 3,
+			'=': 3,
+			'>': 3,
+			'?': 3,
+		},
+		`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[\\]^ !"#$%&'()*+,-./0123456789:;<=>?`,
+		5,
 	),
 };
 

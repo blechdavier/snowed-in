@@ -1,2 +1,4 @@
 https://freesound.org/people/pcaeldries/sounds/65813/: winter ambiance https://creativecommons.org/licenses/by/3.0/
 https://freesound.org/people/aerror/sounds/350757/: campfire sound https://creativecommons.org/publicdomain/zero/1.0/
+
+https://robey.lag.net/2010/01/23/tiny-monospace-font.html: tom thumb font (small 3x5), some modifications made https://opensource.org/licenses/MIT
