@@ -261,6 +261,12 @@ export class GameServer {
 						);
 						return;
 					}
+					if(typeof(this.world.tiles[brokenTile.tileIndex]) === 'string') {
+						console.error(
+							`Player ${user.name} attempted to break a tile entity`,
+						);
+						return;
+					}
 					if (this.world.tiles[brokenTile.tileIndex] === TileType.Air) {
 						console.error(
 							`Player ${user.name} attempted to break an air tile`,

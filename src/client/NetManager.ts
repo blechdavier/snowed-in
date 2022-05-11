@@ -38,12 +38,13 @@ export class NetManager {
                             entity.type
                         ](entity);
                     });
-                    this.game.world.tileEntities = {};
+                    this.game.world.tileEntityPayloads = {};
                     tileEntities.forEach((tileEntity) => {
                         console.log("adding tile entity: "+tileEntity.id)
+                        this.game.world.tileEntityPayloads[tileEntity.id] = tileEntity
                         this.game.world.tileEntities[tileEntity.id] = tileEntity
                     });
-                    console.log(this.game.world.tileEntities);
+                    console.log(this.game.world.tileEntityPayloads);
                 }
             );
         }

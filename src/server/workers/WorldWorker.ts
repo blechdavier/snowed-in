@@ -120,7 +120,7 @@ const workerData = {
 						// world.tiles[(i - 6) * width + x] = TileType.Dirt;
 						// world.tiles[i * width + x + 3] = TileType.Dirt;
 						// world.tiles[(i - 6) * width + x + 3] = TileType.Dirt;
-						new Tree(world, x, i-6, uuidv4());
+						new Tree(world, x, i-5, uuidv4());
 					}
 					break;
 				}

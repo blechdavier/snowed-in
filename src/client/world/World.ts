@@ -6,10 +6,11 @@ import { PlayerLocal } from '../player/PlayerLocal';
 import { ServerEntity } from './entities/ServerEntity';
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation';
 import { Entity, Snapshot } from '@geckos.io/snapshot-interpolation/lib/types';
-import { Tile, WorldTiles } from './WorldTiles';
+import { WorldTiles } from './WorldTiles';
 import { TileType } from '../../global/Tile';
 import { Inventory } from '../player/Inventory';
 import { TileEntityPayload } from '../../global/TileEntity';
+import { ClientTileEntity } from './entities/TileEntity';
 
 export class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -25,7 +26,8 @@ export class World implements Tickable, Renderable {
 
     entities: { [id: string]: ServerEntity } = {};
 
-    tileEntities: { [id: string]: TileEntityPayload }
+    tileEntityPayloads: { [id: string]: TileEntityPayload }
+    tileEntities: { [id: string]: ClientTileEntity }
 
     snapshotInterpolation: SnapshotInterpolation;
 
@@ -60,8 +62,8 @@ export class World implements Tickable, Renderable {
             this.tileLayer,
             0,
             0,
-            (game.width/upscaleSize)*upscaleSize,
-            (game.height/upscaleSize)*upscaleSize,
+            (game.width / upscaleSize) * upscaleSize,
+            (game.height / upscaleSize) * upscaleSize,
             (game.interpolatedCamX * game.TILE_WIDTH),
             (game.interpolatedCamY * game.TILE_WIDTH),
             (game.width / upscaleSize),
@@ -73,11 +75,11 @@ export class World implements Tickable, Renderable {
         target.stroke(0);
         target.strokeWeight(4);
         target.noFill();
-        target.rect(target.width-this.width, 0, this.width, this.height);
+        target.rect(target.width - this.width, 0, this.width, this.height);
 
         target.image(
             this.tileLayer,
-            target.width-this.width,
+            target.width - this.width,
             0,
             this.width,
             this.height
@@ -92,21 +94,50 @@ export class World implements Tickable, Renderable {
         // Update the tile and the 4 neighbouring tiles
         this.worldTiles[tileIndex] = tile;
 
-        // erase the broken tiles and its surrounding tiles using two erasing rectangles in a + shape
+        // erase the broken tiles and its surrounding tiles if they're tiles
         this.tileLayer.erase();
         this.tileLayer.noStroke();
-        this.tileLayer.rect(
-            ((tileIndex % this.width) - 1) * game.TILE_WIDTH,
+        this.tileLayer.rect(//center
+            (tileIndex % this.width) * game.TILE_WIDTH,
             Math.floor(tileIndex / this.width) * game.TILE_HEIGHT,
-            game.TILE_WIDTH * 3,
+            game.TILE_WIDTH,
             game.TILE_HEIGHT
         );
-        this.tileLayer.rect(
-            (tileIndex % this.width) * game.TILE_WIDTH,
-            (Math.floor(tileIndex / this.width) - 1) * game.TILE_HEIGHT,
-            game.TILE_WIDTH,
-            game.TILE_HEIGHT * 3
-        );
+
+        if (tileIndex - 1 >= 0 && typeof (this.worldTiles[tileIndex - 1]) !== 'string' && this.worldTiles[tileIndex - 1] !== TileType.Air) {
+            this.tileLayer.rect(//left
+                ((tileIndex % this.width) - 1) * game.TILE_WIDTH,
+                Math.floor(tileIndex / this.width) * game.TILE_HEIGHT,
+                game.TILE_WIDTH,
+                game.TILE_HEIGHT
+            );
+        }
+
+        if (tileIndex + 1 < this.width * this.height && typeof (this.worldTiles[tileIndex + 1]) !== 'string' && this.worldTiles[tileIndex + 1] !== TileType.Air) {
+            this.tileLayer.rect(//right
+                ((tileIndex % this.width) - 1) * game.TILE_WIDTH,
+                Math.floor(tileIndex / this.width) * game.TILE_HEIGHT,
+                game.TILE_WIDTH,
+                game.TILE_HEIGHT
+            );
+        }
+
+        if (tileIndex - this.width >= 0 && typeof (this.worldTiles[tileIndex - this.width]) !== 'string' && this.worldTiles[tileIndex - this.width] !== TileType.Air) {
+            this.tileLayer.rect(//top
+                (tileIndex % this.width) * game.TILE_WIDTH,
+                (Math.floor(tileIndex / this.width) - 1) * game.TILE_HEIGHT,
+                game.TILE_WIDTH,
+                game.TILE_HEIGHT
+            );
+        }
+        if (tileIndex + this.width < this.width * this.height && typeof (this.worldTiles[tileIndex + this.width]) !== 'string' && this.worldTiles[tileIndex + this.width] !== TileType.Air) {
+            this.tileLayer.rect(//bottom
+                (tileIndex % this.width) * game.TILE_WIDTH,
+                (Math.floor(tileIndex / this.width) + 1) * game.TILE_HEIGHT,
+                game.TILE_WIDTH,
+                game.TILE_HEIGHT
+            );
+        }
         this.tileLayer.noErase();
 
         // redraw the neighboring tiles
@@ -132,7 +163,7 @@ export class World implements Tickable, Renderable {
             state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
                 positionStates[id] = { x, y };
             });
-        } catch (e) {}
+        } catch (e) { }
 
         // Render each entity in random order
         Object.entries(this.entities).forEach(
@@ -155,13 +186,16 @@ export class World implements Tickable, Renderable {
     }
 
     loadWorld() {
-        for (let x = 0; x < this.height; x++) {
+        this.tileLayer.noStroke();
+        this.tileLayer.fill(255, 0, 0);
+        for (let x = 0; x < this.height; x++) {//x and y are switched for some stupid reason
             // i will be the y position of tiles being drawn
             for (let y = 0; y < this.width; y++) {
                 const tileVal = this.worldTiles[x * this.width + y];
 
                 if (typeof tileVal === 'string') {
                     // console.log(tileVal);
+                    this.tileLayer.rect(y * game.TILE_WIDTH, x * game.TILE_HEIGHT, game.TILE_WIDTH, game.TILE_HEIGHT);
                     continue;
                 }
 
@@ -169,7 +203,7 @@ export class World implements Tickable, Renderable {
                     // Draw the correct image for the tiles onto the tiles layer
                     const tile = WorldTiles[tileVal];
 
-                    if(tile === undefined)
+                    if (tile === undefined)
                         continue
 
                     if (
@@ -211,13 +245,14 @@ export class World implements Tickable, Renderable {
 
             if (typeof tileVal === 'string') {
 
-                if(this.tileEntities[tileVal]===undefined) {
-                    console.error("tile entity "+tileVal+" is undefined");
+                if (this.tileEntities[tileVal] === undefined) {
+                    console.error("tile entity " + tileVal + " is undefined");
                 }
 
                 const topLeft = Math.min(...this.tileEntities[tileVal].coveredTiles);
-                if(tileIndex === topLeft) {
-
+                if (tileIndex === topLeft) {
+                    //render tile entity image
+                    //this.tileEntities[tileVal].render(tileLayer, x*8, y*8);
                 } else {
                     console.log(`Already rendered ${tileVal}`)
                 }
@@ -233,52 +268,52 @@ export class World implements Tickable, Renderable {
 
             if (tile.connected && "renderTile" in tile.texture) {
                 let topTileBool = false;
-        let leftTileBool = false;
-        let bottomTileBool = false;
-        let rightTileBool = false;
-        if(tile.anyConnection) {
-            // test if the neighboring tiles are solid
-            topTileBool =
-                x === TileType.Air ||
-                this.worldTiles[(y - 1) * this.width + x] !==
-                    TileType.Air;
-            leftTileBool =
-                y === TileType.Air ||
-                this.worldTiles[y * this.width + x - 1] !==
-                    TileType.Air;
-            bottomTileBool =
-                x === this.height - 1 ||
-                this.worldTiles[(y + 1) * this.width + x] !==
-                    TileType.Air;
-            rightTileBool =
-                y === this.width - 1 ||
-                this.worldTiles[y * this.width + x + 1] !==
-                    TileType.Air;
-            
-                   // console.log(["boring", leftTileBool, bottomTileBool, this.worldTiles[x * this.width + y + 1], topTileBool])
-        }
-        else {
-            // test if the neighboring tiles are the same tile
-            topTileBool =
-                x === 0 ||
-                this.worldTiles[(y - 1) * this.width + x] ===
-                    tileVal;
-            leftTileBool =
-                y === 0 ||
-                this.worldTiles[y * this.width + x - 1] ===
-                    tileVal;
-            bottomTileBool =
-                x === this.height - 1 ||
-                this.worldTiles[(y + 1) * this.width + x] ===
-                    tileVal;
-            rightTileBool =
-                y === this.width - 1 ||
-                this.worldTiles[y * this.width + x + 1] ===
-                    tileVal;
+                let leftTileBool = false;
+                let bottomTileBool = false;
+                let rightTileBool = false;
+                if (tile.anyConnection) {
+                    // test if the neighboring tiles are solid
+                    topTileBool =
+                        x === TileType.Air ||
+                        this.worldTiles[(y - 1) * this.width + x] !==
+                        TileType.Air;
+                    leftTileBool =
+                        y === TileType.Air ||
+                        this.worldTiles[y * this.width + x - 1] !==
+                        TileType.Air;
+                    bottomTileBool =
+                        x === this.height - 1 ||
+                        this.worldTiles[(y + 1) * this.width + x] !==
+                        TileType.Air;
+                    rightTileBool =
+                        y === this.width - 1 ||
+                        this.worldTiles[y * this.width + x + 1] !==
+                        TileType.Air;
+
+                    // console.log(["boring", leftTileBool, bottomTileBool, this.worldTiles[x * this.width + y + 1], topTileBool])
+                }
+                else {
+                    // test if the neighboring tiles are the same tile
+                    topTileBool =
+                        x === 0 ||
+                        this.worldTiles[(y - 1) * this.width + x] ===
+                        tileVal;
+                    leftTileBool =
+                        y === 0 ||
+                        this.worldTiles[y * this.width + x - 1] ===
+                        tileVal;
+                    bottomTileBool =
+                        x === this.height - 1 ||
+                        this.worldTiles[(y + 1) * this.width + x] ===
+                        tileVal;
+                    rightTileBool =
+                        y === this.width - 1 ||
+                        this.worldTiles[y * this.width + x + 1] ===
+                        tileVal;
                     //console.log(["fancy", leftTileBool, bottomTileBool, rightTileBool, topTileBool])
 
-        }
-                    this.worldTiles[tileIndex + 1] !== TileType.Air;
+                }
+                this.worldTiles[tileIndex + 1] !== TileType.Air;
 
                 // convert 4 digit binary number to base 10
                 const tileSetIndex =
@@ -316,47 +351,47 @@ export class World implements Tickable, Renderable {
         let leftTileBool = false;
         let bottomTileBool = false;
         let rightTileBool = false;
-        if(anyConnection) {
+        if (anyConnection) {
             // test if the neighboring tiles are solid
             topTileBool =
                 x === TileType.Air ||
                 this.worldTiles[(x - 1) * this.width + y] !==
-                    TileType.Air;
+                TileType.Air;
             leftTileBool =
                 y === TileType.Air ||
                 this.worldTiles[x * this.width + y - 1] !==
-                    TileType.Air;
+                TileType.Air;
             bottomTileBool =
                 x === this.height - 1 ||
                 this.worldTiles[(x + 1) * this.width + y] !==
-                    TileType.Air;
+                TileType.Air;
             rightTileBool =
                 y === this.width - 1 ||
                 this.worldTiles[x * this.width + y + 1] !==
-                    TileType.Air;
+                TileType.Air;
         }
         else {
             // test if the neighboring tiles are the same tile
             topTileBool =
                 x === 0 ||
                 this.worldTiles[(x - 1) * this.width + y] ===
-                    tileVal;
+                tileVal;
             leftTileBool =
                 y === 0 ||
                 this.worldTiles[x * this.width + y - 1] ===
-                    tileVal;
+                tileVal;
             bottomTileBool =
                 x === this.height - 1 ||
                 this.worldTiles[(x + 1) * this.width + y] ===
-                    tileVal;
+                tileVal;
             rightTileBool =
                 y === this.width - 1 ||
                 this.worldTiles[x * this.width + y + 1] ===
-                    tileVal;
+                tileVal;
         }
-    
+
         // convert 4 digit binary number to base 10
-        return(
+        return (
             8 * +topTileBool +
             4 * +rightTileBool +
             2 * +bottomTileBool +
