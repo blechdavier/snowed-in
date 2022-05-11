@@ -20,7 +20,7 @@ export class TileEntity{
 
 	image: number | number[]
 
-	payload: TileEntityData = {type_: TileEntities.Tree, data: {woodCount: 0, seedCount: 0}};
+	payload: TileEntityData = {type_: TileEntities.Tree, data: {woodCount: 0, seedCount: 0}, animate: false, animFrame: 0};
 
 	protected constructor(
 		world: World,
@@ -81,7 +81,7 @@ export class Tree extends TileEntity {
 	constructor(world: World, x: number, y: number, id: string) {
 		super(world, 4, 6, x, y, id);
 		this.image = randint(0, 9);//pick a random of the tree images to be the image
-		this.payload = {type_: TileEntities.Tree, data: {woodCount: randint(20, 40), seedCount: randint(2, 4)}}
+		this.payload = {type_: TileEntities.Tree, data: {woodCount: randint(20, 40), seedCount: randint(2, 4)}, animate: false, animFrame: randint(0, 9)}
 		this.cut();
 		/*
 

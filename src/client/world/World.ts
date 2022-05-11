@@ -11,6 +11,7 @@ import { TileType } from '../../global/Tile';
 import { Inventory } from '../player/Inventory';
 import { TileEntityPayload } from '../../global/TileEntity';
 import { ClientTileEntity } from './entities/TileEntity';
+import { WorldAssets } from '../assets/Assets';
 
 export class World implements Tickable, Renderable {
     width: number; // width of the world in tiles
@@ -18,7 +19,7 @@ export class World implements Tickable, Renderable {
 
     tileLayer: P5.Graphics; // Tile layer graphic
 
-    worldTiles: (TileType | string)[]; // number for each tiles in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...
+    worldTiles: (TileType | string)[]; // number for each tiles in the world ex: [1, 1, 0, 1, 2, 0, 0, 1...  ] means snow, snow, air, snow, ice, air, air, snow...  string is id for tile entity occupying that tile
 
     player: PlayerLocal;
 
@@ -31,11 +32,12 @@ export class World implements Tickable, Renderable {
 
     snapshotInterpolation: SnapshotInterpolation;
 
-    constructor(width: number, height: number, tiles: (TileType | string)[]) {
+    constructor(width: number, height: number, tiles: (TileType | string)[], tileEntities: {[id: string]: ClientTileEntity}) {
         // Initialize the world with the tiles and dimensions from the server
         this.width = width;
         this.height = height;
         this.worldTiles = tiles;
+        this.tileEntities = tileEntities;
 
         this.snapshotInterpolation = new SnapshotInterpolation();
         this.snapshotInterpolation.interpolationBuffer.set(
@@ -47,7 +49,6 @@ export class World implements Tickable, Renderable {
             this.width * game.TILE_WIDTH,
             this.height * game.TILE_HEIGHT
         );
-
         this.loadWorld();
     }
 
@@ -194,8 +195,23 @@ export class World implements Tickable, Renderable {
                 const tileVal = this.worldTiles[x * this.width + y];
 
                 if (typeof tileVal === 'string') {
-                    // console.log(tileVal);
-                    this.tileLayer.rect(y * game.TILE_WIDTH, x * game.TILE_HEIGHT, game.TILE_WIDTH, game.TILE_HEIGHT);
+
+                    if (this.tileEntities === undefined) {
+                        console.error("tile entity array is undefined");
+                    }
+
+                    if (this.tileEntities[tileVal] === undefined) {
+                        console.error("tile entity " + tileVal + " is undefined");
+                    }
+    
+                    const topLeft = Math.min(...this.tileEntities[tileVal].coveredTiles);
+                    if (x * this.width + y === topLeft) {
+                        //render tile entity image
+                        let img = WorldAssets.tileEntities[this.tileEntities[tileVal].type_][this.tileEntities[tileVal].animFrame];
+                        img.render(this.tileLayer, y*game.TILE_WIDTH, x*game.TILE_HEIGHT, img.image.width, img.image.height)
+                    } else {
+                        console.log(`Already rendered ${tileVal}`)
+                    }
                     continue;
                 }
 

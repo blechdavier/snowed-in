@@ -30,7 +30,12 @@ export class NetManager {
                 'worldLoad',
                 (width, height, tiles, tileEntities, entities, player, inventory) => {
                     console.log(entities);
-                    this.game.world = new World(width, height, tiles);
+                    let tileEntities2: {[id: string]: {id: string, coveredTiles: number[], type_: number, data: {}, animFrame: number, animate: boolean}} = {};
+                    tileEntities.forEach((tileEntity) => {
+                        console.log("adding tile entity: "+tileEntity.id)
+                        tileEntities2[tileEntity.id] = {id: tileEntity.id, coveredTiles: tileEntity.coveredTiles, type_: tileEntity.payload.type_, data: tileEntity.payload.data, animFrame: tileEntity.payload.animFrame, animate: tileEntity.payload.animate}
+                    });
+                    this.game.world = new World(width, height, tiles, tileEntities2);
                     this.game.world.inventory = new Inventory(inventory)
                     this.game.world.player = new PlayerLocal(player);
                     entities.forEach((entity) => {
@@ -38,13 +43,6 @@ export class NetManager {
                             entity.type
                         ](entity);
                     });
-                    this.game.world.tileEntityPayloads = {};
-                    tileEntities.forEach((tileEntity) => {
-                        console.log("adding tile entity: "+tileEntity.id)
-                        this.game.world.tileEntityPayloads[tileEntity.id] = tileEntity
-                        this.game.world.tileEntities[tileEntity.id] = tileEntity
-                    });
-                    console.log(this.game.world.tileEntityPayloads);
                 }
             );
         }

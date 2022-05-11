@@ -25,6 +25,7 @@ interface AssetGroup {
 		| AudioResourceGroup
 		| AudioResource
 		| ImageResource[]
+		| ImageResource[][]
         | ReflectableImageResource[]
         | ReflectableImageResource;
 }
@@ -348,6 +349,7 @@ export const WorldAssets = {
 		
 	},
 	tileEntities: [
+		[//tree
 		new ImageResource(
 			'assets/textures/world/tileEntities/trees/Tree1.png',
 		),
@@ -378,6 +380,8 @@ export const WorldAssets = {
 		new ImageResource(
 			'assets/textures/world/tileEntities/trees/Tree10.png',
 		),
+		],
+		[//drill tier 1
 		new ImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill1.png',
 		),
@@ -417,6 +421,7 @@ export const WorldAssets = {
 		new ImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill13.png',
 		),
+		]
 	],
 	entities: {
 		entity_t1drone: [

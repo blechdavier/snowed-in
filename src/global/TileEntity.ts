@@ -22,7 +22,10 @@ export interface TileEntitiesData {
 	// [TileEntities.CraftingBench]: { level: number; active: boolean };
 }
 
-export type TileEntityData = DataPairs<TileEntitiesData>;
+export type TileEntityData = DataPairs<TileEntitiesData> & {
+	animate: boolean;
+	animFrame: number;
+};
 
 export type TileEntityPayload = {
 	id: string;
