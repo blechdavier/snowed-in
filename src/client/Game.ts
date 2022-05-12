@@ -190,6 +190,15 @@ export class Game extends p5 {
 		new Control('Hotbar 9', true, 57, () => {
 			this.world.inventory.selectedSlot = 8;
 		}), // hot bar 9
+		new Control('Hotbar 10', true, 48, () => {
+			this.world.inventory.selectedSlot = 9;
+		}), // hot bar 10
+		new Control('Hotbar 11', true, 189, () => {
+			this.world.inventory.selectedSlot = 10;
+		}), // hot bar 11
+		new Control('Hotbar 12', true, 187, () => {
+			this.world.inventory.selectedSlot = 11;
+		}), // hot bar 12
 	];
 
 	canvas: p5.Renderer; //the canvas for the game
