@@ -122,6 +122,9 @@ export const ItemAssets: Record<ItemType, ImageResource> = {
 	[ItemType.Wood9Block]: new ImageResource(
 		'assets/textures/items/block_wood9.png',
 	),
+	[ItemType.Seed]: new ImageResource(
+		'assets/textures/items/seed.png',
+	),
 };
 
 // Ui related assets
@@ -420,6 +423,28 @@ export const WorldAssets = {
 		),
 		new ImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill13.png',
+		),
+		],
+		[//drill tier 2
+
+		],
+		[//drill tier 3
+
+		],
+		[//drill tier 4
+
+		],
+		[//drill tier 5
+
+		],
+		[//crafting bench
+		new ImageResource(
+			'assets/textures/world/tileEntities/misc/craftingBench.png',
+		),
+		],
+		[//sapling/seed
+		new ImageResource(
+			'assets/textures/world/tileEntities/trees/sapling.png',
 		),
 		]
 	],

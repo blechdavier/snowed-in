@@ -96,13 +96,12 @@ export class Inventory {
 		item: ItemType,
 		quantity: number = 1,
 	) {
-		console.log(this.mainInventory[3])
 		//check for matching item stack with room left
 		for (let i = 0; i < this.mainInventory.length; i++) {
 			if (this.mainInventory[i]?.item === item) { // if stacks have a max, this will create a bug
 				this.mainInventory[i]!.quantity += quantity;
 				quantity = 0;
-				return [{ item: this.mainInventory[i], slot: i }];
+				return [{slot: i, item: this.mainInventory[i]}];
 			}
 		}
 		//check for empty item stack
@@ -110,10 +109,10 @@ export class Inventory {
 			if (this.mainInventory[i] === undefined) {
 				this.mainInventory[i] = { item: item, quantity: quantity }
 				quantity = 0;
-				return [{ item: this.mainInventory[i], slot: i }];
+				return [{slot: i, item: this.mainInventory[i]}];
 			}
 		}
-		return [{ item: this.mainInventory[0], slot: 0 }];
+		return [{slot: -1, item: undefined}];
 	}
 
 	swapSlots(

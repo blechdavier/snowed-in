@@ -74,4 +74,20 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 	},
 	[ItemCategories.Resource]: {},
 	[ItemCategories.Tool]: {},
+	[ItemCategories.TileEntity]: {
+		worldClick(x: number, y: number) {
+			let itemRef = Items[game.world.inventory.items[game.world.inventory.selectedSlot]?.item || 0];
+			let offset: [number, number] = [0, 0]
+			if("tileEntityOffset" in itemRef) {
+				offset = itemRef.tileEntityOffset;
+			}
+			
+			game.connection.emit(
+				'worldPlace',
+				game.world.inventory.selectedSlot,
+				x,
+				y
+			);
+		}
+	},
 }

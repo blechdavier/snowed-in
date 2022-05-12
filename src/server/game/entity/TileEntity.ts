@@ -4,6 +4,8 @@ import {
 	TileEntityData,
 } from '../../../global/TileEntity';
 import { TileType } from '../../../global/Tile';
+import { Inventory } from '../inventory/Inventory';
+import { ItemType } from '../../../global/Inventory';
 
 export class TileEntity{
 	id: string;
@@ -76,13 +78,11 @@ export class TileEntity{
 
 export class Tree extends TileEntity {
 
-	payload: TileEntityData;
+	payload: {type_: TileEntities.Tree, data: {woodCount: number, seedCount: number}, animate: boolean, animFrame: number};
 
 	constructor(world: World, x: number, y: number, id: string) {
 		super(world, 4, 6, x, y, id);
-		this.image = randint(0, 9);//pick a random of the tree images to be the image
 		this.payload = {type_: TileEntities.Tree, data: {woodCount: randint(20, 40), seedCount: randint(2, 4)}, animate: false, animFrame: randint(0, 9)}
-		this.cut();
 		/*
 
 			Error here is caused because it wants the woodCount and seedCount to be in every type of TileEntity at once.
@@ -95,24 +95,34 @@ export class Tree extends TileEntity {
 		*/
 	}
 
-	cut(amount?: number) {
-		if(amount != undefined) amount = 1;
-		console.log("cut "+amount+" times (this function doesn't do anything yet)");
+	cut(playerInv: Inventory, amount?: number) {
+		if(amount == undefined) amount = 1;
+		for(let i = 0; i<amount; i++) {
+			if(this.payload.data.woodCount+this.payload.data.seedCount>0) {
+				if(Math.random()<this.payload.data.woodCount/(this.payload.data.woodCount+this.payload.data.seedCount)) {
+					if(playerInv.attemptPickUp(ItemType.Wood0Block)) this.payload.data.woodCount--;
+				}
+				else {
+					if(playerInv.attemptPickUp(ItemType.Wood0Block))this.payload.data.seedCount--;
+				}
+			}
+		}
 	}
 }
 
-// export class T1Drill extends TileEntity {
-// 	constructor(world: World, x: number, y: number, id: string) {
-// 		super(world, 1, 2, x, y, id);
-// 	}
+export class T1Drill extends TileEntity {
+	constructor(world: World, x: number, y: number, id: string) {
+		super(world, 1, 2, x, y, id);
+		this.payload = {type_: TileEntities.Tier1Drill, data: { }, animate: true, animFrame: 0};
+	}
+}
 
-// 	getData(): TileEntityData {
-// 		return {
-// 			type: TileEntities.Tier1Drill,
-// 			data: { level: 0, active: true },
-// 		};
-// 	}
-// }
+export class Sapling extends TileEntity {
+	constructor(world: World, x: number, y: number, id: string) {
+		super(world, 4, 6, x, y, id);
+		this.payload = {type_: TileEntities.Seed, data: { }, animate: true, animFrame: 0};
+	}
+}
 
 
 function randint(x1: number, x2: number) {

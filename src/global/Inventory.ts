@@ -1,4 +1,5 @@
 import { TileType } from './Tile';
+import { TileEntities } from './TileEntity';
 
 type DataPairs<T, K extends keyof T = keyof T> = K extends keyof T
 	? { type: K } & T[K]
@@ -12,12 +13,14 @@ export enum ItemCategories {
 	Tile,
 	Resource,
 	Tool,
+	TileEntity,
 }
 
 export type CategoryData = {
 	[ItemCategories.Tile]: { placedTile: TileType, maxStackSize?: number};
 	[ItemCategories.Resource]: {};
 	[ItemCategories.Tool]: { breakableTiles: TileType[]};
+	[ItemCategories.TileEntity]: { placedTileEntity: number, tileEntityOffset?: [number, number]};
 };
 
 export enum ItemType {
@@ -49,6 +52,7 @@ export enum ItemType {
 	Wood7Block,
 	Wood8Block,
 	Wood9Block,
+	Seed,
 }
 
 export type ItemStack = {
@@ -168,6 +172,11 @@ export const Items = itemTypeData({
 	[ItemType.Wood9Block]: {
 		type: ItemCategories.Tile,
 		placedTile: TileType.Wood9,
+	},
+	[ItemType.Seed]: {
+		type: ItemCategories.TileEntity,
+		placedTileEntity: TileEntities.Seed,
+		tileEntityOffset: [-1, -6],
 	},
 	// [ItemType.TinPickaxe]: {
 	// 	type: ItemCategories.Tool,

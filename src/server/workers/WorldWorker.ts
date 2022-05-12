@@ -1,7 +1,7 @@
 import SimplexNoise from 'simplex-noise';
 import { TileType } from '../../global/Tile';
 import { expose } from 'threads';
-import { Tree, TileEntity } from '../game/entity/TileEntity';
+import { Tree, Sapling } from '../game/entity/TileEntity';
 import { World } from '../game/World';
 import { v4 as uuidv4 } from 'uuid';
 

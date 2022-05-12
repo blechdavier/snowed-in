@@ -1,11 +1,12 @@
 export enum TileEntities {
 	Tree,
 	Tier1Drill,
-	// Tier2Drill,
-	// Tier3Drill,
-	// Tier4Drill,
-	// Tier5Drill,
-	// CraftingBench
+	Tier2Drill,
+	Tier3Drill,
+	Tier4Drill,
+	Tier5Drill,
+	CraftingBench,
+	Seed,
 }
 
 type DataPairs<T, K extends keyof T = keyof T> = K extends keyof T
@@ -14,12 +15,13 @@ type DataPairs<T, K extends keyof T = keyof T> = K extends keyof T
 
 export interface TileEntitiesData {
 	[TileEntities.Tree]: { woodCount: number; seedCount: number };
-	[TileEntities.Tier1Drill]: { level: number; active: boolean };
-	// [TileEntities.Tier2Drill]: { level: number; active: boolean };
-	// [TileEntities.Tier3Drill]: { level: number; active: boolean };
-	// [TileEntities.Tier4Drill]: { level: number; active: boolean };
-	// [TileEntities.Tier5Drill]: { level: number; active: boolean };
-	// [TileEntities.CraftingBench]: { level: number; active: boolean };
+	[TileEntities.Tier1Drill]: {  };
+	[TileEntities.Tier2Drill]: {  };
+	[TileEntities.Tier3Drill]: {  };
+	[TileEntities.Tier4Drill]: {  };
+	[TileEntities.Tier5Drill]: {  };
+	[TileEntities.CraftingBench]: {  };
+	[TileEntities.Seed]: {  };
 }
 
 export type TileEntityData = DataPairs<TileEntitiesData> & {
