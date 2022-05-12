@@ -332,28 +332,28 @@ export class World implements Tickable, Renderable {
 					// test if the neighboring tiles are solid
 					topTileBool =
 						x === 0 ||
-						this.worldTiles[(y - 1) * this.width + x] !==
-							TileType.Air ||
-						typeof this.worldTiles[(y - 1) * this.width + x] ===
-							'string';
+						(this.worldTiles[(y - 1) * this.width + x] !==
+							TileType.Air &&
+							typeof this.worldTiles[(y - 1) * this.width + x] !==
+								'string');
 					leftTileBool =
 						y === 0 ||
-						this.worldTiles[y * this.width + x - 1] !==
-							TileType.Air ||
-						typeof this.worldTiles[y * this.width + x - 1] ===
-							'string';
+						(this.worldTiles[y * this.width + x - 1] !==
+							TileType.Air &&
+							typeof this.worldTiles[y * this.width + x - 1] !==
+								'string');
 					bottomTileBool =
 						x === this.height - 1 ||
-						this.worldTiles[(y + 1) * this.width + x] !==
-							TileType.Air ||
-						typeof this.worldTiles[(y + 1) * this.width + x] ===
-							'string';
+						(this.worldTiles[(y + 1) * this.width + x] !==
+							TileType.Air &&
+							typeof this.worldTiles[(y + 1) * this.width + x] !==
+								'string');
 					rightTileBool =
 						y === this.width - 1 ||
-						this.worldTiles[y * this.width + x + 1] !==
-							TileType.Air ||
-						typeof this.worldTiles[y * this.width + x + 1] ===
-							'string';
+						(this.worldTiles[y * this.width + x + 1] !==
+							TileType.Air &&
+							typeof this.worldTiles[y * this.width + x + 1] !==
+								'string');
 
 					// console.log(["boring", leftTileBool, bottomTileBool, this.worldTiles[x * this.width + y + 1], topTileBool])
 				} else {
@@ -416,17 +416,25 @@ export class World implements Tickable, Renderable {
 		if (anyConnection) {
 			// test if the neighboring tiles are solid
 			topTileBool =
-				x === TileType.Air ||
-				this.worldTiles[(x - 1) * this.width + y] !== TileType.Air;
+				x === 0 ||
+				(this.worldTiles[(x - 1) * this.width + y] !== TileType.Air &&//x and y appear to be switched
+					typeof this.worldTiles[(x - 1) * this.width + y] ==
+						'number');
 			leftTileBool =
-				y === TileType.Air ||
-				this.worldTiles[x * this.width + y - 1] !== TileType.Air;
+				y === 0 ||
+				(this.worldTiles[x * this.width + y - 1] !== TileType.Air &&
+					typeof this.worldTiles[x * this.width + y - 1] ==
+						'number');
 			bottomTileBool =
 				x === this.height - 1 ||
-				this.worldTiles[(x + 1) * this.width + y] !== TileType.Air;
+				(this.worldTiles[(x + 1) * this.width + y] !== TileType.Air &&
+					typeof this.worldTiles[(x + 1) * this.width + y] ==
+						'number');
 			rightTileBool =
 				y === this.width - 1 ||
-				this.worldTiles[x * this.width + y + 1] !== TileType.Air;
+				(this.worldTiles[x * this.width + y + 1] !== TileType.Air &&
+					typeof this.worldTiles[x * this.width + y + 1] ==
+						'number');
 		} else {
 			// test if the neighboring tiles are the same tile
 			topTileBool =

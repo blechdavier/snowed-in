@@ -1,6 +1,8 @@
 import { InventoryPayload, ItemCategories, Items, ItemStack } from '../../global/Inventory';
 import { TileType } from '../../global/Tile';
 import { game } from '../Game';
+import { ColorParticle } from '../world/particles/ColorParticle';
+import { WorldTiles } from '../world/WorldTiles';
 
 export class Inventory {
 
@@ -22,6 +24,14 @@ export class Inventory {
 		const selectedItem = this.items[this.selectedSlot]
 		if(selectedItem === undefined || selectedItem === null) {
 			//console.error("Breaking tile")
+			let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
+			if(typeof tileBeingBroken === 'number') {
+				let worldTileBeingBroken = WorldTiles[tileBeingBroken]
+				for(let i = 0; i<5*game.particleMultiplier; i++) {
+					if (worldTileBeingBroken !== undefined)
+					game.particles.push(new ColorParticle(worldTileBeingBroken.color, Math.random()*0.2+0.1, 10, x+Math.random(), y+Math.random(), 0.2*(Math.random()-0.5), -0.15*Math.random()))
+				}
+			}
 			game.connection.emit(
 				'worldBreakStart',
 				game.world.width * y + x
@@ -47,12 +57,22 @@ interface ItemBase {
 const ItemActions: Record<ItemCategories, ItemBase> = {
 	[ItemCategories.Tile]: {
 		worldClick(x: number, y: number) {
-			// If the tiles is air
+			// If the tile isn't air
 			if (
 				game.world.worldTiles[
 				game.world.width * y + x
 					] !== TileType.Air
 			) {
+
+				let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
+				if(typeof tileBeingBroken === 'number') {
+					let worldTileBeingBroken = WorldTiles[tileBeingBroken]
+					for(let i = 0; i<5*game.particleMultiplier; i++) {
+						if (worldTileBeingBroken !== undefined)
+						game.particles.push(new ColorParticle(worldTileBeingBroken.color, Math.random()*0.2+0.1, 10, x+Math.random(), y+Math.random(), 0.2*(Math.random()-0.5), -0.15*Math.random()))
+					}
+				}
+				
 				console.info('Placing');
 				game.connection.emit(
 					'worldBreakStart',
@@ -63,6 +83,7 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 				);
 				return;
 			}
+			//if the tile is air
 			console.info('Placing');
 			game.connection.emit(
 				'worldPlace',
