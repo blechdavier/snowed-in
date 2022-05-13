@@ -65,12 +65,18 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 			) {
 
 				let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
-				if(typeof tileBeingBroken === 'number') {
+				if(typeof tileBeingBroken === 'number') {//tile is tile
 					let worldTileBeingBroken = WorldTiles[tileBeingBroken]
 					for(let i = 0; i<5*game.particleMultiplier; i++) {
 						if (worldTileBeingBroken !== undefined)
 						game.particles.push(new ColorParticle(worldTileBeingBroken.color, Math.random()*0.2+0.1, 10, x+Math.random(), y+Math.random(), 0.2*(Math.random()-0.5), -0.15*Math.random()))
 					}
+				}
+				else {//tile is tile entity
+					game.connection.emit(
+						'tileEntityInteract',
+						game.world.width * y + x
+					);
 				}
 				
 				console.info('Placing');

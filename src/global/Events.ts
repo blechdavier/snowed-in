@@ -78,4 +78,6 @@ export interface ClientEvents {
 	 * Join a game server
 	 */
 	join: (serverId: string, name: string) => void;
+
+	tileEntityInteract: (updatedTile: number) => void;
 }

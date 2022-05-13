@@ -261,7 +261,7 @@ export class GameServer {
 						);
 						return;
 					}
-					if(typeof(this.world.tiles[brokenTile.tileIndex]) === 'string') {
+					if(typeof this.world.tiles[brokenTile.tileIndex] === 'string') {
 						console.error(
 							`Player ${user.name} attempted to break a tile entity`,
 						);
@@ -283,7 +283,7 @@ export class GameServer {
 							]);
 						}, 10000)
 					}
-					if(typeof(brokenTileInstance) === 'number') {
+					if(typeof brokenTileInstance === 'number') {
 						let update = user.inventory.attemptPickUp(WorldTiles[brokenTileInstance]?.itemDrop || ItemType.SnowBlock)//if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
 						socket.emit('inventoryUpdate', update)
 					}
@@ -300,6 +300,11 @@ export class GameServer {
 						},
 					]);
 				});
+
+				socket.on('tileEntityInteract', (updatedTile: number) => {
+					if(this.world == undefined) return;//if there's no world, there's no point.
+					
+				})
 			}
 
 			// Handle disconnect
