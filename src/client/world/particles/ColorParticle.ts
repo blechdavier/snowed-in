@@ -1,6 +1,6 @@
 import { game } from "../../Game";
 import { Particle } from "../../interfaces/Particle";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+import SimplexNoise from "simplex-noise";
 
 export class ColorParticle implements Particle {
     color: string
@@ -10,10 +10,12 @@ export class ColorParticle implements Particle {
     xVel: number;
     yVel: number;
     gravity: boolean;
+    wind: boolean;
     age: number;
     lifespan: number;
+    noise: SimplexNoise
 
-    constructor(color: string, size: number, lifespan: number, x: number, y: number, xVel?: number, yVel?: number, gravity?: boolean) {
+    constructor(color: string, size: number, lifespan: number, x: number, y: number, xVel?: number, yVel?: number, gravity?: boolean, wind?: boolean) {
         this.color = color;
         this.x = x;
         this.y = y;
@@ -23,8 +25,13 @@ export class ColorParticle implements Particle {
         this.gravity = true;//using the or modifier with booleans causes bugs; there's probably a better way to do this
         if (gravity !== undefined)
             this.gravity = gravity;
+
+        this.wind = false;//using the or modifier with booleans causes bugs; there's probably a better way to do this
+        if (wind !== undefined)
+            this.wind = wind;
         this.age = 0;
         this.lifespan = lifespan;
+        this.noise = new SimplexNoise("asdfasdfasdfas");
     }
 
     render(target: import("p5"), upscaleSize: number): void {
@@ -75,6 +82,10 @@ export class ColorParticle implements Particle {
         this.xVel -= (Math.abs(this.xVel) * this.xVel * game.DRAG_COEFFICIENT * this.size);//assuming constant mass for each particle
         if (this.gravity) {
             this.yVel += game.GRAVITY_SPEED;
+        }
+        if (this.wind) {
+            this.xVel += this.noise.noise2D(this.x/10, this.y/10)/40
+            this.yVel += this.noise.noise2D(this.y/10, this.x/10)/40
         }
         this.yVel -= (Math.abs(this.yVel) * this.yVel * game.DRAG_COEFFICIENT * this.size);
     }

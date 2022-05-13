@@ -90,7 +90,7 @@ const workerData = {
 
 		// generate trees
 		new Tree(world, 256, 3, uuidv4());
-		for (let t = 0; t < world.width; t++) {
+		for (let t = 0; t < world.width*2; t++) {
 			let x = Math.floor(Math.random() * world.width);
 			for (let i = 0; i < world.height - 1; i++) {
 				if (

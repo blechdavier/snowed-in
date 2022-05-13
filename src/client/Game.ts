@@ -67,6 +67,7 @@ fix collide with sides of map bug
 import { TileType } from '../global/Tile';
 import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
+import { TileEntities } from '../global/TileEntity';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -291,9 +292,6 @@ export class Game extends p5 {
 	}
 
 	draw() {
-		for (let i = 0; i < 40 * this.particleMultiplier; i++) {
-			//this.particles.push(new ColorParticle("#eb5834", 1/4, 10, this.worldMouseX+Math.random(), this.worldMouseY+Math.random(), Math.random()-0.5, Math.random()/4-0.5, false));
-		}
 		if (this.frameCount === 2) {
 			//has to be done on the second frame for some reason?
 			this.skyShader.setUniform('screenDimensions', [
@@ -328,7 +326,7 @@ export class Game extends p5 {
 
 		if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
-		// render the player, all items, etc.  Basically any physicsRect or particle
+		// render the player, all items, etc.
 		this.renderEntities();
 
 		//delete any particles that have gotten too old
@@ -635,6 +633,16 @@ export class Game extends p5 {
 	}
 
 	doTick() {
+		if(this.world !== undefined && this.world.tileEntities !== undefined) {//tile entity particles
+			for (let i = 0; i < 1 * this.particleMultiplier; i++) {
+				let k = Object.keys(this.world.tileEntities);
+				let r = this.world.tileEntities[k[Math.floor(Math.random()*k.length)]];
+				if(r.type_===TileEntities.Tree) {
+					let t = r.coveredTiles[Math.floor(Math.random()*r.coveredTiles.length)];
+					this.particles.push(new ColorParticle("#348965", Math.random()*0.1+0.1, 20, t%this.world.width+Math.random(), Math.floor(t/this.world.width)+Math.random(), 0.1*(Math.random()-0.5), 0.06*(Math.random()-0.7), false));
+				}
+			}
+		}
 		for (let particle of this.particles) {
 			particle.tick();
 		}
