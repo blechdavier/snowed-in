@@ -71,23 +71,27 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 						if (worldTileBeingBroken !== undefined)
 						game.particles.push(new ColorParticle(worldTileBeingBroken.color, Math.random()*0.2+0.1, 10, x+Math.random(), y+Math.random(), 0.2*(Math.random()-0.5), -0.15*Math.random()))
 					}
-				}
-				else {//tile is tile entity
+					console.info('breaking');
 					game.connection.emit(
-						'tileEntityInteract',
+						'worldBreakStart',
 						game.world.width * y + x
 					);
+					game.connection.emit(
+						'worldBreakFinish'
+					);
+					return;
 				}
-				
-				console.info('Placing');
-				game.connection.emit(
-					'worldBreakStart',
-					game.world.width * y + x
-				);
-				game.connection.emit(
-					'worldBreakFinish'
-				);
-				return;
+				else {//tile is tile entity
+					console.log("tile entity interact")
+					game.connection.emit(
+						'worldBreakStart',
+						game.world.width * y + x
+					);
+					game.connection.emit(
+						'worldBreakFinish'
+					);
+					return;
+				}
 			}
 			//if the tile is air
 			console.info('Placing');

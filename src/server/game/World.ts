@@ -1,16 +1,15 @@
-import { Tree, TileEntity } from './entity/TileEntity';
+import { Tree, TileEntityBase } from './entity/TileEntity';
 import { TileType } from '../../global/Tile';
 import { workers } from '../Main';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemStack } from '../../global/Inventory';
 import { Item } from './entity/Item';
-import { TileEntityPayload } from '../../global/TileEntity';
 
 export class World {
 	// World
 	tiles: WorldTiles;
 
-	tileEntities: { [id: string]: TileEntity } = {};
+	tileEntities: { [id: string]: TileEntityBase } = {};
 
 	items: { [id: string]: Item } = {};
 

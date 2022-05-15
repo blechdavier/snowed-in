@@ -7,11 +7,12 @@ import { io, UserData } from '../Main';
 import { Player } from './entity/Player';
 import { World } from './World';
 import { WorldTiles } from './WorldTiles'
-import { TileEntityPayload } from '../../global/TileEntity';
+import { TileEntities, TileEntityPayload } from '../../global/TileEntity';
 import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemCategories, Items, ItemType } from '../../global/Inventory';
+import { TileEntityBase, Tree } from './entity/TileEntity';
 
 export class GameServer {
 	id: string;
@@ -262,10 +263,15 @@ export class GameServer {
 						return;
 					}
 					if(typeof this.world.tiles[brokenTile.tileIndex] === 'string') {
-						console.error(
-							`Player ${user.name} attempted to break a tile entity`,
-						);
-						return;
+						console.log("debug1")
+						if(this.world == undefined) return;//if there's no world, there's no point.
+						console.log("debug2")
+						let e = this.world.tileEntities[this.world.tiles[brokenTile.tileIndex]]
+						console.log(e)
+						console.log(e.remove);
+						let aaaaa = e.remove();
+						//socket.emit("inventoryUpdate", aaaaa);
+						console.log(aaaaa)
 					}
 					if (this.world.tiles[brokenTile.tileIndex] === TileType.Air) {
 						console.error(
@@ -300,11 +306,6 @@ export class GameServer {
 						},
 					]);
 				});
-
-				socket.on('tileEntityInteract', (updatedTile: number) => {
-					if(this.world == undefined) return;//if there's no world, there's no point.
-					
-				})
 			}
 
 			// Handle disconnect
