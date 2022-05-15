@@ -289,6 +289,7 @@ export class Game extends p5 {
 		this.skyToggle = true;
 		this.skyMod = 2;
 		this.particles = [];
+		this.cursor("assets/textures/ui/cursor2.png");
 	}
 
 	draw() {
@@ -593,6 +594,12 @@ export class Game extends p5 {
 			console.log(
 				`Scroll: ${this.currentUi.scroll}, Min: ${this.currentUi.minScroll}, Max: ${this.currentUi.maxScroll}`,
 			);
+		}
+		else {
+			this.world.inventory.selectedSlot += Math.floor(event.delta/100)
+			this.world.inventory.selectedSlot = this.world.inventory.selectedSlot%this.world.inventory.width;
+			if(this.world.inventory.selectedSlot<0) this.world.inventory.selectedSlot += this.world.inventory.width
+			console.log(this.world.inventory.selectedSlot)
 		}
 	}
 

@@ -30,6 +30,7 @@ export class ReflectableImageResource extends Resource {
     }
     
     renderWorldspaceReflection(x: number, y: number, width: number, height: number) {//this is broken
+        return;
         if (this.image === undefined)
             throw new Error(
                 `Tried to render reflection of image before loading it: ${this.path}`
