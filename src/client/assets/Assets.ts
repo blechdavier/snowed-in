@@ -32,7 +32,10 @@ interface AssetGroup {
 
 export const PlayerAnimations = {
 	idle: [
-		new ReflectableImageResource('assets/textures/player/character.png'),
+		new ReflectableImageResource('assets/textures/player/snowman.png'),
+	],
+	walk: [
+		new ReflectableImageResource('assets/textures/player/snowmanright.png'),
 	],
 };
 

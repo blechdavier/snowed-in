@@ -30,7 +30,6 @@ export class ReflectableImageResource extends Resource {
     }
     
     renderWorldspaceReflection(x: number, y: number, width: number, height: number) {//this is broken
-        return;
         if (this.image === undefined)
             throw new Error(
                 `Tried to render reflection of image before loading it: ${this.path}`
@@ -38,7 +37,6 @@ export class ReflectableImageResource extends Resource {
         if(!this.hasReflection) {//this is so it doesn't load them all at once and instead makes the reflections when they are needed
             this.hasReflection = true;
             this.reflection = game.createImage(this.image.width, this.image.height);
-            this.reflection.loadPixels();
             this.image.loadPixels();
             for(let i = 0; i<this.reflection.width; i++) {//generate a reflection image that is displayed as a reflection
                 for(let j = 0; j<this.reflection.height; j++) {
@@ -64,7 +62,7 @@ export class ReflectableImageResource extends Resource {
                 if(currentBlock === undefined || typeof currentBlock === "string" || currentBlock == TileType.Air) {//the reference to TileEntity can be removed as soon as the better system is in place
                     continue;
                 }
-                game.tint(255, 150);//TODO make it somewhat translucent based on the reflectivity of the tile
+                drawingContext.globalAlpha = 0.6;//TODO make this based on the tile reflectivity
                 game.image(
                     this.reflection,
                     (i * game.TILE_WIDTH -
@@ -80,7 +78,7 @@ export class ReflectableImageResource extends Resource {
                     game.TILE_WIDTH,
                     game.TILE_HEIGHT
                 );
-                game.noTint();
+                drawingContext.globalAlpha = 1.0;
             }
         }
     }
