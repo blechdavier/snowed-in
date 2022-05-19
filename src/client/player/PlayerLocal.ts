@@ -11,7 +11,7 @@ import { ColorParticle } from '../world/particles/ColorParticle';
 export class PlayerLocal extends ServerEntity {
     // Constant data
     width: number = 12 / game.TILE_WIDTH;
-    height: number = 20 / game.TILE_HEIGHT;
+    height: number = 28 / game.TILE_HEIGHT;
 
     // Shared data
     name: string;
