@@ -37,7 +37,6 @@ export class ReflectableImageResource extends Resource {
         if(!this.hasReflection) {//this is so it doesn't load them all at once and instead makes the reflections when they are needed
             this.hasReflection = true;
             this.reflection = game.createImage(this.image.width, this.image.height);
-            this.reflection.loadPixels();
             this.image.loadPixels();
             for(let i = 0; i<this.reflection.width; i++) {//generate a reflection image that is displayed as a reflection
                 for(let j = 0; j<this.reflection.height; j++) {
