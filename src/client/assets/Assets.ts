@@ -34,6 +34,9 @@ export const PlayerAnimations = {
 	idle: [
 		new ReflectableImageResource('assets/textures/player/snowman.png'),
 	],
+	walk: [
+		new ReflectableImageResource('assets/textures/player/snowmanright.png'),
+	],
 };
 
 // Item related assets
