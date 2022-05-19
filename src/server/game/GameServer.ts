@@ -7,12 +7,11 @@ import { io, UserData } from '../Main';
 import { Player } from './entity/Player';
 import { World } from './World';
 import { WorldTiles } from './WorldTiles'
-import { TileEntities, TileEntityPayload } from '../../global/TileEntity';
+import { TileEntityPayload } from '../../global/TileEntity';
 import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemCategories, Items, ItemType } from '../../global/Inventory';
-import { TileEntityBase, Tree } from './entity/TileEntity';
 
 export class GameServer {
 	id: string;
@@ -123,30 +122,10 @@ export class GameServer {
 					entities.push(player.getPayload());
 			});
 
-			// Initialize the client with all the entities
-			const tileEntities: TileEntityPayload[] = [];
-			Object.entries(this.world.tileEntities).forEach(
-				([, tileEntity]) => {
-					if(tileEntity==undefined) {
-						throw new Error(
-							`tileEntity was undefined`
-						)
-					}
-					tileEntities.push({
-						id: tileEntity.id, 
-						coveredTiles: tileEntity.coveredTiles,
-						payload: tileEntity.payload
-					});
-					/*
-
-					I'm having trouble converting TileEntity type to a corresponding TileEntityPayload
-
-					The .get() method doesn't seem to be working; this might have something to do with the file it's defined in being in the client part of the code
-					It might be hard to move this to global because it references World and TileType, which are both client side things
-
-					*/
-				},
-			);
+			const tileEntities: TileEntityPayload[] = Object.entries(this.world.tileEntities).map(tileEntityEntry => {
+				console.log(tileEntityEntry)
+				return tileEntityEntry[1].getPayload()
+			})
 
 			// Send the world to the client
 			socket.emit(
@@ -263,15 +242,9 @@ export class GameServer {
 						return;
 					}
 					if(typeof this.world.tiles[brokenTile.tileIndex] === 'string') {
-						console.log("debug1")
-						if(this.world == undefined) return;//if there's no world, there's no point.
-						console.log("debug2")
 						let e = this.world.tileEntities[this.world.tiles[brokenTile.tileIndex]]
 						console.log(e)
-						console.log(e.remove);
-						let aaaaa = e.remove();
-						//socket.emit("inventoryUpdate", aaaaa);
-						console.log(aaaaa)
+						return
 					}
 					if (this.world.tiles[brokenTile.tileIndex] === TileType.Air) {
 						console.error(
@@ -322,6 +295,8 @@ export class GameServer {
 			this.room.emit('entityDelete', user.id.toString());
 			socket.disconnect();
 			user.socketId = undefined;
+
+			console.log(err)
 
 			console.log(
 				`Player ${name} was kicked from ${this.name} reason: ${err}`,

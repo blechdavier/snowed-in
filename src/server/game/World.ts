@@ -1,4 +1,4 @@
-import { Tree, TileEntityBase } from './entity/TileEntity';
+import { Tree, TileEntityBase, TileEntityProtoMap } from './entity/TileEntity';
 import { TileType } from '../../global/Tile';
 import { workers } from '../Main';
 import { v4 as uuidv4 } from 'uuid';
@@ -38,8 +38,11 @@ export class World {
 			WorldTiles.prototype,
 		);
 
+		this.tileEntities = Object.fromEntries(Object.entries(world.tileEntities).map(tileEntry => {
+			return [tileEntry[0], Object.setPrototypeOf(tileEntry[1], TileEntityProtoMap[tileEntry[1].type])]
+		}))
+
 		this.spawnPosition = world.spawnPosition;
-		this.tileEntities = world.tileEntities;
 		this.tiles[
 			Math.round(this.width) / 2 +
 			(Math.round(this.height) / 2) * this.width

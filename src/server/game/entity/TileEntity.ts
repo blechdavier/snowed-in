@@ -1,43 +1,21 @@
 import { World } from '../World';
-import { TileEntities, TileEntityData } from '../../../global/TileEntity';
+import { TileEntities, TileEntityData, TileEntityPayload } from '../../../global/TileEntity';
 import { TileType } from '../../../global/Tile';
 import { Inventory } from '../inventory/Inventory';
 import { InventoryUpdatePayload, ItemType } from '../../../global/Inventory';
 
-export interface TileEntity {
-	id: string;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	coveredTiles: number[];
-	image: number | number[];
-	world: World
-	payload: TileEntityData
-	remove(): any // apparently any type is better than void??? https://medium.com/@jeffbutsch/typescript-interface-functions-c691a108e3f1
-	interact(): any //not strongly typed necessarily because the interact function takes different parameters and returns different values for different classes that implement this
-}
-
-export class TileEntityBase {
+export abstract class TileEntityBase {
 	id: string;
 
 	x: number;
 	y: number;
-	world: World
+	world: World;
 
 	width: number;
 	height: number;
 
 	coveredTiles: number[] = [];
-
-	image: number | number[];
-
-	payload: TileEntityData = {
-		type_: TileEntities.Tree,
-		data: { woodCount: 0, seedCount: 0 },
-		animate: false,
-		animFrame: 0,
-	};
+	type: TileEntities
 
 	protected constructor(
 		world: World,
@@ -46,12 +24,13 @@ export class TileEntityBase {
 		x: number,
 		y: number,
 		id: string,
+		type: TileEntities
 	) {
+		this.type = type
 		this.width = width;
 		this.height = height;
 
-		this.image = -1;
-		this.world = world
+		this.world = world;
 
 		this.x = x;
 		this.y = y;
@@ -68,7 +47,7 @@ export class TileEntityBase {
 				if (world.tiles[worldIndex] !== TileType.Air) {
 					throw new Error(
 						'Could not place tileEntity because there are tiles in the way: tileType: ' +
-						world.tiles[worldIndex] +
+							world.tiles[worldIndex] +
 							'.',
 					);
 				}
@@ -89,66 +68,52 @@ export class TileEntityBase {
 		delete this.world.tileEntities[this.id];
 	}
 
-	interact() {
-
+	getPayload(): TileEntityPayload {
+		return {
+			id: this.id,
+			payload: this.getData(),
+			coveredTiles: this.coveredTiles,
+		};
 	}
+
+	abstract interact(playerInventory: Inventory): InventoryUpdatePayload;
+
+	abstract getData(): TileEntityData;
 }
 
-export class Tree extends TileEntityBase implements TileEntity {
-	payload: {
-		type_: TileEntities.Tree;
-		data: { woodCount: number; seedCount: number };
-		animate: boolean;
-		animFrame: number;
-	};
+export class Tree extends TileEntityBase {
+
+	woodCount: number = randint(20, 40)
+	seedCount: number = randint(2, 4)
 
 	constructor(world: World, x: number, y: number, id: string) {
-		super(world, 4, 6, x, y, id);
-		this.payload = {
-			type_: TileEntities.Tree,
-			data: { woodCount: randint(20, 40), seedCount: randint(2, 4) },
-			animate: false,
-			animFrame: randint(0, 9),
-		};
+		super(world, 4, 6, x, y, id, TileEntities.Tree);
+
 		world.tileEntities[this.id] = this;
 	}
 
-	interact(/*playerInv: Inventory, amount?: number*/) {//cut down 1 item from the tree
-		// if (amount == undefined) amount = 1;//default to 1 item cut if no other is specified
-		// let P: InventoryUpdatePayload = [];
-		// for (let i = 0; i < amount; i++) {
-		// 	if (this.payload.data.woodCount + this.payload.data.seedCount > 0) {
-		// 		if (
-		// 			Math.random() <
-		// 			this.payload.data.woodCount /
-		// 				(this.payload.data.woodCount +
-		// 					this.payload.data.seedCount)
-		// 		) {
-		// 			let p = playerInv.attemptPickUp(ItemType.Wood0Block);
-		// 			if (p[0].item!=undefined)
-		// 				this.payload.data.woodCount--;
-		// 				i = P.findIndex(element => element.slot === p[0].slot);
-		// 				if(i!==-1) {
-		// 					P[i] = p[0];
-		// 				}
-		// 				else {
-		// 					P.push(p[0]);
-		// 				}
-		// 		} else {
-		// 			let p = playerInv.attemptPickUp(ItemType.Seed);
-		// 			if (p[0].item!=undefined)
-		// 				this.payload.data.seedCount--;
-		// 				i = P.findIndex(element => element.slot === p[0].slot);
-		// 				if(i!==-1) {
-		// 					P[i] = p[0];
-		// 				}
-		// 				else {
-		// 					P.push(p[0]);
-		// 				}
-		// 		}
-		// 	}
-		// }
-		// return P
+	interact(playerInv: Inventory) {
+		let inventoryUpdatePayload: InventoryUpdatePayload = [];
+
+		if (this.woodCount + this.seedCount > 0) {
+			if (
+				Math.random() <
+				this.woodCount /
+					(this.woodCount + this.seedCount)
+			) {
+				inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block));
+			} else {
+				inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed));
+			}
+		}
+		return inventoryUpdatePayload;
+	}
+
+	getData(): TileEntityData {
+		return {
+			type_: TileEntities.Tree,
+			data: { woodCount: this.woodCount, seedCount: this.seedCount},
+		}
 	}
 }
 
@@ -178,4 +143,16 @@ export class Tree extends TileEntityBase implements TileEntity {
 
 function randint(x1: number, x2: number) {
 	return Math.floor(x1 + Math.random() * (x2 + 1 - x1));
+}
+
+export const TileEntityProtoMap: Record<TileEntities, any> = {
+	[TileEntities.Tree]: Tree.prototype,
+	[TileEntities.Seed]: undefined,
+	[TileEntities.Tier1Drill]: undefined,
+	[TileEntities.Tier2Drill]: undefined,
+	[TileEntities.Tier3Drill]: undefined,
+	[TileEntities.Tier4Drill]: undefined,
+	[TileEntities.Tier5Drill]: undefined,
+	[TileEntities.CraftingBench]: undefined
+
 }

@@ -63,31 +63,6 @@ const workerData = {
 			}
 		}
 
-		// //generate caves
-		// {
-		//     for (let c = 0; c < 10; c++) {
-		//         let startX: number = Math.random() * width;
-		//         let startY: number = Math.random() * height;
-		//         for (let i = 0; i < height; i++) {
-		//             if (world.tiles[width * (Math.round(startY) + i) + Math.round(startX)] !== TileType.Air) {
-		//                 startY += i;
-		//                 break;
-		//             }
-		//         }
-		//         for (let k = 0; k < 1; k += 0.00333333333334) {
-		//             let r: number = -25*((k-0.5)*(k-0.5))+6.25;
-		//             //console.log(`cave iteration at x: ${startX}, y: ${startY} with radius: ${r}`);
-		//             startX += (noise.noise2D(startX / 25, startY / 25)) * r*2;
-		//             startY += (noise.noise2D(startY / 5, startX / 5)) * r;
-		//             for (let i = -Math.floor(r); i < Math.ceil(r); i++) {
-		//                 for (let j = -Math.floor(r); j < Math.ceil(r); j++) {
-		//                     world.tiles[width * (Math.round(startY) + j) + Math.round(startX) + i] = TileType.Air;
-		//                 }
-		//             }
-		//         }
-		//     }
-		// }
-
 		// generate trees
 		new Tree(world, 256, 3, uuidv4());
 		for (let t = 0; t < world.width*2; t++) {
@@ -107,20 +82,16 @@ const workerData = {
 								world.tiles[(i - k) * world.width + x + j] !== TileType.Air
 							) {
 								isOpen = false;
-								//break;
+								break;
 							}
 						}
-						//if(!isOpen)//break out of this loop if there isn't enough room: saves time
-						//break;
+						if(!isOpen)//break out of this loop if there isn't enough room: saves time
+						break;
 					}
 					//console.log("tree would have been generated")
 					if (isOpen) {
-						//console.log("tree generated")
-						// world.tiles[i * width + x] = TileType.Stone0;
-						// world.tiles[(i - 6) * width + x] = TileType.Dirt;
-						// world.tiles[i * width + x + 3] = TileType.Dirt;
-						// world.tiles[(i - 6) * width + x + 3] = TileType.Dirt;
-						new Tree(world, x, i-5, uuidv4());
+						const id = uuidv4()
+						world.tileEntities[id] =  new Tree(world, x, i-5, id);
 					}
 					break;
 				}

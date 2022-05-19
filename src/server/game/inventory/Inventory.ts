@@ -95,7 +95,7 @@ export class Inventory {
 	attemptPickUp(
 		item: ItemType,
 		quantity: number = 1,
-	) {
+	): InventoryUpdatePayload {
 		//check for matching item stack with room left
 		for (let i = 0; i < this.mainInventory.length; i++) {
 			if (this.mainInventory[i]?.item === item) { // if stacks have a max, this will create a bug
@@ -112,7 +112,7 @@ export class Inventory {
 				return [{slot: i, item: this.mainInventory[i]}];
 			}
 		}
-		return [{slot: -1, item: undefined}];
+		return [];
 	}
 
 	swapSlots(

@@ -24,10 +24,7 @@ export interface TileEntitiesData {
 	[TileEntities.Seed]: {  };
 }
 
-export type TileEntityData = DataPairs<TileEntitiesData> & {
-	animate: boolean;
-	animFrame: number;
-};
+export type TileEntityData = DataPairs<TileEntitiesData> & {}
 
 export type TileEntityPayload = {
 	id: string;
