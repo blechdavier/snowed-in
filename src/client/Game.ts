@@ -346,9 +346,9 @@ export class Game extends p5 {
 		}
 
 		this.smooth(); //enable image lerp
-		this.tint(255, 150); //make image translucent
+		drawingContext.globalAlpha = 0.6; //make image translucent
 		UiAssets.vignette.render(this, 0, 0, this.width, this.height);
-		this.noTint();
+		drawingContext.globalAlpha = 1.0;
 		this.noSmooth();
 
 		// draw the hot bar
@@ -385,7 +385,7 @@ export class Game extends p5 {
 				if (currentItem !== undefined && currentItem !== null) {
 					this.fill(0);
 					if (this.pickedUpSlot === i) {
-						this.tint(255, 127);
+						drawingContext.globalAlpha = 0.5;
 						this.fill(0, 127);
 					}
 
@@ -404,7 +404,7 @@ export class Game extends p5 {
 					// 	16 * this.upscaleSize,
 					// );
 
-					this.noTint();
+					drawingContext.globalAlpha = 1.0;
 				}
 			}
 
