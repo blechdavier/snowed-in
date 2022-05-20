@@ -222,6 +222,7 @@ export class Game extends p5 {
 	particleMultiplier: number;
 
 	particles: ColorParticle /*|FootstepParticle*/[];
+	breaking: boolean = true;
 
 	constructor(connection: Socket) {
 		super(() => { }); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -315,6 +316,8 @@ export class Game extends p5 {
 
 		// update mouse position
 		this.updateMouse();
+		if(this.mouseIsPressed) {
+		this.world.inventory.worldClick(this.worldMouseX, this.worldMouseY);}
 
 		// update the camera's interpolation
 		this.moveCamera();
@@ -542,7 +545,7 @@ export class Game extends p5 {
 				this.world.inventory.pickedUpSlot = undefined;
 			}
 		} else {
-			this.world.inventory.worldClick(this.worldMouseX, this.worldMouseY);
+			this.world.inventory.worldClickCheck(this.worldMouseX, this.worldMouseY);
 		}
 	}
 

@@ -253,7 +253,7 @@ export class GameServer {
 						return;
 					}
 					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
-					if(typeof brokenTileInstance !== 'string' && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
+					if(this.world.regeneratingTiles[brokenTile.tileIndex]===brokenTileInstance && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
 						setTimeout(() => {
 							if(this.world === undefined)  return;
 							this.world.tiles[brokenTile.tileIndex] = brokenTileInstance;

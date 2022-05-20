@@ -19,6 +19,7 @@ export class World {
 
 	// World spawn position
 	spawnPosition: { x: number; y: number } = { x: 0, y: 0 };
+	regeneratingTiles: number[] = [];
 
 	constructor(width: number, height: number, seed?: string) {
 		this.width = width;
@@ -37,6 +38,8 @@ export class World {
 			{ ...world.tiles, width: this.width, height: this.height },
 			WorldTiles.prototype,
 		);
+
+		this.regeneratingTiles = world.regeneratingTiles;
 
 		this.tileEntities = Object.fromEntries(Object.entries(world.tileEntities).map(tileEntry => {
 			return [tileEntry[0], Object.setPrototypeOf(tileEntry[1], TileEntityProtoMap[tileEntry[1].type])]

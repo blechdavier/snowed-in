@@ -48,6 +48,13 @@ export class Inventory {
 
 		worldClick(x, y)
 	}
+	worldClickCheck(x: number, y: number) {
+		let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
+		if(typeof tileBeingBroken === 'number') {
+			if (tileBeingBroken === TileType.Air) game.breaking = false;
+			else game.breaking = true;
+		}
+	}
 }
 
 interface ItemBase {
@@ -66,6 +73,7 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 
 				let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
 				if(typeof tileBeingBroken === 'number') {//tile is tile
+					if (!game.breaking) return;
 					let worldTileBeingBroken = WorldTiles[tileBeingBroken]
 					for(let i = 0; i<5*game.particleMultiplier; i++) {
 						if (worldTileBeingBroken !== undefined)
@@ -93,7 +101,8 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 					return;
 				}
 			}
-			//if the tile is air
+			//if the tile is air and the game is trying to place
+			if (game.breaking) return;
 			console.info('Placing');
 			game.connection.emit(
 				'worldPlace',
