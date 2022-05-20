@@ -32,7 +32,11 @@ interface AssetGroup {
 		| [ReflectableImageResource, number][];
 }
 
-export const PlayerAnimations: Record<string, [ReflectableImageResource, number][]> = {
+const playerAnimations = <T extends Record<string, [ReflectableImageResource, number][]>>(
+	data: T,
+): T => data;
+
+export const PlayerAnimations = playerAnimations({
 	//image, milliseconds to display for
 	idle: [
 		[new ReflectableImageResource('assets/textures/player/snowmanidle1.png'), 135],//ignore the atrocious naming scheme of these images
@@ -74,7 +78,7 @@ export const PlayerAnimations: Record<string, [ReflectableImageResource, number]
 		[new ReflectableImageResource('assets/textures/player/snowmanrollleft07.png'), 75],
 		[new ReflectableImageResource('assets/textures/player/snowmanrollleft08.png'), 75],
 	],
-};
+});
 
 // Item related assets
 export const ItemAssets: Record<ItemType, ImageResource> = {

@@ -249,7 +249,7 @@ export class World implements Tickable, Renderable {
 							img.image.height,
 						);
 					} else {
-						console.log(`Already rendered ${tileVal}`);
+						//console.log(`Already rendered ${tileVal}`);
 					}
 					continue;
 				}
@@ -311,7 +311,7 @@ export class World implements Tickable, Renderable {
 					//render tile entity image
 					//this.tileEntities[tileVal].render(tileLayer, x*8, y*8);
 				} else {
-					console.log(`Already rendered ${tileVal}`);
+					//console.log(`Already rendered ${tileVal}`);
 				}
 				return;
 			}

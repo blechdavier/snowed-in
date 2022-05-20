@@ -284,7 +284,7 @@ export class Game extends p5 {
 
 		// set the framerate goal to as high as possible (this will end up capping to your monitor's refresh rate with vsync.)
 		this.frameRate(Infinity);
-		// AudioAssets.ambient.winter1.playSound();
+		// AudioAnpssets.ambient.winter1.playSound();
 		this.particleMultiplier = 1;
 		this.skyToggle = true;
 		this.skyMod = 2;
@@ -303,6 +303,12 @@ export class Game extends p5 {
 				'skyImage',
 				WorldAssets.shaderResources.skyImage.image,
 			);
+			Object.values(PlayerAnimations).forEach(playerAnimation => {
+				playerAnimation.forEach(animationFrame => {
+					console.log("loading animation "+animationFrame[0].path)
+					animationFrame[0].loadReflection(this)
+				})
+			});
 		}
 		// do the tick calculations
 		this.doTicks();

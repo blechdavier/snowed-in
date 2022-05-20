@@ -19,6 +19,28 @@ export class ReflectableImageResource extends Resource {
         this.image = game.loadImage(this.path);
     }
 
+    loadReflection(game: P5) {
+        if(!this.hasReflection) {//this is so it doesn't load them all at once and instead makes the reflections when they are needed
+            this.hasReflection = true;
+            this.reflection = game.createImage(this.image.width, this.image.height);
+            this.image.loadPixels();
+            //console.log(this.image.pixels)
+            this.reflection.loadPixels();
+            for(let i = 0; i<this.reflection.width; i++) {//generate a reflection image that is displayed as a reflection
+                for(let j = 0; j<this.reflection.height; j++) {
+                    for(let k = 0; k<3; k++) {
+                        this.reflection.pixels[4*(j*this.reflection.width+i)+k] = this.image.pixels[4*((this.image.height-j-1)*this.image.width+i)+k];
+                    }
+                    this.reflection.pixels[4*(j*this.reflection.width+i)+3] = 
+                    this.image.pixels[4*((this.image.height-j-1)*this.image.width+i)+3] * 
+                    ((this.reflection.height-j)/this.reflection.height) * 
+                    (this.reflection.width/2+0.5-Math.abs(i-this.reflection.width/2+0.5))/(this.reflection.width/2);
+                }
+            }
+            this.reflection.updatePixels();
+        }
+    }
+
     render(target: any, x: number, y: number, width: number, height: number) {
         //console.log(WorldTiles);
         // Verify that the image has been loaded
@@ -36,24 +58,10 @@ export class ReflectableImageResource extends Resource {
             throw new Error(
                 `Tried to render reflection of image before loading it: ${this.path}`
             );
-        if(!this.hasReflection) {//this is so it doesn't load them all at once and instead makes the reflections when they are needed
-            this.hasReflection = true;
-            this.reflection = game.createImage(this.image.width, this.image.height);
-            this.image.loadPixels();
-            this.reflection.loadPixels();
-            for(let i = 0; i<this.reflection.width; i++) {//generate a reflection image that is displayed as a reflection
-                for(let j = 0; j<this.reflection.height; j++) {
-                    for(let k = 0; k<3; k++) {
-                        this.reflection.pixels[4*(j*this.reflection.width+i)+k] = this.image.pixels[4*((this.image.height-j-1)*this.image.width+i)+k];
-                    }
-                    this.reflection.pixels[4*(j*this.reflection.width+i)+3] = 
-                    this.image.pixels[4*((this.image.height-j-1)*this.image.width+i)+3] * 
-                    ((this.reflection.height-j)/this.reflection.height) * 
-                    (this.reflection.width/2+0.5-Math.abs(i-this.reflection.width/2+0.5))/(this.reflection.width/2);
-                }
-            }
-            this.reflection.updatePixels();
-        }
+
+        if (!this.hasReflection)
+            return;
+        
         game.fill(255, 0, 0);
         game.stroke(150, 0, 0);
 
