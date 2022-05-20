@@ -18,7 +18,8 @@ interface AssetGroup {
 					| AudioResource
 					| ImageResource[]
                     | ReflectableImageResource[]
-                    | ReflectableImageResource;
+                    | ReflectableImageResource
+					| [ReflectableImageResource, number][];
 		  }
 		| Resource
 		| AssetGroup
@@ -27,15 +28,51 @@ interface AssetGroup {
 		| ImageResource[]
 		| ImageResource[][]
         | ReflectableImageResource[]
-        | ReflectableImageResource;
+        | ReflectableImageResource
+		| [ReflectableImageResource, number][];
 }
 
-export const PlayerAnimations = {
+export const PlayerAnimations: Record<string, [ReflectableImageResource, number][]> = {
+	//image, milliseconds to display for
 	idle: [
-		new ReflectableImageResource('assets/textures/player/snowman.png'),
+		[new ReflectableImageResource('assets/textures/player/snowmanidle1.png'), 135],//ignore the atrocious naming scheme of these images
+		[new ReflectableImageResource('assets/textures/player/snowmanidle2.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle3.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle4.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle5.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle6.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle7.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidle8.png'), 135],
+	],
+	idleleft: [
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped1.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped2.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped3.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped4.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped5.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped6.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped7.png'), 135],
+		[new ReflectableImageResource('assets/textures/player/snowmanidleflipped8.png'), 135],
 	],
 	walk: [
-		new ReflectableImageResource('assets/textures/player/snowmanright.png'),
+		[new ReflectableImageResource('assets/textures/player/snowmanroll01.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll02.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll03.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll04.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll05.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll06.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll07.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanroll08.png'), 75],
+	],
+	walkleft: [
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft01.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft02.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft03.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft04.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft05.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft06.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft07.png'), 75],
+		[new ReflectableImageResource('assets/textures/player/snowmanrollleft08.png'), 75],
 	],
 };
 
@@ -1051,7 +1088,7 @@ export const AudioAssets = {
 	},
 };
 
-export type AnimationFrame<T extends Record<string, ImageResource[]>> = keyof T;
+export type AnimationFrame<T extends Record<string, [ImageResource, number][]>> = keyof T;
 
 // const animations = <T extends Record<string, ImageResource[]>>(data: T): T => data
 

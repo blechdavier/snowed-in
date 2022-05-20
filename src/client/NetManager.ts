@@ -2,119 +2,168 @@ import { Game } from './Game';
 import { World } from './world/World';
 import { EntityClasses } from './world/entities/EntityClasses';
 import { PlayerLocal } from './player/PlayerLocal';
-import { ItemType } from '../global/Inventory';
 import { Inventory } from './player/Inventory';
+import { TileEntityAnimations } from './world/entities/TileEntity';
+import { WorldAssets } from './assets/Assets';
+import { TileType } from '../global/Tile';
+import {
+	Entities,
+	EntitiesData,
+	EntityData,
+	EntityPayload,
+} from '../global/Entity';
+import { InventoryPayload } from '../global/Inventory';
+import { TileEntityPayload } from '../global/TileEntity';
 
 export class NetManager {
-    game: Game;
+	game: Game;
 
-    playerTickRate: number;
+	playerTickRate: number;
 
-    constructor(game: Game) {
-        this.game = game;
+	constructor(game: Game) {
+		this.game = game;
 
-        // Init event
-        this.game.connection.on('init', (playerTickRate, token) => {
-            console.log(`Tick rate set to: ${playerTickRate}`);
-            this.playerTickRate = playerTickRate;
-            if (token) {
-                window.localStorage.setItem('token', token);
-                (this.game.connection.auth as { token: string }).token = token;
-            }
-        });
+		// Init event
+		this.game.connection.on('init', (playerTickRate, token) => {
+			console.log(`Tick rate set to: ${playerTickRate}`);
+			this.playerTickRate = playerTickRate;
+			if (token) {
+				window.localStorage.setItem('token', token);
+				(this.game.connection.auth as { token: string }).token = token;
+			}
+		});
 
-        // Initialization events
-        {
-            // Load the world and set the player entity id
-            this.game.connection.on(
-                'worldLoad',
-                (width, height, tiles, tileEntities, entities, player, inventory) => {
-                    console.log(entities);
-                    let tileEntities2: {[id: string]: {id: string, coveredTiles: number[], type_: number, data: {}, animFrame: number, animate: boolean}} = {};
-                    tileEntities.forEach((tileEntity) => {
-                        console.log("adding tile entity: "+tileEntity.id)
-                        tileEntities2[tileEntity.id] = {id: tileEntity.id, coveredTiles: tileEntity.coveredTiles, type_: tileEntity.payload.type_, data: tileEntity.payload.data, animFrame: tileEntity.payload.animFrame, animate: tileEntity.payload.animate}
-                    });
-                    this.game.world = new World(width, height, tiles, tileEntities2);
-                    this.game.world.inventory = new Inventory(inventory)
-                    this.game.world.player = new PlayerLocal(player);
-                    entities.forEach((entity) => {
-                        this.game.world.entities[entity.id] = new EntityClasses[
-                            entity.type
-                        ](entity);
-                    });
-                }
-            );
-        }
+		// Initialization events
+		{
+			// Load the world and set the player entity id
+			this.game.connection.on(
+				'worldLoad',
+				(
+					width,
+					height,
+					tiles,
+					tileEntities,
+					entities,
+					player,
+					inventory,
+				) => {
+					console.log(entities);
+					let tileEntities2: {
+						[id: string]: {
+							id: string;
+							coveredTiles: number[];
+							type_: number;
+							data: {};
+							animFrame: number;
+							animate: boolean;
+						};
+					} = {};
+					tileEntities.forEach(tileEntity => {
+						console.log('adding tile entity: ' + tileEntity.id);
+						tileEntities2[tileEntity.id] = {
+							id: tileEntity.id,
+							coveredTiles: tileEntity.coveredTiles,
+							type_: tileEntity.payload.type_,
+							data: tileEntity.payload.data,
+							animFrame: randint(
+								0,
+								WorldAssets.tileEntities[
+									tileEntity.payload.type_
+								].length - 1,
+							),
+							animate:
+								TileEntityAnimations[tileEntity.payload.type_],
+						};
+					});
+					this.game.world = new World(
+						width,
+						height,
+						tiles,
+						tileEntities2,
+					);
+					this.game.world.inventory = new Inventory(inventory);
+					this.game.world.player = new PlayerLocal(player);
+					entities.forEach(entity => {
+						this.game.world.entities[entity.id] = new EntityClasses[
+							entity.type
+						](entity);
+					});
+				},
+			);
+		}
 
-        // World events
-        {
-            // Tile updates such as breaking and placing
-            this.game.connection.on(
-                'worldUpdate',
-                (updatedTiles: { tileIndex: number; tile: number }[]) => {
-                    // If the world is not set
-                    if (this.game.world === undefined) return;
+		// World events
+		{
+			// Tile updates such as breaking and placing
+			this.game.connection.on(
+				'worldUpdate',
+				(updatedTiles: { tileIndex: number; tile: number }[]) => {
+					// If the world is not set
+					if (this.game.world === undefined) return;
 
-                    updatedTiles.forEach((tile) => {
-                        this.game.world.updateTile(tile.tileIndex, tile.tile);
-                    });
-                }
-            );
+					updatedTiles.forEach(tile => {
+						this.game.world.updateTile(tile.tileIndex, tile.tile);
+					});
+				},
+			);
 
-            this.game.connection.on('inventoryUpdate', (updates) => {
-                // If the world is not set
-                if (this.game.world === undefined) return;
+			this.game.connection.on('inventoryUpdate', updates => {
+				// If the world is not set
+				if (this.game.world === undefined) return;
 
-                updates.forEach((update) => {
-                    console.log(update)
-                    this.game.world.inventory.items[update.slot] = update.item;
-                });
-            });
-        }
+				updates.forEach(update => {
+					console.log(update);
+					this.game.world.inventory.items[update.slot] = update.item;
+				});
+			});
+		}
 
-        // Player events
-        {
-            this.game.connection.on('entityUpdate', (entityData) => {
-                // If the world is not set
-                if (this.game.world === undefined) return;
+		// Player events
+		{
+			this.game.connection.on('entityUpdate', entityData => {
+				// If the world is not set
+				if (this.game.world === undefined) return;
 
-                const entity = this.game.world.entities[entityData.id];
-                if (entity === undefined) return;
+				const entity = this.game.world.entities[entityData.id];
+				if (entity === undefined) return;
 
-                entity.updateData(entityData);
-            });
+				entity.updateData(entityData);
+			});
 
-            this.game.connection.on('entityCreate', (entityData) => {
-                // If the world is not set
-                if (this.game.world === undefined) return;
+			this.game.connection.on('entityCreate', entityData => {
+				// If the world is not set
+				if (this.game.world === undefined) return;
 
-                this.game.world.entities[entityData.id] = new EntityClasses[
-                    entityData.type
-                ](entityData);
-            });
+				this.game.world.entities[entityData.id] = new EntityClasses[
+					entityData.type
+				](entityData);
+			});
 
-            this.game.connection.on('entityDelete', (id) => {
-                // If the world is not set
-                if (this.game.world === undefined) return;
+			this.game.connection.on('entityDelete', id => {
+				// If the world is not set
+				if (this.game.world === undefined) return;
 
-                delete this.game.world.entities[id];
-            });
+				delete this.game.world.entities[id];
+			});
 
-            // Update the other players in the world
-            this.game.connection.on(
-                'entitySnapshot',
-                (snapshot: {
-                    id: string;
-                    time: number;
-                    state: { id: string; x: string; y: string }[];
-                }) => {
-                    // If the world is not set
-                    if (this.game.world === undefined) return;
+			// Update the other players in the world
+			this.game.connection.on(
+				'entitySnapshot',
+				(snapshot: {
+					id: string;
+					time: number;
+					state: { id: string; x: string; y: string }[];
+				}) => {
+					// If the world is not set
+					if (this.game.world === undefined) return;
 
-                    this.game.world.updatePlayers(snapshot);
-                }
-            );
-        }
-    }
+					this.game.world.updatePlayers(snapshot);
+				},
+			);
+		}
+	}
+}
+
+function randint(x1: number, x2: number) {
+	return Math.floor(x1 + Math.random() * (x2 + 1 - x1));
 }

@@ -1,13 +1,15 @@
 import { Resource } from "./Resource";
 import P5 from 'p5';
-import { game, Game } from '../../Game';
+import { game } from '../../Game';
 import { TileType } from "../../../global/Tile"
+import { WorldTiles } from "../../world/WorldTiles";
 
 export class ReflectableImageResource extends Resource {
 
     image: P5.Image;
     hasReflection: boolean = false;
     reflection: P5.Image;
+    reflectivityArray: number[] = [0, 90, 150, 0, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31, 10, 17, 21, 25, 29, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
 
     constructor(path: string) {
         super(path);
@@ -29,7 +31,7 @@ export class ReflectableImageResource extends Resource {
         target.image(this.image, x, y, width, height);
     }
     
-    renderWorldspaceReflection(x: number, y: number, width: number, height: number) {//this is broken
+    renderWorldspaceReflection(x: number, y: number, width: number, height: number) {
         if (this.image === undefined)
             throw new Error(
                 `Tried to render reflection of image before loading it: ${this.path}`
@@ -38,6 +40,7 @@ export class ReflectableImageResource extends Resource {
             this.hasReflection = true;
             this.reflection = game.createImage(this.image.width, this.image.height);
             this.image.loadPixels();
+            this.reflection.loadPixels();
             for(let i = 0; i<this.reflection.width; i++) {//generate a reflection image that is displayed as a reflection
                 for(let j = 0; j<this.reflection.height; j++) {
                     for(let k = 0; k<3; k++) {
@@ -62,7 +65,7 @@ export class ReflectableImageResource extends Resource {
                 if(currentBlock === undefined || typeof currentBlock === "string" || currentBlock == TileType.Air) {//the reference to TileEntity can be removed as soon as the better system is in place
                     continue;
                 }
-                drawingContext.globalAlpha = 0.6;//TODO make this based on the tile reflectivity
+                game.drawingContext.globalAlpha = this.reflectivityArray[currentBlock]/255;//TODO make this based on the tile reflectivity
                 game.image(
                     this.reflection,
                     (i * game.TILE_WIDTH -
@@ -78,7 +81,7 @@ export class ReflectableImageResource extends Resource {
                     game.TILE_WIDTH,
                     game.TILE_HEIGHT
                 );
-                drawingContext.globalAlpha = 1.0;
+                game.drawingContext.globalAlpha = 1.0;
             }
         }
     }

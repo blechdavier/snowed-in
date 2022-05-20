@@ -45,6 +45,8 @@ export class PlayerLocal extends ServerEntity {
 
     currentAnimation: AnimationFrame<typeof PlayerAnimations> = "idle";
     animFrame: number = 0;
+    timeInThisAnimationFrame = 0;
+    facingRight = true;
 
     topCollision: (typeof WorldTiles[TileType.Air]) = WorldTiles[TileType.Air];//hacky
     bottomCollision: (typeof WorldTiles[TileType.Air]) = WorldTiles[TileType.Air];
@@ -74,6 +76,15 @@ export class PlayerLocal extends ServerEntity {
 
     render(target: p5, upscaleSize: number): void {
 
+        this.timeInThisAnimationFrame += game.deltaTime;
+        if(this.timeInThisAnimationFrame>PlayerAnimations[this.currentAnimation][this.animFrame][1]) {
+            this.timeInThisAnimationFrame = 0;//this does introduce some slight inaccuracies vs subtracting it, but, when you tab back into the browser after being tabbed out, subtracting it causes spazzing
+            this.animFrame++;
+            if(this.animFrame>=PlayerAnimations[this.currentAnimation].length) {
+                this.animFrame = this.animFrame%PlayerAnimations[this.currentAnimation].length;
+            }
+        }
+
         // target.rect(
         //     (this.interpolatedX * game.TILE_WIDTH -
         //         game.interpolatedCamX * game.TILE_WIDTH) *
@@ -84,7 +95,7 @@ export class PlayerLocal extends ServerEntity {
         //     this.width * upscaleSize * game.TILE_WIDTH,
         //     this.height * upscaleSize * game.TILE_HEIGHT
         // );
-        PlayerAnimations[this.currentAnimation][this.animFrame].render
+        PlayerAnimations[this.currentAnimation][this.animFrame][0].render
             (
                 target,
                 Math.round((this.interpolatedX * game.TILE_WIDTH -
@@ -96,7 +107,7 @@ export class PlayerLocal extends ServerEntity {
                 this.width * upscaleSize * game.TILE_WIDTH,
                 this.height * upscaleSize * game.TILE_HEIGHT
             );
-            PlayerAnimations[this.currentAnimation][this.animFrame].renderWorldspaceReflection
+            PlayerAnimations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection
             (
                 this.interpolatedX,
                 this.interpolatedY+this.height,
@@ -156,6 +167,24 @@ export class PlayerLocal extends ServerEntity {
                 if(this.bottomCollision !== undefined)
                 game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
+        }
+        if((this.xVel)>0.05) {
+            this.currentAnimation = "walk";
+            this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            this.facingRight = true;
+        }
+        else if((this.xVel)<-0.05) {
+            this.currentAnimation = "walkleft";
+            this.facingRight = false;
+            this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+        }
+        else if(this.facingRight) {
+            this.currentAnimation = "idle";
+            this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+        }
+        else {
+            this.currentAnimation = "idleleft";
+            this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
         }
     }
 

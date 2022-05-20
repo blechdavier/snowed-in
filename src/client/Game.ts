@@ -328,7 +328,7 @@ export class Game extends p5 {
 		if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
 		// render the player, all items, etc.
-		this.renderEntities();
+		//this.renderEntities();
 
 		//delete any particles that have gotten too old
 		for (let i = 0; i < this.particles.length; i++) {
@@ -346,9 +346,9 @@ export class Game extends p5 {
 		}
 
 		this.smooth(); //enable image lerp
-		drawingContext.globalAlpha = 0.6; //make image translucent
+		this.drawingContext.globalAlpha = 0.6; //make image translucent
 		UiAssets.vignette.render(this, 0, 0, this.width, this.height);
-		drawingContext.globalAlpha = 1.0;
+		this.drawingContext.globalAlpha = 1.0;
 		this.noSmooth();
 
 		// draw the hot bar
@@ -385,7 +385,7 @@ export class Game extends p5 {
 				if (currentItem !== undefined && currentItem !== null) {
 					this.fill(0);
 					if (this.pickedUpSlot === i) {
-						drawingContext.globalAlpha = 0.5;
+						this.drawingContext.globalAlpha = 0.5;
 						this.fill(0, 127);
 					}
 
@@ -404,7 +404,7 @@ export class Game extends p5 {
 					// 	16 * this.upscaleSize,
 					// );
 
-					drawingContext.globalAlpha = 1.0;
+					this.drawingContext.globalAlpha = 1.0;
 				}
 			}
 
@@ -412,8 +412,6 @@ export class Game extends p5 {
 			this.drawCursor();
 		}
 
-		if (this.currentUi !== undefined)
-			this.currentUi.render(this, this.upscaleSize);
 		if (this.currentUi !== undefined)
 			this.currentUi.render(this, this.upscaleSize);
 
