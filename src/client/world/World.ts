@@ -46,8 +46,9 @@ export class World implements Tickable, Renderable {
 
 		this.snapshotInterpolation = new SnapshotInterpolation();
 		this.snapshotInterpolation.interpolationBuffer.set(
-			(1000 / game.netManager.playerTickRate) * 2,
+			(1000 / game.netManager.playerTickRate)*3,
 		);
+		this.snapshotInterpolation.config.autoCorrectTimeOffset = true;
 
 		// define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
 		this.tileLayer = game.createGraphics(
@@ -181,18 +182,22 @@ export class World implements Tickable, Renderable {
 		try {
 			const calculatedSnapshot =
 				this.snapshotInterpolation.calcInterpolation('x y');
-			if (!calculatedSnapshot) return;
+			if (!calculatedSnapshot) {
+				console.warn("no calculated snapshot");
+			} else {
+				const state = calculatedSnapshot.state;
+				if (!state) {
+					console.warn("no calculated snapshot state");
+				} else {
+					// The new positions of entities as object
+					state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
+						positionStates[id] = { x, y };
+					});
+				}
+			}
+		} catch (e) {{console.warn("error in renderPlayers");return;}}
 
-			const state = calculatedSnapshot.state;
-			if (!state) return;
-
-			// The new positions of entities as object
-			state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
-				positionStates[id] = { x, y };
-			});
-		} catch (e) {}
-
-		// Render each entity in random order
+		// Render each entity in the order they appear
 		Object.entries(this.entities).forEach(
 			(entity: [string, ServerEntity]) => {
 				const updatedPosition = positionStates[entity[0]];
