@@ -5,9 +5,10 @@ import { PlayerLocal } from './player/PlayerLocal';
 import { Inventory } from './player/Inventory';
 import { TileEntityAnimations } from './world/entities/TileEntity';
 import { WorldAssets } from './assets/Assets';
-import { PlayerEntity } from './world/entities/PlayerEntity';
+import { hslToRgb, PlayerEntity } from './world/entities/PlayerEntity';
 import { PlayerAnimations } from './assets/Assets';
 import { AnimationFrame } from './assets/Assets';
+import { ReflectableImageResource } from './assets/resources/ReflectedImageResource';
 
 export class NetManager {
 	game: Game;
@@ -41,7 +42,18 @@ export class NetManager {
 					player,
 					inventory,
 				) => {
-					console.log(entities);
+					//console.log(entities);
+					let id = player.id
+					console.log("player idddadsasdf: " +id)
+					id = player.id.split("-").join("");//string.prototype.replaceAll requires ES2021
+					console.log("player idddadsasdf: " +id)
+					let idNumber = (Number("0x"+id)/100000000000000000000000000000)%1;//get a number 0-1 pseudorandomly selected from the uuid of the player
+					console.log("player idddadsasdf: " +idNumber)
+					Object.entries(PlayerAnimations).forEach(element => {
+						for(let frame of element[1]) {
+							frame[0].redefineScarfColor(hslToRgb(idNumber, 1, 0.45), hslToRgb(idNumber, 1, 0.3));
+						}
+					});
 					let tileEntities2: {
 						[id: string]: {
 							id: string;
@@ -81,6 +93,8 @@ export class NetManager {
 					);
 					this.game.world.inventory = new Inventory(inventory);
 					this.game.world.player = new PlayerLocal(player);
+					this.game.world.player.color1 = hslToRgb(idNumber, 1, 0.45)
+					this.game.world.player.color2 = hslToRgb(idNumber, 1, 0.3)
 					entities.forEach(entity => {
 						this.game.world.entities[entity.id] = new EntityClasses[
 							entity.type

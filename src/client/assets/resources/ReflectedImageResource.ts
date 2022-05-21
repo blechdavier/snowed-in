@@ -46,6 +46,30 @@ export class ReflectableImageResource extends Resource {
         });
     }
 
+    redefineScarfColor(scarfColor1: [number, number, number, number], scarfColor2: [number, number, number, number]) {
+        this.scarfColor1 = scarfColor1;
+        this.scarfColor2 = scarfColor2;
+        this.image.loadPixels();
+        for(let i = 0; i<this.image.width; i++) {
+            for(let j = 0; j<this.image.height; j++) {
+                let p = this.image.get(i, j);
+                if(p[0] === 166) {
+                    //console.log("color1")
+                    this.image.set(i, j, this.scarfColor1);
+                }
+                else if(p[0] === 155) {
+                    //console.log("color2")
+                    this.image.set(i, j, this.scarfColor2);
+                }
+                else(this.image.set(i, j, p))
+                
+            }
+        }
+        //this.image.set(3, 10, [0, 255, 0, 255]);//test pixel
+        this.image.updatePixels();
+        this.loadReflection(game);
+    }
+
     loadReflection(game: P5) {
         this.reflection = game.createImage(this.image.width, this.image.height);
         this.image.loadPixels();

@@ -95,23 +95,37 @@ export class PlayerEntity extends ServerEntity {
         // target.textSize(5 * upscaleSize);
         // target.textAlign(target.CENTER, target.TOP);
 
+        target.fill(this.color1);
+        target.noStroke();
+        target.rect(
+            (this.x * game.TILE_WIDTH -
+                game.interpolatedCamX * game.TILE_WIDTH +
+                (this.width * game.TILE_WIDTH) / 2) *
+                upscaleSize-(this.name.length*2*game.upscaleSize),
+                (this.y * game.TILE_HEIGHT -
+                game.interpolatedCamY * game.TILE_HEIGHT -
+                (this.height * game.TILE_HEIGHT) / 2.5 + 6) *
+                upscaleSize,
+                (this.name.length*4*game.upscaleSize),
+                game.upscaleSize);
+
         Fonts.tom_thumb.drawText(
             game,
             this.name,
             (this.x * game.TILE_WIDTH -
                 game.interpolatedCamX * game.TILE_WIDTH +
                 (this.width * game.TILE_WIDTH) / 2) *
-                upscaleSize-(this.name.length*1.5*game.upscaleSize),
+                upscaleSize-(this.name.length*2*game.upscaleSize),
             (this.y * game.TILE_HEIGHT -
                 game.interpolatedCamY * game.TILE_HEIGHT -
-                (this.height * game.TILE_WIDTH) / 2.5) *
+                (this.height * game.TILE_HEIGHT) / 2.5) *
                 upscaleSize
         );
     }
 }
 
 
-function hslToRgb(h: number, s: number, l: number): [number, number, number, number]{
+export function hslToRgb(h: number, s: number, l: number): [number, number, number, number]{
     var r, g, b;
 
     if(s == 0){
