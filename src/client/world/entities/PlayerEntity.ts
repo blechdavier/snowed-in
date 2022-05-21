@@ -57,7 +57,7 @@ export class PlayerEntity extends ServerEntity {
 
         //update animation frame based on deltaTime
         this.timeInThisAnimationFrame += game.deltaTime;
-        console.log(this.animFrame);
+        //console.log(this.animFrame);
         // console.log([this.currentAnimation, this.animFrame]);
         // console.log(PlayerAnimations[this.currentAnimation])
         // console.log(PlayerAnimations[this.currentAnimation][this.animFrame])

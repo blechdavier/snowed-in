@@ -71,6 +71,7 @@ export class ReflectableImageResource extends Resource {
     }
 
     loadReflection(game: P5) {
+        this.hasReflection = true;
         this.reflection = game.createImage(this.image.width, this.image.height);
         this.image.loadPixels();
         //console.log(this.image.pixels)
@@ -102,16 +103,14 @@ export class ReflectableImageResource extends Resource {
     }
     
     renderWorldspaceReflection(target: p5, x: number, y: number, width: number, height: number) {
-        if (this.image === undefined)
-            throw new Error(
-                `Tried to render reflection of image before loading it: ${this.path}`
-            );
 
         if (!this.hasReflection)
             return;
-        
-            target.fill(255, 0, 0);
-            target.stroke(150, 0, 0);
+
+        if (this.reflection === undefined)
+            throw new Error(
+                `Tried to render reflection of image before loading it: ${this.path}`
+            );
 
         //loop through every tile it passes through
         for(let i = Math.floor(x); i<x+width; i++) {
@@ -144,16 +143,14 @@ export class ReflectableImageResource extends Resource {
     }
 
     renderReflection(target: p5, x: number, y: number, width: number, height: number, worldTiles: (string | TileType)[]) {
-        if (this.image === undefined)
-            throw new Error(
-                `Tried to render reflection of image before loading it: ${this.path}`
-            );
 
         if (!this.hasReflection)
             return;
-        
-            target.fill(255, 0, 0);
-            target.stroke(150, 0, 0);
+
+        if (this.reflection === undefined)
+            throw new Error(
+                `Tried to render reflection of image before loading it: ${this.path}`
+            );
 
         //loop through every tile it passes through
         for(let i = Math.floor(x); i<x+width; i++) {
