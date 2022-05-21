@@ -555,7 +555,24 @@ export const WorldAssets = {
 				'assets/textures/world/entities/Small Drone/SmallDrone20.png',
 			),
 		],
-	}
+	},
+	clouds: [
+		new ImageResource(
+			'assets/textures/world/entities/Clouds/cloud1.png',
+		),
+		new ImageResource(
+			'assets/textures/world/entities/Clouds/cloud2.png',
+		),
+		new ImageResource(
+			'assets/textures/world/entities/Clouds/cloud3.png',
+		),
+		new ImageResource(
+			'assets/textures/world/entities/Clouds/cloud4.png',
+		),
+		new ImageResource(
+			'assets/textures/world/entities/Clouds/cloud5.png',
+		),
+	]
 };
 
 export const Fonts = {

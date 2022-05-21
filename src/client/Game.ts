@@ -68,6 +68,7 @@ import { TileType } from '../global/Tile';
 import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
 import { TileEntities } from '../global/TileEntity';
+import { Cloud } from './world/entities/Cloud';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -222,6 +223,7 @@ export class Game extends p5 {
 	particleMultiplier: number;
 
 	particles: ColorParticle /*|FootstepParticle*/[];
+	clouds: Cloud /*|FootstepParticle*/[];
 	breaking: boolean = true;
 
 	constructor(connection: Socket) {
@@ -290,6 +292,10 @@ export class Game extends p5 {
 		this.skyToggle = true;
 		this.skyMod = 2;
 		this.particles = [];
+		this.clouds = [];
+		for(let i = 0; i<80; i++) {
+			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 4/(0.1+Math.random())-5));
+		}
 		this.cursor("assets/textures/ui/cursor2.png");
 	}
 
@@ -304,12 +310,12 @@ export class Game extends p5 {
 				'skyImage',
 				WorldAssets.shaderResources.skyImage.image,
 			);
-			Object.values(PlayerAnimations).forEach(playerAnimation => {
-				playerAnimation.forEach(animationFrame => {
-					console.log("loading animation "+animationFrame[0].path)
-					animationFrame[0].loadReflection(this)
-				})
-			});
+			// Object.values(PlayerAnimations).forEach(playerAnimation => {
+			// 	playerAnimation.forEach(animationFrame => {
+			// 		console.log("loading animation "+animationFrame[0].path)
+			// 		animationFrame[0].loadReflection(this)
+			// 	})
+			// });
 		}
 		// do the tick calculations
 		this.doTicks();
@@ -352,6 +358,10 @@ export class Game extends p5 {
 		//draw all of the particles
 		for (let particle of this.particles) {
 			particle.render(this, this.upscaleSize);
+		}
+
+		for (let cloud of this.clouds) {
+			cloud.render(this, this.upscaleSize);
 		}
 
 		this.smooth(); //enable image lerp
@@ -430,14 +440,23 @@ export class Game extends p5 {
 	}
 
 	windowResized() {
-		this.resizeCanvas(this.windowWidth, this.windowHeight);
-		this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
 
+		let pUpscaleSize = this.upscaleSize;
 		// go for a scale of <48 tiles screen
 		this.upscaleSize = Math.min(
 			Math.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
 			Math.ceil(this.windowHeight / 48 / this.TILE_HEIGHT),
 		);
+
+		if(this.clouds!= undefined && this.clouds.length>0) {//stretch cloud locations so as to not create gaps
+			for(let cloud of this.clouds) {
+				cloud.x = this.interpolatedCamX + (cloud.x-this.interpolatedCamX)*this.windowWidth/this.width/this.upscaleSize*pUpscaleSize;
+			}
+		}
+		this.resizeCanvas(this.windowWidth, this.windowHeight);
+		this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
+
+		
 
 		this.skyShader.setUniform('screenDimensions', [
 			(this.windowWidth / this.upscaleSize) * 2,
@@ -659,6 +678,9 @@ export class Game extends p5 {
 		}
 		for (let particle of this.particles) {
 			particle.tick();
+		}
+		for (let cloud of this.clouds) {
+			cloud.tick();
 		}
 		if (this.world.player === undefined) return;
 		if (this.world.player === undefined) return;

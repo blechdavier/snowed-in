@@ -23,7 +23,7 @@ export class PauseMenu extends UiScreen {
                 game.currentUi = undefined;
             }),
             new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () => {
-                game.currentUi = new OptionsMenu(font, titleFont);
+                game.currentUi = new OptionsMenu(font, titleFont, "pause menu");
             }),
             new Button(font, "Leave game", "Go back to Main Menu", 0, 0, 0, 0, () => {
                 game.currentUi = new MainMenu(font, titleFont);
@@ -57,7 +57,7 @@ export class PauseMenu extends UiScreen {
         this.frame.h = 54*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<3; i++) {
+        for(let i = 0; i<this.buttons.length; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;

@@ -7,10 +7,11 @@ import { MainMenu } from './MainMenu';
 import { VideoSettingsMenu } from './VideoSettingsMenu';
 import { ControlsMenu } from './ControlsMenu';
 import { game } from '../../Game';
+import { PauseMenu } from './PauseMenu';
 
 export class OptionsMenu extends UiScreen {
 
-    constructor(font: FontResource, titleFont: FontResource) {
+    constructor(font: FontResource, titleFont: FontResource, previousMenu: string) {
         super();
         // make the frame with some default values.  These will later be changed to fit the screen size.
         this.frame = new UiFrame(0, 0, 0, 0);
@@ -19,19 +20,19 @@ export class OptionsMenu extends UiScreen {
         this.buttons = [
             new Button(font, "Video Settings", "Change the balance between performance and fidelity.", 0, 0, 0, 0, () => {
                 console.log("video settings");
-                game.currentUi = new VideoSettingsMenu(font, titleFont);
+                game.currentUi = new VideoSettingsMenu(font, titleFont, previousMenu);
             }),
             new Button(font, "Controls", "Change your keybinds.", 0, 0, 0, 0, () => {
                 console.log("control menu");
-                game.currentUi = new ControlsMenu(font, titleFont);
+                game.currentUi = new ControlsMenu(font, titleFont, previousMenu);
             }),
-            new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
-                console.log("audio menu");
-                game.currentUi = undefined;
-            }),
-            new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
-                console.log("main menu");
-                game.currentUi = new MainMenu(font, titleFont);
+            // new Button(font, "Audio Settings", "Change the volume of different sounds.", 0, 0, 0, 0, () => {
+            //     console.log("audio menu");
+            //     game.currentUi = new AudioSettingsMenu(font, titleFont);
+            // }),
+            new Button(font, "Back", "Return to the "+previousMenu+".", 0, 0, 0, 0, () => {
+                if(previousMenu==="main menu")game.currentUi = new MainMenu(font, titleFont);
+                else game.currentUi = new PauseMenu(font, titleFont)
             })
         ];
         // update the size of the elements based on the initial screen size
@@ -59,7 +60,7 @@ export class OptionsMenu extends UiScreen {
         this.frame.h = 48*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<4; i++) {
+        for(let i = 0; i<this.buttons.length; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;

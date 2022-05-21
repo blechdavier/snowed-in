@@ -78,18 +78,18 @@ export class World implements Tickable, Renderable {
 
 		this.renderPlayers(target, upscaleSize);
 
-		target.stroke(0);
-		target.strokeWeight(4);
-		target.noFill();
-		target.rect(target.width - this.width, 0, this.width, this.height);
+		// target.stroke(0);
+		// target.strokeWeight(4);
+		// target.noFill();
+		// target.rect(target.width - this.width, 0, this.width, this.height);
 
-		target.image(
-			this.tileLayer,
-			target.width - this.width,
-			0,
-			this.width,
-			this.height,
-		);
+		// target.image(
+		// 	this.tileLayer,
+		// 	target.width - this.width,
+		// 	0,
+		// 	this.width,
+		// 	this.height,
+		// );
 	}
 
 	updatePlayers(snapshot: Snapshot) {

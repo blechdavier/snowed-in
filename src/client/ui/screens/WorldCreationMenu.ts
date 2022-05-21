@@ -68,7 +68,7 @@ export class WorldCreationMenu extends UiScreen {
         this.frame.h = 48 * game.upscaleSize;
 
         // set the positions of all the buttons
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < this.buttons.length; i++) {
             this.buttons[i].x = game.width / 2 - 192 / 2 * game.upscaleSize;
             this.buttons[i].y = game.height / 2 + 20 * i * game.upscaleSize;
             this.buttons[i].w = 192 * game.upscaleSize;

@@ -147,6 +147,9 @@ export class GameServer {
 					user.x = x;
 					user.y = y;
 				});
+				socket.on('playerAnimation', (animation: string, playerId: string) => {
+					socket.broadcast.emit('onPlayerAnimation', animation, playerId);
+				});
 			}
 
 			// Inventory
@@ -154,7 +157,7 @@ export class GameServer {
 				socket.on(
 					'worldPlace',
 					(inventoryIndex: number, x: number, y: number) => {
-						if (this.world === undefined) return;
+						if (this.world === undefined || y<0 || x<0 || x>this.world?.width || y>this.world?.height) return;
 						// Index verification
 						if (
 							inventoryIndex >= user.inventory.width ||

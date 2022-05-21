@@ -168,23 +168,27 @@ export class PlayerLocal extends ServerEntity {
                 game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
         }
-        if((this.xVel)>0.05) {
+        if(this.currentAnimation !== "walk" && (this.xVel)>0.05) {
             this.currentAnimation = "walk";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             this.facingRight = true;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else if((this.xVel)<-0.05) {
+        if(this.currentAnimation !== "walkleft" && (this.xVel)<-0.05) {
             this.currentAnimation = "walkleft";
             this.facingRight = false;
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else if(this.facingRight) {
+        if(this.currentAnimation !== "idle" && game.worldMouseX>this.interpolatedX+this.width/2) {
             this.currentAnimation = "idle";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else {
+        if(this.currentAnimation !== "idleleft" && game.worldMouseX<=this.interpolatedX+this.width/2){
             this.currentAnimation = "idleleft";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
     }
 
@@ -250,7 +254,7 @@ export class PlayerLocal extends ServerEntity {
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
                 let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
-                if (currentBlock !== TileType.Air && typeof currentBlock !== 'string') {
+                if (currentBlock !== TileType.Air && typeof currentBlock === 'number') {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -352,7 +356,7 @@ export class PlayerLocal extends ServerEntity {
                 ) {
                     let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
                     // if the current tile isn't air, then continue with the collision detection
-                    if (currentBlock !== TileType.Air && typeof currentBlock !== "string") {
+                    if (currentBlock !== TileType.Air && typeof currentBlock === "number") {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,

@@ -5,15 +5,9 @@ import { PlayerLocal } from './player/PlayerLocal';
 import { Inventory } from './player/Inventory';
 import { TileEntityAnimations } from './world/entities/TileEntity';
 import { WorldAssets } from './assets/Assets';
-import { TileType } from '../global/Tile';
-import {
-	Entities,
-	EntitiesData,
-	EntityData,
-	EntityPayload,
-} from '../global/Entity';
-import { InventoryPayload } from '../global/Inventory';
-import { TileEntityPayload } from '../global/TileEntity';
+import { PlayerEntity } from './world/entities/PlayerEntity';
+import { PlayerAnimations } from './assets/Assets';
+import { AnimationFrame } from './assets/Assets';
 
 export class NetManager {
 	game: Game;
@@ -128,6 +122,15 @@ export class NetManager {
 				if (entity === undefined) return;
 
 				entity.updateData(entityData);
+			});
+
+			this.game.connection.on('onPlayerAnimation', (animation, playerId) => {
+				if (((((((this.game.world == undefined))))))) return;
+				let e = this.game.world.entities[playerId];
+				if(e instanceof PlayerEntity && Object.keys(PlayerAnimations).includes(e.currentAnimation)) {
+					//@ts-expect-error
+					e.currentAnimation = animation;
+				}
 			});
 
 			this.game.connection.on('entityCreate', entityData => {

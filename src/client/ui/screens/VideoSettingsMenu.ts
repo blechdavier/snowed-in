@@ -8,7 +8,7 @@ import { OptionsMenu } from './OptionsMenu';
 
 export class VideoSettingsMenu extends UiScreen {
 
-	constructor(font: FontResource, titleFont: FontResource) {
+	constructor(font: FontResource, titleFont: FontResource, previousMenu: string) {
 		super();
 		// make the frame with some default values.  These will later be changed to fit the screen size.
 		this.frame = new UiFrame(0, 0, 0, 0);
@@ -84,7 +84,7 @@ export class VideoSettingsMenu extends UiScreen {
 			}),
 			new Button(font, "Back", "Return to the main menu.", 0, 0, 0, 0, () => {
 				console.log("main menu");
-				game.currentUi = new OptionsMenu(font, titleFont);
+				game.currentUi = new OptionsMenu(font, titleFont, previousMenu);
 			})
 		];
 		// update the size of the elements based on the initial screen size
@@ -110,7 +110,7 @@ export class VideoSettingsMenu extends UiScreen {
 		this.frame.h = 48 * game.upscaleSize;
 
 		// set the positions of all the buttons
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < this.buttons.length; i++) {
 			this.buttons[i].x = game.width / 2 - 192 / 2 * game.upscaleSize;
 			this.buttons[i].y = game.height / 2 + 20 * i * game.upscaleSize;
 			this.buttons[i].w = 192 * game.upscaleSize;

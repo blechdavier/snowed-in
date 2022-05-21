@@ -38,7 +38,8 @@ export interface ServerEvents {
 	/**
 	 * Sends an entity position snapshot used for interpolation
 	 */
-	entitySnapshot: (snapshot: Snapshot) => void;
+	 entitySnapshot: (snapshot: Snapshot) => void;
+
 	/**
 	 * Creates a new world entity
 	 */
@@ -51,6 +52,10 @@ export interface ServerEvents {
 	 * Deletes a world entity
 	 */
 	entityDelete: (id: EntityPayload['id']) => void;
+	/**
+	* Sends an entity position snapshot used for interpolation
+	*/
+	onPlayerAnimation: (animationName: string, playerId: string) => void;
 }
 
 export interface ClientEvents {
@@ -80,4 +85,9 @@ export interface ClientEvents {
 	join: (serverId: string, name: string) => void;
 
 	tileEntityInteract: (updatedTile: number) => void;
+
+	/**
+	* Sends an entity position snapshot used for interpolation
+	*/
+	playerAnimation: (animationName: string, playerId: string) => void;
 }

@@ -3,6 +3,7 @@ import P5 from 'p5';
 import { game } from '../../Game';
 import { TileType } from "../../../global/Tile"
 import { WorldTiles } from "../../world/WorldTiles";
+import p5 from "p5";
 
 export class ReflectableImageResource extends Resource {
 
@@ -10,13 +11,39 @@ export class ReflectableImageResource extends Resource {
     hasReflection: boolean = false;
     reflection: P5.Image;
     reflectivityArray: number[] = [0, 90, 150, 0, 10, 15, 17, 19, 21, 23, 25, 27, 29, 31, 10, 17, 21, 25, 29, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+    scarfColor1?: [number, number, number, number]
+    scarfColor2?: [number, number, number, number]
 
-    constructor(path: string) {
-        super(path);
+    constructor(path: string, scarfColor1?: [number, number, number, number], scarfColor2?: [number, number, number, number]) {
+        super(path)
+        this.scarfColor1 = scarfColor1;
+        this.scarfColor2 = scarfColor2;
     }
 
     loadResource(game: P5) {
-        this.image = game.loadImage(this.path);
+        this.image = game.loadImage(this.path, ()=>{
+            if(this.scarfColor1!=undefined && this.scarfColor2!=undefined) {
+                this.image.loadPixels();
+                for(let i = 0; i<this.image.width; i++) {
+                    for(let j = 0; j<this.image.height; j++) {
+                        let p = this.image.get(i, j);
+                        if(p[0] === 166) {
+                            //console.log("color1")
+                            this.image.set(i, j, this.scarfColor1);
+                        }
+                        else if(p[0] === 155) {
+                            //console.log("color2")
+                            this.image.set(i, j, this.scarfColor2);
+                        }
+                        else(this.image.set(i, j, p))
+                        
+                    }
+                }
+                //this.image.set(3, 10, [0, 255, 0, 255]);//test pixel
+                this.image.updatePixels();
+            }
+            this.loadReflection(game);
+        });
     }
 
     loadReflection(game: P5) {

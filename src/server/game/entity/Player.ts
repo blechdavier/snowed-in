@@ -12,6 +12,8 @@ export class Player extends Entity {
 	inventory: Inventory = new Inventory(12, 4);
 	breakingTile: { start: number; tileIndex: number } | undefined;
 
+	currentAnimation: string = "idle";
+
 	constructor(
 		name: string,
 		userId: string,

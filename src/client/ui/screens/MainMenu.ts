@@ -18,21 +18,14 @@ export class MainMenu extends UiScreen {
 
         // make 4 buttons with default positions
         this.buttons = [
-            new Button(font, "Resume Game", "Keep playing where you left off.", 0, 0, 0, 0, () => {
-                console.log("resume game");
-                game.currentUi = undefined;
-            }),
-            new Button(font, "New Game", "Creates a new server that your friends can join.", 0, 0, 0, 0, () => {
-                console.log("new game");
-                game.currentUi = new WorldCreationMenu(font, titleFont);
-            }),
             new Button(font, "Join Game", "Join a game with your friends, or make new ones.", 0, 0, 0, 0, () => {
                 console.log("join game");
+                if(game.world==undefined)return;//if there's no world, there's no point.
                 game.currentUi = undefined;
             }),
             new Button(font, "Options", "Change your keybinds, reduce lag, etc.", 0, 0, 0, 0, () =>{
                 console.log("options");
-                game.currentUi = new OptionsMenu(font, titleFont);
+                game.currentUi = new OptionsMenu(font, titleFont, "main menu");
             })
         ];
 
@@ -62,7 +55,7 @@ export class MainMenu extends UiScreen {
         this.frame.h = 48*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<4; i++) {
+        for(let i = 0; i<this.buttons.length; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+20*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;
