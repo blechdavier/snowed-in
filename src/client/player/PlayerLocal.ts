@@ -223,12 +223,12 @@ export class PlayerLocal extends ServerEntity {
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idle" && Math.abs(this.xVel)<=0.05 && game.worldMouseX>this.interpolatedX+this.width/2) {
+        if(this.currentAnimation !== "idle" && this.xVel<=0.05 && (this.xVel>0 || (game.worldMouseX>this.interpolatedX+this.width/2 && this.xVel===0))) {
             this.currentAnimation = "idle";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idleleft" && Math.abs(this.xVel)<=0.05 && game.worldMouseX<=this.interpolatedX+this.width/2){
+        if(this.currentAnimation !== "idleleft" && this.xVel>=-0.05 && (this.xVel<0 || (game.worldMouseX<=this.interpolatedX+this.width/2 && this.xVel===0))){
             this.currentAnimation = "idleleft";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
