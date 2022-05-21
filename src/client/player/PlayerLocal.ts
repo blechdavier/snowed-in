@@ -180,16 +180,17 @@ export class PlayerLocal extends ServerEntity {
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idle" && game.worldMouseX>this.interpolatedX+this.width/2) {
+        if(this.currentAnimation !== "idle" && Math.abs(this.xVel)<=0.05 && game.worldMouseX>this.interpolatedX+this.width/2) {
             this.currentAnimation = "idle";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idleleft" && game.worldMouseX<=this.interpolatedX+this.width/2){
+        if(this.currentAnimation !== "idleleft" && Math.abs(this.xVel)<=0.05 && game.worldMouseX<=this.interpolatedX+this.width/2){
             this.currentAnimation = "idleleft";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
+        //console.log(this.currentAnimation, this.currentAnimation !== "walk" && (this.xVel)>0.05)
     }
 
     findInterpolatedCoordinates() {

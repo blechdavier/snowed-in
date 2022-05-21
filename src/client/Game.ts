@@ -293,8 +293,8 @@ export class Game extends p5 {
 		this.skyMod = 2;
 		this.particles = [];
 		this.clouds = [];
-		for(let i = 0; i<80; i++) {
-			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 4/(0.1+Math.random())-5));
+		for(let i = 0; i<this.width/this.upscaleSize/2; i++) {
+			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 5/(0.1+Math.random())-7));
 		}
 		this.cursor("assets/textures/ui/cursor2.png");
 	}
@@ -340,6 +340,10 @@ export class Game extends p5 {
 
 		this.image(this.skyLayer, 0, 0, this.width, this.height);
 
+		for (let cloud of this.clouds) {
+			cloud.render(this, this.upscaleSize);
+		}
+
 		if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
 		// render the player, all items, etc.
@@ -358,10 +362,6 @@ export class Game extends p5 {
 		//draw all of the particles
 		for (let particle of this.particles) {
 			particle.render(this, this.upscaleSize);
-		}
-
-		for (let cloud of this.clouds) {
-			cloud.render(this, this.upscaleSize);
 		}
 
 		this.smooth(); //enable image lerp

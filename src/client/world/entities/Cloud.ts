@@ -18,7 +18,7 @@ export class Cloud {
     }
 
     render(target: p5, upscaleSize: number): void {
-        console.log(`x: ${this.x}, y: ${this.y}`);
+        //console.log(`x: ${this.x}, y: ${this.y}`);
         //draw a cloud at the place :o
         this.image.render(
             target,
