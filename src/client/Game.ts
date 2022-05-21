@@ -293,9 +293,10 @@ export class Game extends p5 {
 		this.skyMod = 2;
 		this.particles = [];
 		this.clouds = [];
-		for(let i = 0; i<this.width/this.upscaleSize/2; i++) {
-			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 5/(0.1+Math.random())-7));
+		for(let i = 0; i<this.width/this.upscaleSize/15; i++) {
+			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 2/(0.03+Math.random())-5));
 		}
+		console.log("there are "+this.clouds.length+" clouds")
 		this.cursor("assets/textures/ui/cursor2.png");
 	}
 
