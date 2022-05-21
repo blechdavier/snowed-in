@@ -109,6 +109,7 @@ export class PlayerLocal extends ServerEntity {
             );
             PlayerAnimations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection
             (
+                game,
                 this.interpolatedX,
                 this.interpolatedY+this.height,
                 this.width,

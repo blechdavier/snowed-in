@@ -1,6 +1,6 @@
 import { Resource } from "./Resource";
 import P5 from 'p5';
-import { game } from '../../Game';
+import { Game, game } from '../../Game';
 import { TileType } from "../../../global/Tile"
 import { WorldTiles } from "../../world/WorldTiles";
 import p5 from "p5";
@@ -61,7 +61,7 @@ export class ReflectableImageResource extends Resource {
                     this.reflection.pixels[4*(j*this.reflection.width+i)+3] = 
                     this.image.pixels[4*((this.image.height-j-1)*this.image.width+i)+3] * 
                     ((this.reflection.height-j)/this.reflection.height) * 
-                    (this.reflection.width/2+0.5-Math.abs(i-this.reflection.width/2+0.5))/(this.reflection.width/2);
+                    (this.reflection.width/2+0.5-Math.abs(i-this.reflection.width/2+0.5))/(this.reflection.width/2) * Math.min(1, 28*28/this.reflection.height/this.reflection.height);
                 }
             }
             this.reflection.updatePixels();
@@ -80,7 +80,7 @@ export class ReflectableImageResource extends Resource {
         target.image(this.image, x, y, width, height);
     }
     
-    renderWorldspaceReflection(x: number, y: number, width: number, height: number) {
+    renderWorldspaceReflection(target: p5, x: number, y: number, width: number, height: number) {
         if (this.image === undefined)
             throw new Error(
                 `Tried to render reflection of image before loading it: ${this.path}`
@@ -89,19 +89,20 @@ export class ReflectableImageResource extends Resource {
         if (!this.hasReflection)
             return;
         
-        game.fill(255, 0, 0);
-        game.stroke(150, 0, 0);
+            target.fill(255, 0, 0);
+            target.stroke(150, 0, 0);
 
         //loop through every tile it passes through
         for(let i = Math.floor(x); i<x+width; i++) {
             for(let j = Math.floor(y); j<y+height; j++) {
                 // console.log(target.world.worldTiles);
-                let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
+                let currentBlock: TileType | string;
+                currentBlock = game.world.worldTiles[j * game.worldWidth + i];
                 if(currentBlock === undefined || typeof currentBlock === "string" || currentBlock == TileType.Air) {//the reference to TileEntity can be removed as soon as the better system is in place
                     continue;
                 }
-                game.drawingContext.globalAlpha = this.reflectivityArray[currentBlock]/255;//TODO make this based on the tile reflectivity
-                game.image(
+                target.drawingContext.globalAlpha = this.reflectivityArray[currentBlock]/255;//TODO make this based on the tile reflectivity
+                target.image(
                     this.reflection,
                     (i * game.TILE_WIDTH -
                         game.interpolatedCamX * game.TILE_WIDTH) *
@@ -116,7 +117,45 @@ export class ReflectableImageResource extends Resource {
                     game.TILE_WIDTH,
                     game.TILE_HEIGHT
                 );
-                game.drawingContext.globalAlpha = 1.0;
+                target.drawingContext.globalAlpha = 1.0;
+            }
+        }
+    }
+
+    renderReflection(target: p5, x: number, y: number, width: number, height: number, worldTiles: (string | TileType)[]) {
+        if (this.image === undefined)
+            throw new Error(
+                `Tried to render reflection of image before loading it: ${this.path}`
+            );
+
+        if (!this.hasReflection)
+            return;
+        
+            target.fill(255, 0, 0);
+            target.stroke(150, 0, 0);
+
+        //loop through every tile it passes through
+        for(let i = Math.floor(x); i<x+width; i++) {
+            for(let j = Math.floor(y); j<y+height; j++) {
+                // console.log(target.world.worldTiles);
+                let currentBlock: TileType | string;
+                currentBlock = worldTiles[j * game.worldWidth + i];
+                if(currentBlock === undefined || typeof currentBlock === "string" || currentBlock == TileType.Air) {//the reference to TileEntity can be removed as soon as the better system is in place
+                    continue;
+                }
+                target.drawingContext.globalAlpha = this.reflectivityArray[currentBlock]/255;//TODO make this based on the tile reflectivity
+                target.image(
+                    this.reflection,
+                    i * game.TILE_WIDTH,
+                    j*game.TILE_HEIGHT,
+                    game.TILE_WIDTH,
+                    game.TILE_HEIGHT,
+                    (i-x)*game.TILE_WIDTH,
+                    (j-y)*game.TILE_HEIGHT,
+                    game.TILE_WIDTH,
+                    game.TILE_HEIGHT
+                );
+                target.drawingContext.globalAlpha = 1.0;
             }
         }
     }

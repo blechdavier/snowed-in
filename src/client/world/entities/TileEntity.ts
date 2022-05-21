@@ -1,5 +1,6 @@
 export class ClientTileEntity {
     coveredTiles: number[]
+    reflectedTiles: number[]
     id: string
     type_: number
     data: object

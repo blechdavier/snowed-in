@@ -2,7 +2,7 @@ import p5 from 'p5';
 import { ServerEntity } from './ServerEntity';
 import { Entities, EntityPayload } from '../../../global/Entity';
 import { game } from '../../Game';
-import { AnimationFrame, PlayerAnimations } from '../../assets/Assets';
+import { AnimationFrame, Fonts, PlayerAnimations, UiAssets } from '../../assets/Assets';
 import { ReflectableImageResource } from '../../assets/resources/ReflectedImageResource';
 
 export class PlayerEntity extends ServerEntity {
@@ -83,23 +83,25 @@ export class PlayerEntity extends ServerEntity {
             this.height * upscaleSize * game.TILE_HEIGHT
         );
         this.animations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection(
+            game,
             this.x,
             this.y+this.height,
             this.width,
             this.height
         );
 
-        target.noStroke();
+        // target.noStroke();
 
-        target.textSize(5 * upscaleSize);
-        target.textAlign(target.CENTER, target.TOP);
+        // target.textSize(5 * upscaleSize);
+        // target.textAlign(target.CENTER, target.TOP);
 
-        target.text(
-            this.name+", test: "+this.animations.idle[0][0].image.get(3, 10),
+        Fonts.tom_thumb.drawText(
+            game,
+            this.name,
             (this.x * game.TILE_WIDTH -
                 game.interpolatedCamX * game.TILE_WIDTH +
                 (this.width * game.TILE_WIDTH) / 2) *
-                upscaleSize,
+                upscaleSize-(this.name.length*1.5*game.upscaleSize),
             (this.y * game.TILE_HEIGHT -
                 game.interpolatedCamY * game.TILE_HEIGHT -
                 (this.height * game.TILE_WIDTH) / 2.5) *

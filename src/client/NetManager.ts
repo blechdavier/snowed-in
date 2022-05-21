@@ -46,6 +46,7 @@ export class NetManager {
 						[id: string]: {
 							id: string;
 							coveredTiles: number[];
+							reflectedTiles: number[];//this honestly shouldn't be sent over socket but im tired
 							type_: number;
 							data: {};
 							animFrame: number;
@@ -57,6 +58,7 @@ export class NetManager {
 						tileEntities2[tileEntity.id] = {
 							id: tileEntity.id,
 							coveredTiles: tileEntity.coveredTiles,
+							reflectedTiles: tileEntity.reflectedTiles,
 							type_: tileEntity.payload.type_,
 							data: tileEntity.payload.data,
 							animFrame: randint(
@@ -68,6 +70,8 @@ export class NetManager {
 							animate:
 								TileEntityAnimations[tileEntity.payload.type_],
 						};
+						console.log(width*height+" tiles in world");
+						console.log(tileEntities2[tileEntity.id].reflectedTiles);
 					});
 					this.game.world = new World(
 						width,

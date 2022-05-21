@@ -3,6 +3,7 @@ import { TileEntities, TileEntityData, TileEntityPayload } from '../../../global
 import { TileType } from '../../../global/Tile';
 import { Inventory } from '../inventory/Inventory';
 import { InventoryUpdatePayload, ItemType } from '../../../global/Inventory';
+import { updateRestTypeNode } from 'typescript';
 
 export abstract class TileEntityBase {
 	id: string;
@@ -16,6 +17,7 @@ export abstract class TileEntityBase {
 
 	coveredTiles: number[] = [];
 	type: TileEntities
+	reflectedTiles: number[] = [];
 
 	protected constructor(
 		world: World,
@@ -55,6 +57,14 @@ export abstract class TileEntityBase {
 			}
 		}
 		this.coveredTiles = updatedTiles;
+		updatedTiles.forEach((tileIndex)=>{
+			this.reflectedTiles.push(tileIndex+this.world.width*(Math.round((Math.max(//can cause some issues with very very wide tile entities
+				...this.coveredTiles,
+			)-Math.min(
+				...this.coveredTiles,
+			))/this.world.width)+1));
+		})
+		
 
 		updatedTiles.forEach(index => {
 			world.tiles[index] = this.id;
@@ -73,6 +83,7 @@ export abstract class TileEntityBase {
 			id: this.id,
 			payload: this.getData(),
 			coveredTiles: this.coveredTiles,
+			reflectedTiles: this.reflectedTiles,
 		};
 	}
 

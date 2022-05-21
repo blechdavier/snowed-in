@@ -397,97 +397,97 @@ export const WorldAssets = {
 	},
 	tileEntities: [
 		[//tree
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree1.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree2.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree3.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree4.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree5.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree6.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree7.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree8.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree9.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/Tree10.png',
 		),
 		],
 		[//drill tier 1
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill1.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill2.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill3.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill4.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill5.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill6.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill7.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill8.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill9.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill10.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill11.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill12.png',
 		),
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/Rusty Drill/RustyDrill13.png',
 		),
 		],
 		[//drill tier 2
-
+	
 		],
 		[//drill tier 3
-
+	
 		],
 		[//drill tier 4
-
+	
 		],
 		[//drill tier 5
-
+	
 		],
 		[//crafting bench
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/misc/craftingBench.png',
 		),
 		],
 		[//sapling/seed
-		new ImageResource(
+		new ReflectableImageResource(
 			'assets/textures/world/tileEntities/trees/sapling.png',
 		),
 		]

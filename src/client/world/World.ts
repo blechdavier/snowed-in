@@ -214,7 +214,6 @@ export class World implements Tickable, Renderable {
 
 	loadWorld() {
 		this.tileLayer.noStroke();
-		this.tileLayer.fill(255, 0, 0);
 		for (let x = 0; x < this.height; x++) {
 			//x and y are switched for some stupid reason
 			// i will be the y position of tiles being drawn
@@ -241,13 +240,13 @@ export class World implements Tickable, Renderable {
 							WorldAssets.tileEntities[
 								this.tileEntities[tileVal].type_
 							][this.tileEntities[tileVal].animFrame];
-						img.render(
-							this.tileLayer,
-							y * game.TILE_WIDTH,
-							x * game.TILE_HEIGHT,
-							img.image.width,
-							img.image.height,
-						);
+							img.render(
+								this.tileLayer,
+								y * game.TILE_WIDTH,
+								x * game.TILE_HEIGHT,
+								img.image.width,
+								img.image.height,
+							);
 					} else {
 						//console.log(`Already rendered ${tileVal}`);
 					}
@@ -287,6 +286,24 @@ export class World implements Tickable, Renderable {
 					}
 				}
 			}
+		}
+		for(let tileEntity of Object.values(this.tileEntities)) {
+			let img = WorldAssets.tileEntities[
+				tileEntity.type_
+			][tileEntity.animFrame];
+			//console.log("debug1")
+			img.renderReflection(
+				this.tileLayer,
+				Math.min(
+					...tileEntity.coveredTiles,
+				)%this.width,
+				Math.floor(Math.max(
+					...tileEntity.coveredTiles,
+				)/this.width)+1,
+				img.image.width/game.TILE_WIDTH,
+				img.image.height/game.TILE_HEIGHT,
+				this.worldTiles
+			);
 		}
 	}
 
@@ -399,6 +416,29 @@ export class World implements Tickable, Renderable {
 					game.TILE_WIDTH,
 					game.TILE_HEIGHT,
 				);
+			}
+			for(let tileEntity of Object.values(this.tileEntities)) {
+				if(tileEntity.reflectedTiles.includes(tileIndex)) {
+					console.log("reflection at index "+tileIndex);
+					const topLeft = Math.min(
+						...tileEntity.reflectedTiles,
+					);
+					const tileEntityReflectionImage = WorldAssets.tileEntities[tileEntity.type_][tileEntity.animFrame];
+					this.tileLayer.drawingContext.globalAlpha = tileEntityReflectionImage.reflectivityArray[tileVal]/255;//TODO make this based on the tile reflectivity
+					this.tileLayer.image(
+						tileEntityReflectionImage.reflection,
+						x*game.TILE_WIDTH,
+						y*game.TILE_HEIGHT,
+						game.TILE_WIDTH,
+						game.TILE_HEIGHT,
+						(x-topLeft%this.width)*game.TILE_WIDTH,
+						(y-Math.floor(topLeft/this.width))*game.TILE_HEIGHT,
+						game.TILE_WIDTH,
+						game.TILE_HEIGHT
+					);
+					this.tileLayer.drawingContext.globalAlpha = 1.0;
+					//WorldAssets.tileEntities[tileEntity.type_][tileEntity.animFrame].renderPartialWorldspaceReflection(this.tileLayer, tileIndex%this.width, Math.floor(tileIndex/this.width), topLeft%this.width, Math.floor(topLeft/this.width));
+				}
 			}
 		}
 	}

@@ -1112,7 +1112,7 @@ export class Game extends p5 {
 					this.text("Tile entity: " + selectedTile, this.mouseX, this.mouseY);//JANKY ALERT
 				}
 				else if (WorldTiles[selectedTile] !== undefined) {
-					this.text((WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
+					this.text((this.world.width * this.worldMouseY + this.worldMouseX)+": "+(WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
 				}
 			}
 		}
