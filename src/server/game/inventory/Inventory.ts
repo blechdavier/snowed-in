@@ -1,6 +1,7 @@
 import {
 	InventoryPayload,
 	InventoryUpdatePayload,
+	Items,
 	ItemStack,
 	ItemType,
 } from '../../../global/Inventory';
@@ -9,14 +10,12 @@ export class Inventory {
 	width: number;
 	height: number;
 
-	mainInventory: (ItemStack | undefined)[]
+	mainInventory: (ItemStack | undefined)[];
 
 	constructor(width: number, height: number) {
-		this.mainInventory = new Array(
-			width * height,
-		);
-		this.width = width
-		this.height = height
+		this.mainInventory = new Array(width * height);
+		this.width = width;
+		this.height = height;
 	}
 
 	removeItems(
@@ -97,22 +96,55 @@ export class Inventory {
 		quantity: number = 1,
 	): InventoryUpdatePayload {
 		//check for matching item stack with room left
-		for (let i = 0; i < this.mainInventory.length; i++) {
-			if (this.mainInventory[i]?.item === item) { // if stacks have a max, this will create a bug
-				this.mainInventory[i]!.quantity += quantity;
-				quantity = 0;
-				return [{slot: i, item: this.mainInventory[i]}];
+		const updatePayload: InventoryUpdatePayload = [];
+		for (let i = 0; i < this.mainInventory.length; i++){
+			const invItem = this.mainInventory[i];
+			if (invItem === undefined || invItem.item !== item) continue;
+
+			if (invItem.quantity <= 100) {
+				if (quantity <= 100 - invItem.quantity) {
+					this.mainInventory[i] = {
+						item: item,
+						quantity: invItem.quantity + quantity,
+					};
+					updatePayload.push({
+						item: this.mainInventory[i],
+						slot: i,
+					});
+					return updatePayload
+				}
+
+				this.mainInventory[i] = { item: item, quantity: 100 };
+				updatePayload.push({ item: this.mainInventory[i], slot: i });
+				quantity -= 100 - invItem.quantity;
 			}
 		}
-		//check for empty item stack
-		for (let i = 0; i < this.mainInventory.length; i++) {
-			if (this.mainInventory[i] === undefined) {
-				this.mainInventory[i] = { item: item, quantity: quantity }
-				quantity = 0;
-				return [{slot: i, item: this.mainInventory[i]}];
+
+		for (let i = 0; i < this.mainInventory.length; i++){
+			console.log("yes")
+			const invItem = this.mainInventory[i];
+			if (invItem !== undefined) continue;
+
+			if (quantity > 100) {
+				this.mainInventory[i] = {
+					item: item,
+					quantity: 100,
+				};
+				quantity -= 100;
+				updatePayload.push({ item: this.mainInventory[i], slot: i });
+				continue;
 			}
+
+			this.mainInventory[i] = {
+				item: item,
+				quantity: quantity,
+			};
+			quantity = 0;
+			updatePayload.push({ item: this.mainInventory[i], slot: i });
+			return updatePayload
 		}
-		return [];
+
+		return updatePayload;
 	}
 
 	swapSlots(
@@ -120,25 +152,30 @@ export class Inventory {
 		destination: number,
 	): false | InventoryUpdatePayload {
 		if (source < 0 || source > this.mainInventory.length) {
-			console.error("Invalid source slot")
-			return false
+			console.error('Invalid source slot');
+			return false;
 		}
 
 		if (destination < 0 || destination > this.mainInventory.length) {
-			console.error("Invalid source slot")
-			return false
+			console.error('Invalid source slot');
+			return false;
 		}
 
 		if (source == destination) {
-			console.error("Cannot swap a slot for itself")
-			return false
+			console.error('Cannot swap a slot for itself');
+			return false;
 		}
 
 		// Swap the slots
-		[this.mainInventory[source], this.mainInventory[destination]] = [this.mainInventory[destination], this.mainInventory[source]];
+		[this.mainInventory[source], this.mainInventory[destination]] = [
+			this.mainInventory[destination],
+			this.mainInventory[source],
+		];
 
-
-		return [{ item: this.mainInventory[source], slot: source }, { item: this.mainInventory[destination], slot: destination }]
+		return [
+			{ item: this.mainInventory[source], slot: source },
+			{ item: this.mainInventory[destination], slot: destination },
+		];
 	}
 
 	getPayload(): InventoryPayload {

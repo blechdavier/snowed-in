@@ -3,7 +3,7 @@ import { World } from './world/World';
 import { EntityClasses } from './world/entities/EntityClasses';
 import { PlayerLocal } from './player/PlayerLocal';
 import { Inventory } from './player/Inventory';
-import { TileEntityAnimations } from './world/entities/TileEntity';
+import { ClientTileEntity, TileEntityAnimations } from './world/entities/TileEntity';
 import { WorldAssets } from './assets/Assets';
 import { TileType } from '../global/Tile';
 import {
@@ -47,24 +47,13 @@ export class NetManager {
 					player,
 					inventory,
 				) => {
-					console.log(entities);
 					let tileEntities2: {
-						[id: string]: {
-							id: string;
-							coveredTiles: number[];
-							type_: number;
-							data: {};
-							animFrame: number;
-							animate: boolean;
-						};
+						[id: string]: ClientTileEntity
 					} = {};
 					tileEntities.forEach(tileEntity => {
 						console.log('adding tile entity: ' + tileEntity.id);
 						tileEntities2[tileEntity.id] = {
-							id: tileEntity.id,
-							coveredTiles: tileEntity.coveredTiles,
-							type_: tileEntity.payload.type_,
-							data: tileEntity.payload.data,
+							...tileEntity,
 							animFrame: randint(
 								0,
 								WorldAssets.tileEntities[

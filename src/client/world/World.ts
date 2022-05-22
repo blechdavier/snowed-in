@@ -27,7 +27,6 @@ export class World implements Tickable, Renderable {
 
 	entities: { [id: string]: ServerEntity } = {};
 
-	tileEntityPayloads: { [id: string]: TileEntityPayload };
 	tileEntities: { [id: string]: ClientTileEntity };
 
 	snapshotInterpolation: SnapshotInterpolation;
@@ -239,7 +238,7 @@ export class World implements Tickable, Renderable {
 						//render tile entity image
 						let img =
 							WorldAssets.tileEntities[
-								this.tileEntities[tileVal].type_
+								this.tileEntities[tileVal].payload.type_
 							][this.tileEntities[tileVal].animFrame];
 						img.render(
 							this.tileLayer,

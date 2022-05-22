@@ -6,7 +6,7 @@ import { ClientEvents, ServerEvents } from '../../global/Events';
 import { io, UserData } from '../Main';
 import { Player } from './entity/Player';
 import { World } from './World';
-import { WorldTiles } from './WorldTiles'
+import { WorldTiles } from './WorldTiles';
 import { TileEntityPayload } from '../../global/TileEntity';
 import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
@@ -122,10 +122,11 @@ export class GameServer {
 					entities.push(player.getPayload());
 			});
 
-			const tileEntities: TileEntityPayload[] = Object.entries(this.world.tileEntities).map(tileEntityEntry => {
-				console.log(tileEntityEntry)
-				return tileEntityEntry[1].getPayload()
-			})
+			const tileEntities: TileEntityPayload[] = Object.entries(
+				this.world.tileEntities,
+			).map(tileEntityEntry => {
+				return tileEntityEntry[1].getPayload();
+			});
 
 			// Send the world to the client
 			socket.emit(
@@ -205,16 +206,21 @@ export class GameServer {
 					},
 				);
 
-				socket.on('inventorySwap', ((sourceSlot: number, destinationSlot: number) => {
-					if (this.world === undefined) return;
+				socket.on(
+					'inventorySwap',
+					(sourceSlot: number, destinationSlot: number) => {
+						if (this.world === undefined) return;
 
-					const swapped = user.inventory.swapSlots(sourceSlot, destinationSlot)
+						const swapped = user.inventory.swapSlots(
+							sourceSlot,
+							destinationSlot,
+						);
 
-					if(!swapped)
-						return
+						if (!swapped) return;
 
-					socket.emit('inventoryUpdate', swapped)
-				}))
+						socket.emit('inventoryUpdate', swapped);
+					},
+				);
 			}
 
 			// World interact
@@ -241,30 +247,59 @@ export class GameServer {
 						);
 						return;
 					}
-					if(typeof this.world.tiles[brokenTile.tileIndex] === 'string') {
-						let e = this.world.tileEntities[this.world.tiles[brokenTile.tileIndex]]
-						console.log(e)
-						return
+					if (
+						typeof this.world.tiles[brokenTile.tileIndex] ===
+						'string'
+					) {
+						let brokenTileEntity =
+							this.world.tileEntities[
+								this.world.tiles[brokenTile.tileIndex]
+							];
+						socket.emit('inventoryUpdate', brokenTileEntity.interact(user.inventory));
+						socket.emit('worldUpdate', brokenTileEntity.remove())
+						delete this.world.tileEntities[
+							this.world.tiles[brokenTile.tileIndex]
+						];
+						return;
 					}
-					if (this.world.tiles[brokenTile.tileIndex] === TileType.Air) {
+					if (
+						this.world.tiles[brokenTile.tileIndex] === TileType.Air
+					) {
 						console.error(
 							`Player ${user.name} attempted to break an air tile`,
 						);
 						return;
 					}
-					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
-					if(typeof brokenTileInstance !== 'string' && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
+					let brokenTileInstance =
+						this.world.tiles[brokenTile.tileIndex];
+					if (
+						typeof brokenTileInstance !== 'string' &&
+						[
+							TileType.Tin,
+							TileType.Aluminum,
+							TileType.Gold,
+							TileType.Titanium,
+							TileType.Grape,
+						].includes(brokenTileInstance)
+					) {
 						setTimeout(() => {
-							if(this.world === undefined)  return;
-							this.world.tiles[brokenTile.tileIndex] = brokenTileInstance;
+							if (this.world === undefined) return;
+							this.world.tiles[brokenTile.tileIndex] =
+								brokenTileInstance;
 							this.room.emit('worldUpdate', [
-								{ tileIndex: brokenTile.tileIndex, tile: brokenTileInstance },
+								{
+									tileIndex: brokenTile.tileIndex,
+									tile: brokenTileInstance,
+								},
 							]);
-						}, 10000)
+						}, 10000);
 					}
-					if(typeof brokenTileInstance === 'number') {
-						let update = user.inventory.attemptPickUp(WorldTiles[brokenTileInstance]?.itemDrop || ItemType.SnowBlock)//if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
-						socket.emit('inventoryUpdate', update)
+					if (typeof brokenTileInstance === 'number') {
+						let update = user.inventory.attemptPickUp(
+							WorldTiles[brokenTileInstance]?.itemDrop ||
+								ItemType.SnowBlock,
+						); //if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
+						socket.emit('inventoryUpdate', update);
 					}
 
 					this.world.tiles[brokenTile.tileIndex] = TileType.Air;
@@ -296,7 +331,7 @@ export class GameServer {
 			socket.disconnect();
 			user.socketId = undefined;
 
-			console.log(err)
+			console.log(err);
 
 			console.log(
 				`Player ${name} was kicked from ${this.name} reason: ${err}`,

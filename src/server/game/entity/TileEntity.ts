@@ -62,10 +62,16 @@ export abstract class TileEntityBase {
 	}
 
 	remove() {
+		const updatePayload: {
+			tileIndex: number;
+			tile: TileType | string;
+		}[] = []
 		this.coveredTiles.forEach(index => {
 			this.world.tiles[index] = TileType.Air;
+			updatePayload.push({tile: TileType.Air, tileIndex: index})
 		});
 		delete this.world.tileEntities[this.id];
+		return updatePayload
 	}
 
 	getPayload(): TileEntityPayload {
@@ -93,6 +99,7 @@ export class Tree extends TileEntityBase {
 	}
 
 	interact(playerInv: Inventory) {
+		// console.log(playerInv.mainInventory)
 		let inventoryUpdatePayload: InventoryUpdatePayload = [];
 
 		if (this.woodCount + this.seedCount > 0) {
@@ -101,11 +108,12 @@ export class Tree extends TileEntityBase {
 				this.woodCount /
 					(this.woodCount + this.seedCount)
 			) {
-				inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block));
+				inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block));
 			} else {
-				inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed));
+				inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed));
 			}
 		}
+		console.log(inventoryUpdatePayload)
 		return inventoryUpdatePayload;
 	}
 

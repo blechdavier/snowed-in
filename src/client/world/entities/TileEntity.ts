@@ -1,11 +1,12 @@
-export class ClientTileEntity {
-    coveredTiles: number[]
-    id: string
-    type_: number
-    data: object
-    animFrame: number
-    animate: boolean
+import { TileEntityPayload } from '../../../global/TileEntity';
+
+export type ClientTileEntity = TileEntityPayload & {
+	animFrame: number
+	animate: boolean
 }
+
+
+
 export const TileEntityAnimations = [
     false,//tree
 	true,//drill

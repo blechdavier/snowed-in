@@ -20,7 +20,6 @@ export abstract class UiScreen implements Renderable {
 
     frame: UiFrame
 
-
     titleFont: FontResource
 
     abstract render(target: p5, upscaleSize: number): void;

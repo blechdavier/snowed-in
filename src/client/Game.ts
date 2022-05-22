@@ -645,10 +645,10 @@ export class Game extends p5 {
 
 	doTick() {
 		if(this.world !== undefined && this.world.tileEntities !== undefined) {//tile entity particles
-			for (let i = 0; i < 1 * this.particleMultiplier; i++) {
+			for (let i = 0; i < this.particleMultiplier; i++) {
 				let k = Object.keys(this.world.tileEntities);
 				let r = this.world.tileEntities[k[Math.floor(Math.random()*k.length)]];
-				if(r.type_===TileEntities.Tree) {
+				if(r.payload.type_ === TileEntities.Tree) {
 					let t = r.coveredTiles[Math.floor(Math.random()*r.coveredTiles.length)];
 					this.particles.push(new ColorParticle("#348965", Math.random()*0.1+0.1, 20, t%this.world.width+Math.random(), Math.floor(t/this.world.width)+Math.random(), 0.1*(Math.random()-0.5), 0.06*(Math.random()-0.7), false));
 				}
@@ -658,7 +658,7 @@ export class Game extends p5 {
 			particle.tick();
 		}
 		if (this.world.player === undefined) return;
-		if (this.world.player === undefined) return;
+
 		this.world.player.keyboardInput();
 		this.world.player.applyGravityAndDrag();
 		this.world.player.applyVelocityAndCollide();
@@ -698,20 +698,6 @@ export class Game extends p5 {
 				this.worldHeight -
 				this.height / this.upscaleSize / this.TILE_HEIGHT;
 		}
-
-		// for (const item of this.items) {
-		//     item.goTowardsPlayer();
-		//     item.combineWithNearItems();
-		//     item.applyGravityAndDrag();
-		//     item.applyVelocityAndCollide();
-		// }
-		//
-		// for (let i = 0; i < this.items.length; i++) {
-		//     if (this.items[i].deleted === true) {
-		//         this.items.splice(i, 1);
-		//         i--;
-		//     }
-		// }
 	}
 
 	uiFrameRect(x: number, y: number, w: number, h: number) {
