@@ -82,8 +82,8 @@ export class NetManager {
 							animate:
 								TileEntityAnimations[tileEntity.payload.type_],
 						};
-						console.log(width*height+" tiles in world");
-						console.log(tileEntities2[tileEntity.id].reflectedTiles);
+						//console.log(width*height+" tiles in world");
+						//console.log(tileEntities2[tileEntity.id].reflectedTiles);
 					});
 					this.game.world = new World(
 						width,

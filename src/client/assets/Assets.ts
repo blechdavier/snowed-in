@@ -492,8 +492,8 @@ export const WorldAssets = {
 		),
 		]
 	],
-	entities: {
-		entity_t1drone: [
+	entities: [
+		[
 			new ImageResource(
 				'assets/textures/world/entities/Small Drone/SmallDrone01.png',
 			),
@@ -555,7 +555,8 @@ export const WorldAssets = {
 				'assets/textures/world/entities/Small Drone/SmallDrone20.png',
 			),
 		],
-	},
+	],
+
 	clouds: [
 		new ImageResource(
 			'assets/textures/world/entities/Clouds/cloud1.png',
@@ -572,8 +573,9 @@ export const WorldAssets = {
 		new ImageResource(
 			'assets/textures/world/entities/Clouds/cloud5.png',
 		),
-	]
-};
+	]}
+
+	
 
 export const Fonts = {
 	title: new FontResource(

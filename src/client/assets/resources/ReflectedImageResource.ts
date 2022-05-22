@@ -101,6 +101,21 @@ export class ReflectableImageResource extends Resource {
         // Draw non tiles image
         target.image(this.image, x, y, width, height);
     }
+
+    renderRotated(target: any, x: number, y: number, width: number, height: number, rotation: number) {
+        // Verify that the tiles has been loaded
+        if (this.image === undefined)
+            throw new Error(
+                `Tried to render image before loading it: ${this.path}`
+            );
+
+        // Draw non tiles image
+        target.push()
+        target.translate(-width/2, -height/2);
+        target.rotate(rotation);
+        target.image(this.image, x, y, width, height);
+        target.pop()
+    }
     
     renderWorldspaceReflection(target: p5, x: number, y: number, width: number, height: number) {
 

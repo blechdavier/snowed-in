@@ -12,6 +12,7 @@ import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemCategories, Items, ItemType } from '../../global/Inventory';
+import { Drone } from './entity/Drone';
 
 export class GameServer {
 	id: string;
@@ -56,11 +57,21 @@ export class GameServer {
 		// Server ticks per second
 		let tps = 30;
 		setInterval(async () => {
-			// Get the state of all the entities
+			// Get the state of all the players
 			const entitiesState: State = [];
 			Object.entries(this.players).forEach(([, player]) => {
 				if (player.socketId !== undefined)
-					entitiesState.push(player.getSnapshot());
+				entitiesState.push(player.getSnapshot());
+			});
+
+			if(this.world?.entities!=undefined)
+			Object.entries(this.world?.entities).forEach(([, entity]) => {
+				if (entity instanceof Drone) {
+					if(this.world!==undefined)
+					entity.tick(this.world);
+					this.room.emit("entityUpdate", entity.getPayload());
+					entitiesState.push(entity.getSnapshot());
+				}
 			});
 
 			// Create a snapshot with that state
@@ -121,6 +132,9 @@ export class GameServer {
 			Object.entries(this.players).forEach(([id, player]) => {
 				if (player.socketId !== undefined && id !== user.userId)
 					entities.push(player.getPayload());
+			});
+			Object.entries(this.world.entities).forEach(([id, entity]) => {
+				entities.push(entity.getPayload());
 			});
 
 			const tileEntities: TileEntityPayload[] = Object.entries(this.world.tileEntities).map(tileEntityEntry => {
