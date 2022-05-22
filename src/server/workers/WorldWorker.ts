@@ -4,6 +4,7 @@ import { expose } from 'threads';
 import { Tree } from '../game/entity/TileEntity';
 import { World } from '../game/World';
 import { v4 as uuidv4 } from 'uuid';
+import { isTypeLiteralNode } from 'typescript';
 
 export type WorldWorkerData = typeof workerData;
 
@@ -24,6 +25,9 @@ const workerData = {
 					if (belowDirtHeight(x, y, noise)) {
 						if (belowStoneHeight(x, y, noise)) {
 							world.tiles[y * world.width + x] = typeOfStone(x, y, noise);
+							let t = world.tiles[y*world.width+x];
+							if (typeof t==="number") {
+							if([TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(t)) world.regeneratingTiles[y*world.width+x] = t;}
 						} else {
 							world.tiles[y * world.width + x] = TileType.Dirt;
 						}
@@ -107,7 +111,7 @@ const workerData = {
 		console.log('Finished World Generation');
 		//console.log("printing object")
 		//console.log(world.tileEntities);
-		return { tiles: world.tiles, spawnPosition: world.spawnPosition, tileEntities: world.tileEntities };
+		return { tiles: world.tiles, spawnPosition: world.spawnPosition, tileEntities: world.tileEntities, regeneratingTiles: world.regeneratingTiles };
 	},
 };
 

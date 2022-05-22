@@ -29,6 +29,7 @@ export type TileEntityData = DataPairs<TileEntitiesData> & {}
 export type TileEntityPayload = {
 	id: string;
 	coveredTiles: number[];
+	reflectedTiles: number[];
 	payload: TileEntityData;
 };
 

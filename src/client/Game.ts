@@ -68,6 +68,8 @@ import { TileType } from '../global/Tile';
 import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
 import { TileEntities } from '../global/TileEntity';
+import { Cloud } from './world/entities/Cloud';
+import { idText } from 'typescript';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -108,6 +110,8 @@ export class Game extends p5 {
 	mouseOn = true; // is the mouse on the window?
 
 	keys: boolean[] = [];
+
+	userGesture: boolean = false;
 
 	// the keycode for the key that does the action
 	controls: Control[] = [
@@ -222,6 +226,8 @@ export class Game extends p5 {
 	particleMultiplier: number;
 
 	particles: ColorParticle /*|FootstepParticle*/[];
+	clouds: Cloud /*|FootstepParticle*/[];
+	breaking: boolean = true;
 
 	constructor(connection: Socket) {
 		super(() => { }); // To create a new instance of p5 it will call back with the instance. We don't need this since we are extending the class
@@ -265,12 +271,6 @@ export class Game extends p5 {
 			this.world.tick(this);
 		}, 1000 / this.netManager.playerTickRate);
 
-		this.connection.emit(
-			'join',
-			'e4022d403dcc6d19d6a68ba3abfd0a60',
-			'player' + Math.floor(Math.random() * 1000),
-		);
-
 		// go for a scale of <64 tiles wide screen
 		this.windowResized();
 
@@ -289,6 +289,11 @@ export class Game extends p5 {
 		this.skyToggle = true;
 		this.skyMod = 2;
 		this.particles = [];
+		this.clouds = [];
+		for(let i = 0; i<this.width/this.upscaleSize/15; i++) {
+			this.clouds.push(new Cloud(Math.random()*this.width/this.upscaleSize/this.TILE_WIDTH, 2/(0.03+Math.random())-5));
+		}
+		console.log("there are "+this.clouds.length+" clouds")
 		this.cursor("assets/textures/ui/cursor2.png");
 	}
 
@@ -303,18 +308,20 @@ export class Game extends p5 {
 				'skyImage',
 				WorldAssets.shaderResources.skyImage.image,
 			);
-			Object.values(PlayerAnimations).forEach(playerAnimation => {
-				playerAnimation.forEach(animationFrame => {
-					console.log("loading animation "+animationFrame[0].path)
-					animationFrame[0].loadReflection(this)
-				})
-			});
+			// Object.values(PlayerAnimations).forEach(playerAnimation => {
+			// 	playerAnimation.forEach(animationFrame => {
+			// 		console.log("loading animation "+animationFrame[0].path)
+			// 		animationFrame[0].loadReflection(this)
+			// 	})
+			// });
 		}
 		// do the tick calculations
 		this.doTicks();
 
 		// update mouse position
 		this.updateMouse();
+		if(this.mouseIsPressed && this.world!=undefined) {
+		this.world.inventory.worldClick(this.worldMouseX, this.worldMouseY);}
 
 		// update the camera's interpolation
 		this.moveCamera();
@@ -330,6 +337,10 @@ export class Game extends p5 {
 		this.skyLayer.rect(0, 0, this.skyLayer.width, this.skyLayer.height);
 
 		this.image(this.skyLayer, 0, 0, this.width, this.height);
+
+		for (let cloud of this.clouds) {
+			cloud.render(this, this.upscaleSize);
+		}
 
 		if (this.world !== undefined) this.world.render(this, this.upscaleSize);
 
@@ -352,7 +363,7 @@ export class Game extends p5 {
 		}
 
 		this.smooth(); //enable image lerp
-		this.drawingContext.globalAlpha = 0.6; //make image translucent
+		this.drawingContext.globalAlpha = 0.65-Number(this.userGesture)/20; //make image translucent
 		UiAssets.vignette.render(this, 0, 0, this.width, this.height);
 		this.drawingContext.globalAlpha = 1.0;
 		this.noSmooth();
@@ -422,19 +433,30 @@ export class Game extends p5 {
 			this.currentUi.render(this, this.upscaleSize);
 
 		Fonts.tom_thumb.drawText(this, "Snowed In v1.0.0", this.upscaleSize, this.height-6*this.upscaleSize);
+		if(!this.userGesture)
+		Fonts.title.drawText(this, "Click Anywhere To Unmute.", this.width/2-this.upscaleSize*76, this.upscaleSize*5+Math.abs(Math.sin(this.millis()/200))*this.upscaleSize*10);
 
 		// console.timeEnd("frame");
 	}
 
 	windowResized() {
-		this.resizeCanvas(this.windowWidth, this.windowHeight);
-		this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
 
+		let pUpscaleSize = this.upscaleSize;
 		// go for a scale of <48 tiles screen
 		this.upscaleSize = Math.min(
 			Math.ceil(this.windowWidth / 48 / this.TILE_WIDTH),
 			Math.ceil(this.windowHeight / 48 / this.TILE_HEIGHT),
 		);
+
+		if(this.clouds!= undefined && this.clouds.length>0) {//stretch cloud locations so as to not create gaps
+			for(let cloud of this.clouds) {
+				cloud.x = this.interpolatedCamX + (cloud.x-this.interpolatedCamX)*this.windowWidth/this.width/this.upscaleSize*pUpscaleSize;
+			}
+		}
+		this.resizeCanvas(this.windowWidth, this.windowHeight);
+		this.skyLayer.resizeCanvas(this.windowWidth, this.windowHeight);
+
+		
 
 		this.skyShader.setUniform('screenDimensions', [
 			(this.windowWidth / this.upscaleSize) * 2,
@@ -506,6 +528,10 @@ export class Game extends p5 {
 	}
 
 	mousePressed(e: MouseEvent) {
+		if(!this.userGesture) {
+			this.userGesture = true;
+			this.startSounds();
+		}
 		// image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
 		if (this.currentUi !== undefined) {
 			this.currentUi.mousePressed(e.button);
@@ -542,7 +568,7 @@ export class Game extends p5 {
 				this.world.inventory.pickedUpSlot = undefined;
 			}
 		} else {
-			this.world.inventory.worldClick(this.worldMouseX, this.worldMouseY);
+			this.world.inventory.worldClickCheck(this.worldMouseX, this.worldMouseY);
 		}
 	}
 
@@ -583,8 +609,7 @@ export class Game extends p5 {
 		 */
 	}
 
-	mouseWheel(event: any) {
-		//mouseEvent apparently doesn't have a delta property sooooo idk what to do sorry for the any type
+	mouseWheel(event: {delta: number}) {
 		if (
 			this.currentUi !== undefined &&
 			this.currentUi.scroll !== undefined
@@ -657,6 +682,9 @@ export class Game extends p5 {
 		for (let particle of this.particles) {
 			particle.tick();
 		}
+		for (let cloud of this.clouds) {
+			cloud.tick();
+		}
 		if (this.world.player === undefined) return;
 
 		this.world.player.keyboardInput();
@@ -698,6 +726,10 @@ export class Game extends p5 {
 				this.worldHeight -
 				this.height / this.upscaleSize / this.TILE_HEIGHT;
 		}
+	}
+
+	startSounds() {
+		console.log("starting sounds has not been implemented yet.")
 	}
 
 	uiFrameRect(x: number, y: number, w: number, h: number) {
@@ -1072,7 +1104,7 @@ export class Game extends p5 {
 					this.text("Tile entity: " + selectedTile, this.mouseX, this.mouseY);//JANKY ALERT
 				}
 				else if (WorldTiles[selectedTile] !== undefined) {
-					this.text((WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
+					this.text((this.world.width * this.worldMouseY + this.worldMouseX)+": "+(WorldTiles[selectedTile] as Tile).name, this.mouseX, this.mouseY);//JANKY ALERT
 				}
 			}
 		}

@@ -88,15 +88,23 @@ io.on(
 		);
 
 		socket.on('join', async (serverId: string, name: string) => {
+
+			console.log("name: "+name);
 			// Invalid name or serverId
 			if (
-				!/^[A-z0-9\-_]{3,20}$/.test(name) ||
+				!/^[A-z0-9\-_ ]{3,20}$/.test(name) ||
 				!/^[a-f0-9]{32}$/.test(serverId)
-			)
+			) {
+				console.warn("invalid username or server id name: "+name+", server id: "+serverId)
 				return;
+			}
+
+			console.log("1")
 
 			// Make sure that the serverId is valid
 			if (servers[serverId] === undefined) return;
+
+			console.log("2")
 
 			await servers[serverId].join(socket, name);
 		});

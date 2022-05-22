@@ -3,7 +3,7 @@ import { Entities, EntityPayload } from '../../global/Entity';
 import { game } from '../Game';
 import { ServerEntity } from '../world/entities/ServerEntity';
 // import { ColorParticle } from '../world/';
-import { AnimationFrame, PlayerAnimations } from '../assets/Assets';
+import { AnimationFrame, Fonts, PlayerAnimations } from '../assets/Assets';
 import { TileType } from '../../global/Tile';
 import { WorldTiles } from '../world/WorldTiles';
 import { ColorParticle } from '../world/particles/ColorParticle';
@@ -42,6 +42,9 @@ export class PlayerLocal extends ServerEntity {
     rightButton: boolean;
     leftButton: boolean;
     jumpButton: boolean;
+
+    color1: [number, number, number, number] = [0, 0, 0, 255]
+    color2: [number, number, number, number] = [0, 0, 0, 255]
 
     currentAnimation: AnimationFrame<typeof PlayerAnimations> = "idle";
     animFrame: number = 0;
@@ -109,11 +112,51 @@ export class PlayerLocal extends ServerEntity {
             );
             PlayerAnimations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection
             (
+                game,
                 this.interpolatedX,
                 this.interpolatedY+this.height,
                 this.width,
                 this.height
             );
+
+            target.fill(this.color1);
+        target.noStroke();
+        target.rect(
+            (this.interpolatedX * game.TILE_WIDTH -
+                game.interpolatedCamX * game.TILE_WIDTH +
+                (this.width * game.TILE_WIDTH) / 2) *
+                upscaleSize-(this.name.length*2*game.upscaleSize),
+                (this.interpolatedY * game.TILE_HEIGHT -
+                game.interpolatedCamY * game.TILE_HEIGHT -
+                (this.height * game.TILE_HEIGHT) / 2.5 + 4) *
+                upscaleSize,
+                (this.name.length*4*game.upscaleSize),
+                game.upscaleSize);
+
+        target.rect(
+                    (this.interpolatedX * game.TILE_WIDTH -
+                        game.interpolatedCamX * game.TILE_WIDTH +
+                        (this.width * game.TILE_WIDTH) / 2) *
+                        upscaleSize-((this.name.length*2-2)*game.upscaleSize),
+                        (this.interpolatedY * game.TILE_HEIGHT -
+                        game.interpolatedCamY * game.TILE_HEIGHT -
+                        (this.height * game.TILE_HEIGHT) / 2.5 + 6) *
+                        upscaleSize,
+                        ((this.name.length*4-4)*game.upscaleSize),
+                        game.upscaleSize);
+
+        Fonts.tom_thumb.drawText(
+            game,
+            this.name,
+            (this.interpolatedX * game.TILE_WIDTH -
+                game.interpolatedCamX * game.TILE_WIDTH +
+                (this.width * game.TILE_WIDTH) / 2) *
+                upscaleSize-(this.name.length*2*game.upscaleSize),
+            (this.interpolatedY * game.TILE_HEIGHT -
+                game.interpolatedCamY * game.TILE_HEIGHT -
+                (this.height * game.TILE_HEIGHT) / 2.5-2) *
+                upscaleSize
+        );
     }
 
     updateData(data: EntityPayload): void {
@@ -168,24 +211,29 @@ export class PlayerLocal extends ServerEntity {
                 game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
         }
-        if((this.xVel)>0.05) {
+        if(this.currentAnimation !== "walk" && (this.xVel)>0.05) {
             this.currentAnimation = "walk";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             this.facingRight = true;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else if((this.xVel)<-0.05) {
+        if(this.currentAnimation !== "walkleft" && (this.xVel)<-0.05) {
             this.currentAnimation = "walkleft";
             this.facingRight = false;
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else if(this.facingRight) {
+        if(this.currentAnimation !== "idle" && this.xVel<=0.05 && (this.xVel>0 || (game.worldMouseX>this.interpolatedX+this.width/2 && this.xVel===0))) {
             this.currentAnimation = "idle";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        else {
+        if(this.currentAnimation !== "idleleft" && this.xVel>=-0.05 && (this.xVel<0 || (game.worldMouseX<=this.interpolatedX+this.width/2 && this.xVel===0))){
             this.currentAnimation = "idleleft";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
+            game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
+        //console.log(this.currentAnimation, this.currentAnimation !== "walk" && (this.xVel)>0.05)
     }
 
     findInterpolatedCoordinates() {
@@ -250,7 +298,7 @@ export class PlayerLocal extends ServerEntity {
             ) {
                 // if the current tile isn't air (value 0), then continue with the collision detection
                 let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
-                if (currentBlock !== TileType.Air && typeof currentBlock !== 'string') {
+                if (currentBlock !== TileType.Air && typeof currentBlock === 'number') {
                     // get the data about the collision and store it in a variable
                     this.collisionData = game.rectVsRay(
                         i - this.width,
@@ -352,7 +400,7 @@ export class PlayerLocal extends ServerEntity {
                 ) {
                     let currentBlock: TileType | string = game.world.worldTiles[j * game.worldWidth + i];
                     // if the current tile isn't air, then continue with the collision detection
-                    if (currentBlock !== TileType.Air && typeof currentBlock !== "string") {
+                    if (currentBlock !== TileType.Air && typeof currentBlock === "number") {
                         // get the data about the collision and store it in a variable
                         this.collisionData = game.rectVsRay(
                             i - this.width,

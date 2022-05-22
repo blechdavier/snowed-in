@@ -17,6 +17,6 @@ void main() {
 	vec4 backSnowLayer = texture2D(skyImage, fract(offsetCoords / 120.0 + vec2( (coord.x+millis/-400.0)+sin(millis/300.0+(coord.y+offsetCoords.y*5.0)/22.0)*3.2, (coord.y+millis/-200.0)+offsetCoords*0.75 )/256.0));
 	vec4 backBack = texture2D(skyImage, fract(1.5*(offsetCoords / 120.0 + vec2( (coord.x+millis/-300.0)+sin(millis/300.0+coord.y/16.0)*2.4, (coord.y+millis/-200.0)+offsetCoords*0.6 )/256.0)));
 
-	gl_FragColor = vec4(vec3(0.65, 0.85, 1.0)*(1.1-0.1*vTexCoord.y) + vec3(0.35, 0.15, 0.0) * (frontSnowLayer.www+backBack.www+backSnowLayer.www), 1.0);
+	gl_FragColor = vec4(vec3(0.65, 0.85, 1.0)*(1.1-0.1*vTexCoord.y) + float(offsetCoords.y*8.0+(coord.y/2.0)>0.0) * vec3(0.35, 0.15, 0.0) * (frontSnowLayer.www+backBack.www+backSnowLayer.www), 1.0);
 	
 }

@@ -90,7 +90,7 @@ export class WorldOptionsMenu extends UiScreen {
         this.frame.h = 48*game.upscaleSize;
 
         // set the positions of all the buttons
-        for(let i = 0; i<2; i++) {
+        for(let i = 0; i<this.buttons.length; i++) {
             this.buttons[i].x = game.width/2-192/2*game.upscaleSize;
             this.buttons[i].y = game.height/2+60*i*game.upscaleSize;
             this.buttons[i].w = 192*game.upscaleSize;
@@ -99,7 +99,7 @@ export class WorldOptionsMenu extends UiScreen {
         }
 
         // set the positions of all the sliders
-        for(let i = 0; i<2; i++) {
+        for(let i = 0; i<this.sliders.length; i++) {
             this.sliders[i].x = game.width/2-192/2*game.upscaleSize;
             this.sliders[i].y = game.height/2+20*game.upscaleSize+20*i*game.upscaleSize;
             this.sliders[i].w = 192*game.upscaleSize;

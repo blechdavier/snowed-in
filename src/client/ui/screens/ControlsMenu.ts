@@ -10,7 +10,7 @@ import { Control } from '../../input/Control'
 
 export class ControlsMenu extends UiScreen {
 
-	constructor(font: FontResource, titleFont: FontResource) {
+	constructor(font: FontResource, titleFont: FontResource, previousMenu: string) {
 		super();
 		// make the frame with some default values.  These will later be changed to fit the screen size.
 		this.frame = new UiFrame(0, 0, 0, 0);
@@ -19,7 +19,7 @@ export class ControlsMenu extends UiScreen {
 		this.buttons = [
 			new Button(font, "Back", "Return to the options menu.", 0, 0, 0, 0, () => {
 				console.log("options menu");
-				game.currentUi = new OptionsMenu(font, titleFont);
+				game.currentUi = new OptionsMenu(font, titleFont, previousMenu);
 			})
 		];
 

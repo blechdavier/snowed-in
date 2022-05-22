@@ -5,15 +5,10 @@ import { PlayerLocal } from './player/PlayerLocal';
 import { Inventory } from './player/Inventory';
 import { ClientTileEntity, TileEntityAnimations } from './world/entities/TileEntity';
 import { WorldAssets } from './assets/Assets';
-import { TileType } from '../global/Tile';
-import {
-	Entities,
-	EntitiesData,
-	EntityData,
-	EntityPayload,
-} from '../global/Entity';
-import { InventoryPayload } from '../global/Inventory';
-import { TileEntityPayload } from '../global/TileEntity';
+import { hslToRgb, PlayerEntity } from './world/entities/PlayerEntity';
+import { PlayerAnimations } from './assets/Assets';
+import { AnimationFrame } from './assets/Assets';
+import { ReflectableImageResource } from './assets/resources/ReflectedImageResource';
 
 export class NetManager {
 	game: Game;
@@ -47,13 +42,39 @@ export class NetManager {
 					player,
 					inventory,
 				) => {
+					//console.log(entities);
+					let id = player.id
+					console.log("player idddadsasdf: " +id)
+					id = player.id.split("-").join("");//string.prototype.replaceAll requires ES2021
+					console.log("player idddadsasdf: " +id)
+					let idNumber = (Number("0x"+id)/100000000000000000000000000000)%1;//get a number 0-1 pseudorandomly selected from the uuid of the player
+					console.log("player idddadsasdf: " +idNumber)
+					Object.entries(PlayerAnimations).forEach(element => {
+						for(let frame of element[1]) {
+							frame[0].redefineScarfColor(hslToRgb(idNumber, 1, 0.45), hslToRgb(idNumber, 1, 0.3));
+						}
+					});
 					let tileEntities2: {
 						[id: string]: ClientTileEntity
+						[id: string]: {
+							id: string;
+							coveredTiles: number[];
+							reflectedTiles: number[];//this honestly shouldn't be sent over socket but im tired
+							type_: number;
+							data: {};
+							animFrame: number;
+							animate: boolean;
+						};
 					} = {};
 					tileEntities.forEach(tileEntity => {
 						console.log('adding tile entity: ' + tileEntity.id);
 						tileEntities2[tileEntity.id] = {
 							...tileEntity,
+							id: tileEntity.id,
+							coveredTiles: tileEntity.coveredTiles,
+							reflectedTiles: tileEntity.reflectedTiles,
+							type_: tileEntity.payload.type_,
+							data: tileEntity.payload.data,
 							animFrame: randint(
 								0,
 								WorldAssets.tileEntities[
@@ -117,6 +138,15 @@ export class NetManager {
 				if (entity === undefined) return;
 
 				entity.updateData(entityData);
+			});
+
+			this.game.connection.on('onPlayerAnimation', (animation, playerId) => {
+				if (((((((this.game.world == undefined))))))) return;
+				let e = this.game.world.entities[playerId];
+				if(e instanceof PlayerEntity && Object.keys(PlayerAnimations).includes(e.currentAnimation)) {
+					//@ts-expect-error
+					e.currentAnimation = animation;
+				}
 			});
 
 			this.game.connection.on('entityCreate', entityData => {

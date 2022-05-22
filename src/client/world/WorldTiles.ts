@@ -28,7 +28,7 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#cafafc",
         friction: 2,
-        reflectivity: 50//this reflectivity actually does nothing and instead reflectivity can be changed inside ReflectedImageResource.ts
+        reflectivity: 60//this reflectivity actually does nothing and instead reflectivity can be changed inside ReflectedImageResource.ts
     },
     [TileType.Ice]: {
         name: 'ice',

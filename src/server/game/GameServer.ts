@@ -12,6 +12,7 @@ import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemCategories, Items, ItemType } from '../../global/Inventory';
+import { Drone } from './entity/Drone';
 
 export class GameServer {
 	id: string;
@@ -56,11 +57,21 @@ export class GameServer {
 		// Server ticks per second
 		let tps = 30;
 		setInterval(async () => {
-			// Get the state of all the entities
+			// Get the state of all the players
 			const entitiesState: State = [];
 			Object.entries(this.players).forEach(([, player]) => {
 				if (player.socketId !== undefined)
-					entitiesState.push(player.getSnapshot());
+				entitiesState.push(player.getSnapshot());
+			});
+
+			if(this.world?.entities!=undefined)
+			Object.entries(this.world?.entities).forEach(([, entity]) => {
+				if (entity instanceof Drone) {
+					if(this.world!==undefined)
+					entity.tick(this.world);
+					this.room.emit("entityUpdate", entity.getPayload());
+					entitiesState.push(entity.getSnapshot());
+				}
 			});
 
 			// Create a snapshot with that state
@@ -76,6 +87,7 @@ export class GameServer {
 		socket: Socket<ClientEvents, ServerEvents, {}, UserData>,
 		name: string,
 	) {
+		console.log("got to anync function");
 		const sockets = await this.room.allSockets();
 
 		// If the server is full
@@ -121,6 +133,9 @@ export class GameServer {
 				if (player.socketId !== undefined && id !== user.userId)
 					entities.push(player.getPayload());
 			});
+			Object.entries(this.world.entities).forEach(([id, entity]) => {
+				entities.push(entity.getPayload());
+			});
 
 			const tileEntities: TileEntityPayload[] = Object.entries(
 				this.world.tileEntities,
@@ -142,11 +157,16 @@ export class GameServer {
 
 			socket.broadcast.emit('entityCreate', user.getPayload());
 
+			console.log("created user with name "+user.name)
+
 			// Update player
 			{
 				socket.on('playerUpdate', (x: number, y: number) => {
 					user.x = x;
 					user.y = y;
+				});
+				socket.on('playerAnimation', (animation: string, playerId: string) => {
+					socket.broadcast.emit('onPlayerAnimation', animation, playerId);
 				});
 			}
 
@@ -155,7 +175,7 @@ export class GameServer {
 				socket.on(
 					'worldPlace',
 					(inventoryIndex: number, x: number, y: number) => {
-						if (this.world === undefined) return;
+						if (this.world === undefined || y<0 || x<0 || x>this.world?.width || y>this.world?.height) return;
 						// Index verification
 						if (
 							inventoryIndex >= user.inventory.width ||
@@ -282,6 +302,8 @@ export class GameServer {
 							TileType.Grape,
 						].includes(brokenTileInstance)
 					) {
+					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
+					if(this.world.regeneratingTiles[brokenTile.tileIndex]===brokenTileInstance && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
 						setTimeout(() => {
 							if (this.world === undefined) return;
 							this.world.tiles[brokenTile.tileIndex] =
@@ -331,7 +353,7 @@ export class GameServer {
 			socket.disconnect();
 			user.socketId = undefined;
 
-			console.log(err);
+			console.log(err)
 
 			console.log(
 				`Player ${name} was kicked from ${this.name} reason: ${err}`,

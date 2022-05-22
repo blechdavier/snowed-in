@@ -45,8 +45,9 @@ export class World implements Tickable, Renderable {
 
 		this.snapshotInterpolation = new SnapshotInterpolation();
 		this.snapshotInterpolation.interpolationBuffer.set(
-			(1000 / game.netManager.playerTickRate) * 2,
+			(1000 / game.netManager.playerTickRate)*3,
 		);
+		this.snapshotInterpolation.config.autoCorrectTimeOffset = true;
 
 		// define the p5.Graphics objects that hold an image of the tiles of the world.  These act sort of like a virtual canvas and can be drawn on just like a normal canvas by using tileLayer.rect();, tileLayer.ellipse();, tileLayer.fill();, etc.
 		this.tileLayer = game.createGraphics(
@@ -77,18 +78,18 @@ export class World implements Tickable, Renderable {
 
 		this.renderPlayers(target, upscaleSize);
 
-		target.stroke(0);
-		target.strokeWeight(4);
-		target.noFill();
-		target.rect(target.width - this.width, 0, this.width, this.height);
+		// target.stroke(0);
+		// target.strokeWeight(4);
+		// target.noFill();
+		// target.rect(target.width - this.width, 0, this.width, this.height);
 
-		target.image(
-			this.tileLayer,
-			target.width - this.width,
-			0,
-			this.width,
-			this.height,
-		);
+		// target.image(
+		// 	this.tileLayer,
+		// 	target.width - this.width,
+		// 	0,
+		// 	this.width,
+		// 	this.height,
+		// );
 	}
 
 	updatePlayers(snapshot: Snapshot) {
@@ -180,18 +181,22 @@ export class World implements Tickable, Renderable {
 		try {
 			const calculatedSnapshot =
 				this.snapshotInterpolation.calcInterpolation('x y');
-			if (!calculatedSnapshot) return;
+			if (!calculatedSnapshot) {
+				console.warn("no calculated snapshot");
+			} else {
+				const state = calculatedSnapshot.state;
+				if (!state) {
+					console.warn("no calculated snapshot state");
+				} else {
+					// The new positions of entities as object
+					state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
+						positionStates[id] = { x, y };
+					});
+				}
+			}
+		} catch (e) {{console.warn("error in renderPlayers");return;}}
 
-			const state = calculatedSnapshot.state;
-			if (!state) return;
-
-			// The new positions of entities as object
-			state.forEach(({ id, x, y }: Entity & { x: number; y: number }) => {
-				positionStates[id] = { x, y };
-			});
-		} catch (e) {}
-
-		// Render each entity in random order
+		// Render each entity in the order they appear
 		Object.entries(this.entities).forEach(
 			(entity: [string, ServerEntity]) => {
 				const updatedPosition = positionStates[entity[0]];
@@ -213,7 +218,6 @@ export class World implements Tickable, Renderable {
 
 	loadWorld() {
 		this.tileLayer.noStroke();
-		this.tileLayer.fill(255, 0, 0);
 		for (let x = 0; x < this.height; x++) {
 			//x and y are switched for some stupid reason
 			// i will be the y position of tiles being drawn
@@ -240,13 +244,13 @@ export class World implements Tickable, Renderable {
 							WorldAssets.tileEntities[
 								this.tileEntities[tileVal].payload.type_
 							][this.tileEntities[tileVal].animFrame];
-						img.render(
-							this.tileLayer,
-							y * game.TILE_WIDTH,
-							x * game.TILE_HEIGHT,
-							img.image.width,
-							img.image.height,
-						);
+							img.render(
+								this.tileLayer,
+								y * game.TILE_WIDTH,
+								x * game.TILE_HEIGHT,
+								img.image.width,
+								img.image.height,
+							);
 					} else {
 						//console.log(`Already rendered ${tileVal}`);
 					}
@@ -286,6 +290,24 @@ export class World implements Tickable, Renderable {
 					}
 				}
 			}
+		}
+		for(let tileEntity of Object.values(this.tileEntities)) {
+			let img = WorldAssets.tileEntities[
+				tileEntity.type_
+			][tileEntity.animFrame];
+			//console.log("debug1")
+			img.renderReflection(
+				this.tileLayer,
+				Math.min(
+					...tileEntity.coveredTiles,
+				)%this.width,
+				Math.floor(Math.max(
+					...tileEntity.coveredTiles,
+				)/this.width)+1,
+				img.image.width/game.TILE_WIDTH,
+				img.image.height/game.TILE_HEIGHT,
+				this.worldTiles
+			);
 		}
 	}
 
@@ -398,6 +420,29 @@ export class World implements Tickable, Renderable {
 					game.TILE_WIDTH,
 					game.TILE_HEIGHT,
 				);
+			}
+			for(let tileEntity of Object.values(this.tileEntities)) {
+				if(tileEntity.reflectedTiles.includes(tileIndex)) {
+					console.log("reflection at index "+tileIndex);
+					const topLeft = Math.min(
+						...tileEntity.reflectedTiles,
+					);
+					const tileEntityReflectionImage = WorldAssets.tileEntities[tileEntity.type_][tileEntity.animFrame];
+					this.tileLayer.drawingContext.globalAlpha = tileEntityReflectionImage.reflectivityArray[tileVal]/255;//TODO make this based on the tile reflectivity
+					this.tileLayer.image(
+						tileEntityReflectionImage.reflection,
+						x*game.TILE_WIDTH,
+						y*game.TILE_HEIGHT,
+						game.TILE_WIDTH,
+						game.TILE_HEIGHT,
+						(x-topLeft%this.width)*game.TILE_WIDTH,
+						(y-Math.floor(topLeft/this.width))*game.TILE_HEIGHT,
+						game.TILE_WIDTH,
+						game.TILE_HEIGHT
+					);
+					this.tileLayer.drawingContext.globalAlpha = 1.0;
+					//WorldAssets.tileEntities[tileEntity.type_][tileEntity.animFrame].renderPartialWorldspaceReflection(this.tileLayer, tileIndex%this.width, Math.floor(tileIndex/this.width), topLeft%this.width, Math.floor(topLeft/this.width));
+				}
 			}
 		}
 	}
