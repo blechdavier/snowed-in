@@ -3,3 +3,31 @@ body {
     margin: 0;
     overflow: hidden;
 }
+
+input {
+    position: fixed;
+    color: #4a2e1b;
+    background-color: #c9a68d;
+    border-color: #4a2e1b;
+}
+
+
+::-webkit-input-placeholder {
+    color: #000000;
+    opacity: 0.7; 
+}
+
+::-moz-placeholder {
+    color: black;
+    opacity: 0.7; 
+}
+
+::-ms-placeholder {
+    color:#000000;
+    opacity: 0.7; 
+}
+
+::placeholder {
+    color:#000000;
+    opacity: 0.7; 
+}

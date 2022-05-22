@@ -76,6 +76,7 @@ export class GameServer {
 		socket: Socket<ClientEvents, ServerEvents, {}, UserData>,
 		name: string,
 	) {
+		console.log("got to anync function");
 		const sockets = await this.room.allSockets();
 
 		// If the server is full
@@ -123,7 +124,7 @@ export class GameServer {
 			});
 
 			const tileEntities: TileEntityPayload[] = Object.entries(this.world.tileEntities).map(tileEntityEntry => {
-				console.log(tileEntityEntry)
+				//console.log(tileEntityEntry)
 				return tileEntityEntry[1].getPayload()
 			})
 
@@ -140,6 +141,8 @@ export class GameServer {
 			);
 
 			socket.broadcast.emit('entityCreate', user.getPayload());
+
+			console.log("created user with name "+user.name)
 
 			// Update player
 			{

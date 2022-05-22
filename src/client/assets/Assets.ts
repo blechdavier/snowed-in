@@ -824,8 +824,9 @@ export const Fonts = {
 			'=': 3,
 			'>': 3,
 			'?': 3,
+			'_': 3,
 		},
-		`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[\\]^ !"#$%&'()*+,-./0123456789:;<=>?`,
+		`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[\\]^ !"#$%&'()*+,-./0123456789:;<=>?_`,
 		5,
 	),
 };

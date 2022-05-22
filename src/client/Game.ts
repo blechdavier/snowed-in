@@ -69,6 +69,7 @@ import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
 import { TileEntities } from '../global/TileEntity';
 import { Cloud } from './world/entities/Cloud';
+import { idText } from 'typescript';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -109,6 +110,8 @@ export class Game extends p5 {
 	mouseOn = true; // is the mouse on the window?
 
 	keys: boolean[] = [];
+
+	userGesture: boolean = false;
 
 	// the keycode for the key that does the action
 	controls: Control[] = [
@@ -268,12 +271,6 @@ export class Game extends p5 {
 			this.world.tick(this);
 		}, 1000 / this.netManager.playerTickRate);
 
-		this.connection.emit(
-			'join',
-			'e4022d403dcc6d19d6a68ba3abfd0a60',
-			'player' + Math.floor(Math.random() * 1000),
-		);
-
 		// go for a scale of <64 tiles wide screen
 		this.windowResized();
 
@@ -323,7 +320,7 @@ export class Game extends p5 {
 
 		// update mouse position
 		this.updateMouse();
-		if(this.mouseIsPressed) {
+		if(this.mouseIsPressed && this.world!=undefined) {
 		this.world.inventory.worldClick(this.worldMouseX, this.worldMouseY);}
 
 		// update the camera's interpolation
@@ -366,7 +363,7 @@ export class Game extends p5 {
 		}
 
 		this.smooth(); //enable image lerp
-		this.drawingContext.globalAlpha = 0.6; //make image translucent
+		this.drawingContext.globalAlpha = 0.65-Number(this.userGesture)/20; //make image translucent
 		UiAssets.vignette.render(this, 0, 0, this.width, this.height);
 		this.drawingContext.globalAlpha = 1.0;
 		this.noSmooth();
@@ -436,6 +433,8 @@ export class Game extends p5 {
 			this.currentUi.render(this, this.upscaleSize);
 
 		Fonts.tom_thumb.drawText(this, "Snowed In v1.0.0", this.upscaleSize, this.height-6*this.upscaleSize);
+		if(!this.userGesture)
+		Fonts.title.drawText(this, "Click Anywhere To Unmute.", this.width/2-this.upscaleSize*76, this.upscaleSize*5+Math.abs(Math.sin(this.millis()/200))*this.upscaleSize*10);
 
 		// console.timeEnd("frame");
 	}
@@ -529,6 +528,10 @@ export class Game extends p5 {
 	}
 
 	mousePressed(e: MouseEvent) {
+		if(!this.userGesture) {
+			this.userGesture = true;
+			this.startSounds();
+		}
 		// image(uiSlotImage, 2*upscaleSize+16*i*upscaleSize, 2*upscaleSize, 16*upscaleSize, 16*upscaleSize);
 		if (this.currentUi !== undefined) {
 			this.currentUi.mousePressed(e.button);
@@ -606,8 +609,7 @@ export class Game extends p5 {
 		 */
 	}
 
-	mouseWheel(event: any) {
-		//mouseEvent apparently doesn't have a delta property sooooo idk what to do sorry for the any type
+	mouseWheel(event: {delta: number}) {
 		if (
 			this.currentUi !== undefined &&
 			this.currentUi.scroll !== undefined
@@ -738,6 +740,10 @@ export class Game extends p5 {
 		//         i--;
 		//     }
 		// }
+	}
+
+	startSounds() {
+		console.log("starting sounds has not been implemented yet.")
 	}
 
 	uiFrameRect(x: number, y: number, w: number, h: number) {
