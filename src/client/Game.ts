@@ -64,12 +64,10 @@ fix cursor input lag (separate cursor and animation images)
 fix stuck on side of block bug
 fix collide with sides of map bug
  */
-import { TileType } from '../global/Tile';
 import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
 import { TileEntities } from '../global/TileEntity';
 import { Cloud } from './world/entities/Cloud';
-import { idText } from 'typescript';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>

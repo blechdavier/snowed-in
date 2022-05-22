@@ -293,7 +293,7 @@ export class World implements Tickable, Renderable {
 		}
 		for(let tileEntity of Object.values(this.tileEntities)) {
 			let img = WorldAssets.tileEntities[
-				tileEntity.type_
+				tileEntity.payload.type_
 			][tileEntity.animFrame];
 			//console.log("debug1")
 			img.renderReflection(
@@ -427,7 +427,7 @@ export class World implements Tickable, Renderable {
 					const topLeft = Math.min(
 						...tileEntity.reflectedTiles,
 					);
-					const tileEntityReflectionImage = WorldAssets.tileEntities[tileEntity.type_][tileEntity.animFrame];
+					const tileEntityReflectionImage = WorldAssets.tileEntities[tileEntity.payload.type_][tileEntity.animFrame];
 					this.tileLayer.drawingContext.globalAlpha = tileEntityReflectionImage.reflectivityArray[tileVal]/255;//TODO make this based on the tile reflectivity
 					this.tileLayer.image(
 						tileEntityReflectionImage.reflection,

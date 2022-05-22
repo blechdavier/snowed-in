@@ -275,11 +275,18 @@ export class GameServer {
 							this.world.tileEntities[
 								this.world.tiles[brokenTile.tileIndex]
 							];
+						
+						console.log(this.world.tileEntities);
+						console.log(this.world.tiles[brokenTile.tileIndex])
+
+						const STEVE = "this line of code is useless but you better not delete it!!!! -Xavier";
+
+						if(brokenTileEntity==undefined)throw new Error("UNDEFINED BOZO GameServer.ts")
 						socket.emit('inventoryUpdate', brokenTileEntity.interact(user.inventory));
 						socket.emit('worldUpdate', brokenTileEntity.remove())
-						delete this.world.tileEntities[
+						this.world.tileEntities[
 							this.world.tiles[brokenTile.tileIndex]
-						];
+						].remove();
 						return;
 					}
 					if (
@@ -292,9 +299,11 @@ export class GameServer {
 					}
 					let brokenTileInstance =
 						this.world.tiles[brokenTile.tileIndex];
+					
+					
+					//if ore, regenerate
 					if (
-						typeof brokenTileInstance !== 'string' &&
-						[
+						typeof brokenTileInstance !== 'string' && [
 							TileType.Tin,
 							TileType.Aluminum,
 							TileType.Gold,
@@ -302,7 +311,6 @@ export class GameServer {
 							TileType.Grape,
 						].includes(brokenTileInstance)
 					) {
-					let brokenTileInstance = this.world.tiles[brokenTile.tileIndex];
 					if(this.world.regeneratingTiles[brokenTile.tileIndex]===brokenTileInstance && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
 						setTimeout(() => {
 							if (this.world === undefined) return;
@@ -335,7 +343,7 @@ export class GameServer {
 							tile: this.world.tiles[brokenTile.tileIndex],
 						},
 					]);
-				});
+				}});
 			}
 
 			// Handle disconnect

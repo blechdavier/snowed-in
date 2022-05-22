@@ -56,15 +56,15 @@ export class NetManager {
 					});
 					let tileEntities2: {
 						[id: string]: ClientTileEntity
-						[id: string]: {
-							id: string;
-							coveredTiles: number[];
-							reflectedTiles: number[];//this honestly shouldn't be sent over socket but im tired
-							type_: number;
-							data: {};
-							animFrame: number;
-							animate: boolean;
-						};
+						// [id: string]: {
+						// 	id: string;
+						// 	coveredTiles: number[];
+						// 	reflectedTiles: number[];//this honestly shouldn't be sent over socket but im tired
+						// 	type_: number;
+						// 	data: {};
+						// 	animFrame: number;
+						// 	animate: boolean;
+						// };
 					} = {};
 					tileEntities.forEach(tileEntity => {
 						console.log('adding tile entity: ' + tileEntity.id);
@@ -73,8 +73,6 @@ export class NetManager {
 							id: tileEntity.id,
 							coveredTiles: tileEntity.coveredTiles,
 							reflectedTiles: tileEntity.reflectedTiles,
-							type_: tileEntity.payload.type_,
-							data: tileEntity.payload.data,
 							animFrame: randint(
 								0,
 								WorldAssets.tileEntities[
@@ -93,6 +91,8 @@ export class NetManager {
 					);
 					this.game.world.inventory = new Inventory(inventory);
 					this.game.world.player = new PlayerLocal(player);
+					this.game.world.player.color1 = hslToRgb(idNumber, 1, 0.45);
+					this.game.world.player.color1 = hslToRgb(idNumber, 1, 0.3);
 					entities.forEach(entity => {
 						this.game.world.entities[entity.id] = new EntityClasses[
 							entity.type
