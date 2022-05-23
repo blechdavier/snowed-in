@@ -61,18 +61,17 @@ export class GameServer {
 			const entitiesState: State = [];
 			Object.entries(this.players).forEach(([, player]) => {
 				if (player.socketId !== undefined)
-				entitiesState.push(player.getSnapshot());
+					entitiesState.push(player.getSnapshot());
 			});
 
-			if(this.world?.entities!=undefined)
-			Object.entries(this.world?.entities).forEach(([, entity]) => {
-				if (entity instanceof Drone) {
-					if(this.world!==undefined)
-					entity.tick(this.world);
-					this.room.emit("entityUpdate", entity.getPayload());
-					entitiesState.push(entity.getSnapshot());
-				}
-			});
+			if (this.world?.entities != undefined)
+				Object.entries(this.world?.entities).forEach(([, entity]) => {
+					if (entity instanceof Drone) {
+						if (this.world !== undefined) entity.tick(this.world);
+						this.room.emit('entityUpdate', entity.getPayload());
+						entitiesState.push(entity.getSnapshot());
+					}
+				});
 
 			// Create a snapshot with that state
 			if (entitiesState.length > 0) {
@@ -87,7 +86,7 @@ export class GameServer {
 		socket: Socket<ClientEvents, ServerEvents, {}, UserData>,
 		name: string,
 	) {
-		console.log("got to anync function");
+		console.log('got to anync function');
 		const sockets = await this.room.allSockets();
 
 		// If the server is full
@@ -157,7 +156,7 @@ export class GameServer {
 
 			socket.broadcast.emit('entityCreate', user.getPayload());
 
-			console.log("created user with name "+user.name)
+			console.log('created user with name ' + user.name);
 
 			// Update player
 			{
@@ -165,9 +164,16 @@ export class GameServer {
 					user.x = x;
 					user.y = y;
 				});
-				socket.on('playerAnimation', (animation: string, playerId: string) => {
-					socket.broadcast.emit('onPlayerAnimation', animation, playerId);
-				});
+				socket.on(
+					'playerAnimation',
+					(animation: string, playerId: string) => {
+						socket.broadcast.emit(
+							'onPlayerAnimation',
+							animation,
+							playerId,
+						);
+					},
+				);
 			}
 
 			// Inventory
@@ -175,7 +181,14 @@ export class GameServer {
 				socket.on(
 					'worldPlace',
 					(inventoryIndex: number, x: number, y: number) => {
-						if (this.world === undefined || y<0 || x<0 || x>this.world?.width || y>this.world?.height) return;
+						if (
+							this.world === undefined ||
+							y < 0 ||
+							x < 0 ||
+							x > this.world?.width ||
+							y > this.world?.height
+						)
+							return;
 						// Index verification
 						if (
 							inventoryIndex >= user.inventory.width ||
@@ -267,6 +280,8 @@ export class GameServer {
 						);
 						return;
 					}
+
+					// Tile Entity
 					if (
 						typeof this.world.tiles[brokenTile.tileIndex] ===
 						'string'
@@ -275,20 +290,25 @@ export class GameServer {
 							this.world.tileEntities[
 								this.world.tiles[brokenTile.tileIndex]
 							];
-						
-						console.log(this.world.tileEntities);
-						console.log(this.world.tiles[brokenTile.tileIndex])
 
-						const STEVE = "this line of code is useless but you better not delete it!!!! -Xavier";
+						const STEVE: string =
+							'this line of code is useless but you better not delete it!!!! -Xavier';
 
-						if(brokenTileEntity==undefined)throw new Error("UNDEFINED BOZO GameServer.ts")
-						socket.emit('inventoryUpdate', brokenTileEntity.interact(user.inventory));
-						socket.emit('worldUpdate', brokenTileEntity.remove())
+						if (brokenTileEntity === undefined)
+							throw new Error('UNDEFINED BOZO GameServer.ts');
+
+						socket.emit(
+							'inventoryUpdate',
+							brokenTileEntity.interact(user.inventory),
+						);
+						socket.emit('worldUpdate', brokenTileEntity.remove());
 						this.world.tileEntities[
 							this.world.tiles[brokenTile.tileIndex]
 						].remove();
 						return;
 					}
+
+					// Air tile
 					if (
 						this.world.tiles[brokenTile.tileIndex] === TileType.Air
 					) {
@@ -297,13 +317,15 @@ export class GameServer {
 						);
 						return;
 					}
+
 					let brokenTileInstance =
 						this.world.tiles[brokenTile.tileIndex];
-					
-					
+
 					//if ore, regenerate
 					if (
-						typeof brokenTileInstance !== 'string' && [
+						this.world.regeneratingTiles[brokenTile.tileIndex] ===
+							brokenTileInstance &&
+						[
 							TileType.Tin,
 							TileType.Aluminum,
 							TileType.Gold,
@@ -311,7 +333,6 @@ export class GameServer {
 							TileType.Grape,
 						].includes(brokenTileInstance)
 					) {
-					if(this.world.regeneratingTiles[brokenTile.tileIndex]===brokenTileInstance && [TileType.Tin, TileType.Aluminum, TileType.Gold, TileType.Titanium, TileType.Grape].includes(brokenTileInstance)) {
 						setTimeout(() => {
 							if (this.world === undefined) return;
 							this.world.tiles[brokenTile.tileIndex] =
@@ -343,7 +364,7 @@ export class GameServer {
 							tile: this.world.tiles[brokenTile.tileIndex],
 						},
 					]);
-				}});
+				});
 			}
 
 			// Handle disconnect
@@ -361,7 +382,7 @@ export class GameServer {
 			socket.disconnect();
 			user.socketId = undefined;
 
-			console.log(err)
+			console.log(err);
 
 			console.log(
 				`Player ${name} was kicked from ${this.name} reason: ${err}`,

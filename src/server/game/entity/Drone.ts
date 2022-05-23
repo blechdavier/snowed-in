@@ -57,26 +57,24 @@ export class Drone extends Entity {
             this.xVel = 0;
             const destinationTile = world.tiles[Math.floor(this.destinationY)*world.width+Math.floor(this.destinationX)];
             if(typeof destinationTile === "string" && Object.keys(world.tileEntities).includes(destinationTile) && world.tileEntities[destinationTile] instanceof Tree) {
-                console.log("pretending to cut tree")
+                //console.log("pretending to cut tree")
             }
             else {
                 let isTree = false;
                 let closestTreeDistanceSquared: number = Infinity;
                 for(let tree of Object.values(world.tileEntities)) {
-                    if(tree instanceof Tree) {
-                        let d = distSquared(tree.x, tree.y, this.x, this.y);
-                        if(d<closestTreeDistanceSquared && d<=this.radius) {
-                            closestTreeDistanceSquared = d;
-                            let closestTree = tree;
-                            isTree = true;
-                            this.destinationX = closestTree.x+closestTree.width/2;
-                            this.destinationY = closestTree.y+closestTree.height/2;
-                        }
+                    let d = distSquared(tree.x, tree.y, this.x, this.y);
+                    if (d < closestTreeDistanceSquared && d <= this.radius) {
+                        closestTreeDistanceSquared = d;
+                        let closestTree = tree;
+                        isTree = true;
+                        this.destinationX = closestTree.x + closestTree.width / 2;
+                        this.destinationY = closestTree.y + closestTree.height / 2;
                     }
                 }
 
                 if(!isTree) {
-                    console.log("there are no trees in radius")
+                    //console.log("there are no trees in radius")
                 }
                 
             }
