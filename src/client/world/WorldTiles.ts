@@ -186,7 +186,7 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
     [TileType.Wood0]: {
         name: 'raw wood',
         texture: WorldAssets.middleground.tileset_wood0,
-        connected: false,
+        connected: true,
         anyConnection: true,
         color: "#a77145",
         friction: 3,
