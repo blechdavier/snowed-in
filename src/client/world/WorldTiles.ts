@@ -44,7 +44,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#76adc4",
         friction: 1.5,
-        reflectivity: 150
+        reflectivity: 150,
+        breakSound: AudioAssets.world.hightonalnoise
     },
     [TileType.Dirt]: {
         name: 'dirt',
@@ -63,7 +64,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#414245",
         friction: 3,
-        reflectivity: 10
+        reflectivity: 10,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone1]: {
         name: 'stone tier 1',
@@ -72,7 +74,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 15
+        reflectivity: 15,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone2]: {
         name: 'stone tier 2',
@@ -81,7 +84,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",//TODO change these colors to be more accurate
         friction: 3,
-        reflectivity: 17
+        reflectivity: 17,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone3]: {
         name: 'stone tier 3',
@@ -90,7 +94,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 19
+        reflectivity: 19,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone4]: {
         name: 'stone tier 4',
@@ -99,7 +104,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 21
+        reflectivity: 21,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone5]: {
         name: 'stone tier 5',
@@ -108,7 +114,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 23
+        reflectivity: 23,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone6]: {
         name: 'stone tier 6',
@@ -117,7 +124,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 25
+        reflectivity: 25,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone7]: {
         name: 'stone tier 7',
@@ -126,7 +134,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 27
+        reflectivity: 27,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone8]: {
         name: 'stone tier 8',
@@ -135,7 +144,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 29
+        reflectivity: 29,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Stone9]: {
         name: 'stone tier 9',
@@ -144,7 +154,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#31323b",
         friction: 3,
-        reflectivity: 31
+        reflectivity: 31,
+        breakSound: AudioAssets.world.stone
     },
     [TileType.Tin]: {
         name: 'tin ore',
@@ -203,7 +214,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood1]: {
         name: 'wood tier 1',
@@ -212,7 +224,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood2]: {
         name: 'wood tier 2',
@@ -221,7 +234,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood3]: {
         name: 'wood tier 3',
@@ -230,7 +244,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood4]: {
         name: 'wood tier 4',
@@ -239,7 +254,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood5]: {
         name: 'wood tier 5',
@@ -248,7 +264,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood6]: {
         name: 'wood tier 6',
@@ -257,7 +274,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood7]: {
         name: 'wood tier 7',
@@ -266,7 +284,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood8]: {
         name: 'wood tier 8',
@@ -275,7 +294,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
     [TileType.Wood9]: {
         name: 'wood tier 9',
@@ -284,7 +304,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#a77145",
         friction: 3,
-        reflectivity: 5
+        reflectivity: 5,
+        breakSound: AudioAssets.world.wood
     },
 };
 

@@ -1125,6 +1125,9 @@ export const AudioAssets = {
 		]),
 		softplosive: new AudioResource('assets/sounds/sfx/tiles/soft1plosive.mp3'),
 		texturedplosive: new AudioResource('assets/sounds/sfx/tiles/textured1plosive.mp3'),
+		hightonalnoise: new AudioResource('assets/sounds/sfx/tiles/ICEBREAK.mp3'),
+		stone: new AudioResource('assets/sounds/sfx/tiles/stone.mp3'),
+		wood: new AudioResource('assets/sounds/sfx/tiles/wood.mp3'),
 	}
 };
 
