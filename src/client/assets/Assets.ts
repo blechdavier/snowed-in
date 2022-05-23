@@ -322,8 +322,8 @@ export const WorldAssets = {
 			8,
 		),
 		tileset_wood0: new TileResource(
-			'assets/textures/world/middleground/wood0.png',
-			1,
+			'assets/textures/world/middleground/tileset_wood0.png',
+			16,
 			1,
 			8,
 			8,
