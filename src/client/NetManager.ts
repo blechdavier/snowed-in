@@ -112,6 +112,10 @@ export class NetManager {
 					if (this.game.world === undefined) return;
 
 					updatedTiles.forEach(tile => {
+						const index = this.game.brokenTilesQueue.indexOf(tile.tileIndex);
+						if (index > -1) {
+							this.game.brokenTilesQueue.splice(index, 1); // 2nd parameter means remove one item only
+						}
 						this.game.world.updateTile(tile.tileIndex, tile.tile);
 					});
 				},

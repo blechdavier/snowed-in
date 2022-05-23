@@ -7,6 +7,7 @@ import { AnimationFrame, Fonts, PlayerAnimations } from '../assets/Assets';
 import { TileType } from '../../global/Tile';
 import { WorldTiles } from '../world/WorldTiles';
 import { ColorParticle } from '../world/particles/ColorParticle';
+import { xToStereo } from './Inventory';
 
 export class PlayerLocal extends ServerEntity {
     // Constant data
@@ -71,7 +72,7 @@ export class PlayerLocal extends ServerEntity {
         this.interpolatedY = this.y;
 
         this.closestCollision = [1, 0, Infinity];
-    
+
         this.leftButton = false;
         this.rightButton = false;
         this.jumpButton = false;
@@ -80,11 +81,11 @@ export class PlayerLocal extends ServerEntity {
     render(target: p5, upscaleSize: number): void {
 
         this.timeInThisAnimationFrame += game.deltaTime;
-        if(this.timeInThisAnimationFrame>PlayerAnimations[this.currentAnimation][this.animFrame][1]) {
+        if (this.timeInThisAnimationFrame > PlayerAnimations[this.currentAnimation][this.animFrame][1]) {
             this.timeInThisAnimationFrame = 0;//this does introduce some slight inaccuracies vs subtracting it, but, when you tab back into the browser after being tabbed out, subtracting it causes spazzing
             this.animFrame++;
-            if(this.animFrame>=PlayerAnimations[this.currentAnimation].length) {
-                this.animFrame = this.animFrame%PlayerAnimations[this.currentAnimation].length;
+            if (this.animFrame >= PlayerAnimations[this.currentAnimation].length) {
+                this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             }
         }
 
@@ -103,47 +104,47 @@ export class PlayerLocal extends ServerEntity {
                 target,
                 Math.round((this.interpolatedX * game.TILE_WIDTH -
                     game.interpolatedCamX * game.TILE_WIDTH) *
-                upscaleSize),
+                    upscaleSize),
                 Math.round((this.interpolatedY * game.TILE_HEIGHT -
                     game.interpolatedCamY * game.TILE_HEIGHT) *
-                upscaleSize),
+                    upscaleSize),
                 this.width * upscaleSize * game.TILE_WIDTH,
                 this.height * upscaleSize * game.TILE_HEIGHT
             );
-            PlayerAnimations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection
+        PlayerAnimations[this.currentAnimation][this.animFrame][0].renderWorldspaceReflection
             (
                 game,
                 this.interpolatedX,
-                this.interpolatedY+this.height,
+                this.interpolatedY + this.height,
                 this.width,
                 this.height
             );
 
-            target.fill(this.color1);
+        target.fill(this.color1);
         target.noStroke();
         target.rect(
             (this.interpolatedX * game.TILE_WIDTH -
                 game.interpolatedCamX * game.TILE_WIDTH +
                 (this.width * game.TILE_WIDTH) / 2) *
-                upscaleSize-(this.name.length*2*game.upscaleSize),
-                (this.interpolatedY * game.TILE_HEIGHT -
+            upscaleSize - (this.name.length * 2 * game.upscaleSize),
+            (this.interpolatedY * game.TILE_HEIGHT -
                 game.interpolatedCamY * game.TILE_HEIGHT -
                 (this.height * game.TILE_HEIGHT) / 2.5 + 4) *
-                upscaleSize,
-                (this.name.length*4*game.upscaleSize),
-                game.upscaleSize);
+            upscaleSize,
+            (this.name.length * 4 * game.upscaleSize),
+            game.upscaleSize);
 
         target.rect(
-                    (this.interpolatedX * game.TILE_WIDTH -
-                        game.interpolatedCamX * game.TILE_WIDTH +
-                        (this.width * game.TILE_WIDTH) / 2) *
-                        upscaleSize-((this.name.length*2-2)*game.upscaleSize),
-                        (this.interpolatedY * game.TILE_HEIGHT -
-                        game.interpolatedCamY * game.TILE_HEIGHT -
-                        (this.height * game.TILE_HEIGHT) / 2.5 + 6) *
-                        upscaleSize,
-                        ((this.name.length*4-4)*game.upscaleSize),
-                        game.upscaleSize);
+            (this.interpolatedX * game.TILE_WIDTH -
+                game.interpolatedCamX * game.TILE_WIDTH +
+                (this.width * game.TILE_WIDTH) / 2) *
+            upscaleSize - ((this.name.length * 2 - 2) * game.upscaleSize),
+            (this.interpolatedY * game.TILE_HEIGHT -
+                game.interpolatedCamY * game.TILE_HEIGHT -
+                (this.height * game.TILE_HEIGHT) / 2.5 + 6) *
+            upscaleSize,
+            ((this.name.length * 4 - 4) * game.upscaleSize),
+            game.upscaleSize);
 
         Fonts.tom_thumb.drawText(
             game,
@@ -151,11 +152,11 @@ export class PlayerLocal extends ServerEntity {
             (this.interpolatedX * game.TILE_WIDTH -
                 game.interpolatedCamX * game.TILE_WIDTH +
                 (this.width * game.TILE_WIDTH) / 2) *
-                upscaleSize-(this.name.length*2*game.upscaleSize),
+            upscaleSize - (this.name.length * 2 * game.upscaleSize),
             (this.interpolatedY * game.TILE_HEIGHT -
                 game.interpolatedCamY * game.TILE_HEIGHT -
-                (this.height * game.TILE_HEIGHT) / 2.5-2) *
-                upscaleSize
+                (this.height * game.TILE_HEIGHT) / 2.5 - 2) *
+            upscaleSize
         );
     }
 
@@ -172,8 +173,10 @@ export class PlayerLocal extends ServerEntity {
         ) {
             game.screenshakeAmount = 0.5;
             for (let i = 0; i < 10 * game.particleMultiplier; i++) {
-                if(this.bottomCollision !== undefined)
+                if (this.bottomCollision !== undefined) {
                     game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
+                    this.bottomCollision.jumpSound?.playRandom(xToStereo(this.interpolatedX));
+                }
             }
             this.yVel = -1.5;
         }
@@ -207,28 +210,28 @@ export class PlayerLocal extends ServerEntity {
             }
             //dust
             for (let i = 0; i < randomlyToInt(Math.abs(this.xVel) * game.particleMultiplier / 2); i++) {
-                if(this.bottomCollision !== undefined)
-                game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
+                if (this.bottomCollision !== undefined)
+                    game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 10, this.x + this.width / 2, this.y + this.height, 0.2 * -this.xVel + 0.2 * (Math.random() - 0.5), 0.2 * -Math.random(), true));
             }
         }
-        if(this.currentAnimation !== "walk" && (this.xVel)>0.05) {
+        if (this.currentAnimation !== "walk" && (this.xVel) > 0.05) {
             this.currentAnimation = "walk";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             this.facingRight = true;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "walkleft" && (this.xVel)<-0.05) {
+        if (this.currentAnimation !== "walkleft" && (this.xVel) < -0.05) {
             this.currentAnimation = "walkleft";
             this.facingRight = false;
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idle" && this.xVel<=0.05 && (this.xVel>0 || (game.worldMouseX>this.interpolatedX+this.width/2 && this.xVel===0))) {
+        if (this.currentAnimation !== "idle" && this.xVel <= 0.05 && (this.xVel > 0 || (game.worldMouseX > this.interpolatedX + this.width / 2 && this.xVel === 0))) {
             this.currentAnimation = "idle";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
         }
-        if(this.currentAnimation !== "idleleft" && this.xVel>=-0.05 && (this.xVel<0 || (game.worldMouseX<=this.interpolatedX+this.width/2 && this.xVel===0))){
+        if (this.currentAnimation !== "idleleft" && this.xVel >= -0.05 && (this.xVel < 0 || (game.worldMouseX <= this.interpolatedX + this.width / 2 && this.xVel === 0))) {
             this.currentAnimation = "idleleft";
             this.animFrame = this.animFrame % PlayerAnimations[this.currentAnimation].length;
             game.connection.emit('playerAnimation', this.currentAnimation, this.entityId);
@@ -357,16 +360,26 @@ export class PlayerLocal extends ServerEntity {
                     // if it collided on the higher side, it must be touching the ground. (higher y is down)
                     if (!this.pGrounded) {//if it isn't grounded yet, it must be colliding with the ground for the first time, so summon particles
                         game.screenshakeAmount = Math.abs(this.yVel * 0.75);
-                        for (let i = 0; i < 5 * game.particleMultiplier; i++) {
-                            if(this.bottomCollision !== undefined)
+                        if (this.bottomCollision !== undefined) {
+                            for (let i = 0; i < 5 * game.particleMultiplier; i++) {
                                 game.particles.push(new ColorParticle(this.bottomCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y + this.height, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
+                            }
+                            if (this.bottomCollision.landSound != undefined) {
+                                this.bottomCollision.landSound?.playRandom(xToStereo(this.interpolatedX), -this.yVel);
+                            }
+                            else if (this.bottomCollision.jumpSound != undefined) {
+                                this.bottomCollision.jumpSound?.playRandom(xToStereo(this.interpolatedX), -this.yVel);
+                            }
+                            else {
+                                this.bottomCollision.breakSound?.playRandom(xToStereo(this.interpolatedX), -this.yVel);
+                            }
                         }
                     }
                 }
                 else {
                     game.screenshakeAmount = Math.abs(this.yVel * 0.75);
                     for (let i = 0; i < 5 * game.particleMultiplier; i++) {//ceiling collision particles
-                        if(this.topCollision !== undefined)
+                        if (this.topCollision !== undefined)
                             game.particles.push(new ColorParticle(this.topCollision.color, 1 / 8 + Math.random() / 8, 20, this.x + this.width * Math.random(), this.y, 0.2 * (Math.random() - 0.5), 0.2 * -Math.random()));
                     }
                 }
@@ -441,6 +454,7 @@ export class PlayerLocal extends ServerEntity {
                     if (this.closestCollision[1] === -1) {
                         // if it collided on the higher side, it must be touching the ground. (higher y is down)
                         this.grounded = true;
+
 
                     }
                 } else {

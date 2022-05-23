@@ -62,31 +62,31 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         itemDrop: ItemType.GrapeBlock
     },
     [TileType.Wood0]: {
-        itemDrop: ItemType.Stone0Block
+        itemDrop: ItemType.Wood0Block
     },
     [TileType.Wood1]: {
-        itemDrop: ItemType.Stone1Block
+        itemDrop: ItemType.Wood1Block
     },
     [TileType.Wood2]: {
-        itemDrop: ItemType.Stone2Block
+        itemDrop: ItemType.Wood2Block
     },
     [TileType.Wood3]: {
-        itemDrop: ItemType.Stone3Block
+        itemDrop: ItemType.Wood3Block
     },
     [TileType.Wood4]: {
-        itemDrop: ItemType.Stone4Block
+        itemDrop: ItemType.Wood4Block
     },
     [TileType.Wood5]: {
-        itemDrop: ItemType.Stone5Block
+        itemDrop: ItemType.Wood5Block
     },
     [TileType.Wood6]: {
-        itemDrop: ItemType.Stone6Block
+        itemDrop: ItemType.Wood6Block
     },
     [TileType.Wood7]: {
-        itemDrop: ItemType.Stone7Block
+        itemDrop: ItemType.Wood7Block
     },
     [TileType.Wood8]: {
-        itemDrop: ItemType.Stone8Block
+        itemDrop: ItemType.Wood8Block
     },
     [TileType.Wood9]: {
         itemDrop: ItemType.Wood9Block

@@ -1,9 +1,11 @@
 import { ImageResource } from '../assets/resources/ImageResource';
-import { WorldAssets } from '../assets/Assets';
+import { AudioAssets, WorldAssets } from '../assets/Assets';
 import { TileResource } from '../assets/resources/TileResource';
 import { TileType } from '../../global/Tile';
 import { TileEntities } from '../../global/TileEntity';
 import { ItemType } from '../../global/Inventory';
+import { AudioResourceGroup } from '../assets/resources/AudioResourceGroup';
+import { AudioResource } from '../assets/resources/AudioResource';
 
 export type Tile = {
     name: string;
@@ -13,6 +15,10 @@ export type Tile = {
     color: string;
     friction: number;
     reflectivity: number;
+    breakSound?: AudioResource | AudioResourceGroup
+    placeSound?: AudioResource | AudioResourceGroup
+    jumpSound?: AudioResource | AudioResourceGroup
+    landSound?: AudioResource | AudioResourceGroup
 }
 
 export type TileEntityRenderData = {
@@ -28,7 +34,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#cafafc",
         friction: 2,
-        reflectivity: 60//this reflectivity actually does nothing and instead reflectivity can be changed inside ReflectedImageResource.ts
+        reflectivity: 60,//this reflectivity actually does nothing and instead reflectivity can be changed inside ReflectedImageResource.ts
+        breakSound: AudioAssets.world.softplosive
     },
     [TileType.Ice]: {
         name: 'ice',
@@ -46,7 +53,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: true,
         color: "#4a2e1e",
         friction: 4,
-        reflectivity: 0
+        reflectivity: 0,
+        breakSound: AudioAssets.world.texturedplosive
     },
     [TileType.Stone0]: {
         name: 'raw stone',
@@ -145,7 +153,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 10
+        reflectivity: 10,
+        breakSound: AudioAssets.world.metalplosive
     },
     [TileType.Aluminum]: {
         name: 'aluminum ore',
@@ -154,7 +163,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 17
+        reflectivity: 17,
+        breakSound: AudioAssets.world.metalplosive
     },
     [TileType.Gold]: {
         name: 'gold ore',
@@ -163,7 +173,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 21
+        reflectivity: 21,
+        breakSound: AudioAssets.world.metalplosive
     },
     [TileType.Titanium]: {
         name: 'titanium ore',
@@ -172,7 +183,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 25
+        reflectivity: 25,
+        breakSound: AudioAssets.world.metalplosive
     },
     [TileType.Grape]: {
         name: 'grape ore',
@@ -181,7 +193,8 @@ export const WorldTiles: Record<TileType, Tile | undefined> = {
         anyConnection: false,
         color: "#31323b",
         friction: 3,
-        reflectivity: 29
+        reflectivity: 29,
+        breakSound: AudioAssets.world.metalplosive
     },
     [TileType.Wood0]: {
         name: 'raw wood',

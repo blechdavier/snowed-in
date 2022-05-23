@@ -100,8 +100,8 @@ export abstract class TileEntityBase {
 
 export class Tree extends TileEntityBase {
 
-	woodCount: number = randint(20, 40)
-	seedCount: number = randint(2, 4)
+	woodCount: number = randint(10, 20)
+	seedCount: number = randint(1, 2)
 
 	constructor(world: World, x: number, y: number, id: string) {
 		super(world, 4, 6, x, y, id, TileEntities.Tree);
@@ -109,22 +109,40 @@ export class Tree extends TileEntityBase {
 		world.tileEntities[this.id] = this;
 	}
 
-	interact(playerInv: Inventory) {
+	interact(playerInv: Inventory, itemCutCount?: number) {
 		// console.log(playerInv.mainInventory)
 		let inventoryUpdatePayload: InventoryUpdatePayload = [];
 
-		if (this.woodCount + this.seedCount > 0) {
-			if (
-				Math.random() <
-				this.woodCount /
-					(this.woodCount + this.seedCount)
-			) {
-				inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block));
-			} else {
-				inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed));
+		//if no item cut count is passed in, use 1 item (this is useful for drones)
+		if(!itemCutCount)itemCutCount=1;
+
+		//give randomly the amount of numbers
+		for(let i = 0; i<itemCutCount; i++) {
+			//if there are more items to cut, then cut one randomly based on the proportion of seeds to wood blocks...
+			if (this.woodCount + this.seedCount > 0) {
+				if (
+					Math.random() <
+					this.woodCount /
+						(this.woodCount + this.seedCount)
+				) {
+					inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block));
+				} else {
+					inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed));
+				}
+			}
+			else {//otherwise, break out of the loop
+				break;
 			}
 		}
-		console.log(inventoryUpdatePayload)
+		//if 0 is passed in, cut all of the tree's materials down.
+		if(itemCutCount===0) {
+			inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block, this.woodCount))
+			inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed, this.seedCount))
+			this.woodCount = 0;
+			this.seedCount = 0;
+		}
+		
+		//return the inventory update payload
 		return inventoryUpdatePayload;
 	}
 

@@ -1,4 +1,4 @@
-import { InventoryPayload, ItemCategories, Items, ItemStack } from '../../global/Inventory';
+import { CategoryData, InventoryPayload, ItemCategories, Items, ItemStack, ItemType } from '../../global/Inventory';
 import { TileType } from '../../global/Tile';
 import { game } from '../Game';
 import { ColorParticle } from '../world/particles/ColorParticle';
@@ -36,6 +36,10 @@ export class Inventory {
 				'worldBreakStart',
 				game.world.width * y + x
 			);
+			if(typeof tileBeingBroken === "number" && WorldTiles[tileBeingBroken]?.breakSound!==undefined) {
+				//console.log((x-game.interpolatedCamX)+"+"+(game.width/game.TILE_WIDTH/game.upscaleSize)+"="+(x-game.interpolatedCamX-game.width/game.TILE_WIDTH/game.upscaleSize));
+				WorldTiles[tileBeingBroken]?.breakSound?.playRandom((x-game.interpolatedCamX-game.width/game.TILE_WIDTH/game.upscaleSize/2)/20);
+			}
 			game.connection.emit('worldBreakFinish');
 			return
 		}
@@ -73,7 +77,8 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 
 				let tileBeingBroken = game.world.worldTiles[game.world.width * y + x];
 				if(typeof tileBeingBroken === 'number') {//tile is tile
-					if (!game.breaking) return;
+					if (!game.breaking || game.brokenTilesQueue.includes(game.world.width * y + x)) return;
+					game.brokenTilesQueue.push(game.world.width*y+x)
 					let worldTileBeingBroken = WorldTiles[tileBeingBroken]
 					for(let i = 0; i<5*game.particleMultiplier; i++) {
 						if (worldTileBeingBroken !== undefined)
@@ -87,6 +92,7 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 					game.connection.emit(
 						'worldBreakFinish'
 					);
+					WorldTiles[tileBeingBroken]?.breakSound?.playRandom(xToStereo(x));
 					return;
 				}
 				else {//tile is tile entity
@@ -102,14 +108,25 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 				}
 			}
 			//if the tile is air and the game is trying to place
-			if (game.breaking) return;
+			if (game.breaking || game.brokenTilesQueue.includes(game.world.width * y + x)) return;
+			game.brokenTilesQueue.push(game.world.width*y+x)
 			console.info('Placing');
+			let itemTypeBeingHeld = game.world.inventory.items[game.world.inventory.selectedSlot]?.item;
+			if(itemTypeBeingHeld===undefined)return;
+						let itemData = Items[itemTypeBeingHeld];
+						if (
+				itemData.type === ItemCategories.Tile
+			) {
+				if(WorldTiles[itemData.placedTile]?.placeSound!==undefined) WorldTiles[itemData.placedTile]?.placeSound?.playRandom(xToStereo(x));
+				else WorldTiles[itemData.placedTile]?.breakSound?.playRandom(xToStereo(x))
+			}
 			game.connection.emit(
 				'worldPlace',
 				game.world.inventory.selectedSlot,
 				x,
 				y
 			);
+			
 		}
 	},
 	[ItemCategories.Resource]: {},
@@ -130,4 +147,8 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 			);
 		}
 	},
+}
+
+export function xToStereo(x: number) {
+	return (x-game.interpolatedCamX-game.width/game.TILE_WIDTH/game.upscaleSize/2)/20
 }

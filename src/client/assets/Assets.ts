@@ -14,15 +14,18 @@ interface AssetGroup {
 				[name: string]:
 					| Resource
 					| AssetGroup
+					| AudioResourceGroup[]
 					| AudioResourceGroup
 					| AudioResource
 					| ImageResource[]
+					| ImageResource[][]
                     | ReflectableImageResource[]
                     | ReflectableImageResource
 					| [ReflectableImageResource, number][];
 		  }
 		| Resource
 		| AssetGroup
+		| AudioResourceGroup[]
 		| AudioResourceGroup
 		| AudioResource
 		| ImageResource[]
@@ -1110,6 +1113,19 @@ export const AudioAssets = {
 			'assets/sounds/sfx/ambient/65813__pcaeldries__countrysidewinterevening02.wav',
 		),
 	},
+	world: {
+		metalplosive: new AudioResourceGroup([
+		new AudioResource('assets/sounds/sfx/tiles/metal1plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal2plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal3plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal4plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal5plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal6plosive.mp3'),
+		new AudioResource('assets/sounds/sfx/tiles/metal7plosive.mp3'),
+		]),
+		softplosive: new AudioResource('assets/sounds/sfx/tiles/soft1plosive.mp3'),
+		texturedplosive: new AudioResource('assets/sounds/sfx/tiles/textured1plosive.mp3'),
+	}
 };
 
 export type AnimationFrame<T extends Record<string, [ImageResource, number][]>> = keyof T;
@@ -1124,18 +1140,40 @@ export const loadAssets = (sketch: P5, ...assets: AssetGroup[]) => {
 
 function searchGroup(
 	assetGroup:
-		| AssetGroup
-		| Resource
-		| AudioResource
-		| AudioResourceGroup,
+	{
+		[name: string]:
+			| Resource
+			| AssetGroup
+			| AudioResourceGroup[]
+			| AudioResourceGroup
+			| AudioResource
+			| ImageResource[]
+			| ImageResource[][]
+			| ReflectableImageResource[]
+			| ReflectableImageResource
+			| [ReflectableImageResource, number][];
+  }
+| Resource
+| AssetGroup
+| AudioResourceGroup[]
+| AudioResourceGroup
+| AudioResource
+| ImageResource[]
+| ImageResource[][]
+| ReflectableImageResource[]
+| ReflectableImageResource
+| [ReflectableImageResource, number][],
 	sketch: P5,
 ) {
 	if (assetGroup instanceof Resource) {
 		console.log(`Loading asset ${assetGroup.path}`);
 		assetGroup.loadResource(sketch);
+		console.log("up a level")
 		return;
 	}
 	Object.entries(assetGroup).forEach(asset => {
+		console.log("down a level")
+		//console.log(asset[1]);
 		searchGroup(asset[1], sketch);
 	});
 }
