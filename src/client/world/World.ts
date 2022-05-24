@@ -311,7 +311,7 @@ export class World implements Tickable, Renderable {
 		}
 	}
 
-	drawTile(tileIndex: number) {
+	drawTile(tileIndex: number, avoidReflection?: boolean) {
 		const x = tileIndex % this.width;
 		const y = Math.floor(tileIndex / this.width);
 
@@ -421,6 +421,7 @@ export class World implements Tickable, Renderable {
 					game.TILE_HEIGHT,
 				);
 			}
+			if(avoidReflection)
 			for(let tileEntity of Object.values(this.tileEntities)) {
 				if(tileEntity.reflectedTiles.includes(tileIndex)) {
 					console.log("reflection at index "+tileIndex);

@@ -93,40 +93,54 @@ export class Inventory {
 
 	attemptPickUp(
 		item: ItemType,
-		quantity: number = 1,
+		quantity: number = 1,// quantity of items to add (this is modified in the method as a sort of tally of how many of the item are left to add)
 	): InventoryUpdatePayload {
 		//check for matching item stack with room left
 		const updatePayload: InventoryUpdatePayload = [];
-		for (let i = 0; i < this.mainInventory.length; i++){
+		for (let i = 0; i < this.mainInventory.length; i++) {
+			//console.log("testing slot "+i+" for matching item stack: ")
 			const invItem = this.mainInventory[i];
-			if (invItem === undefined || invItem.item !== item) continue;
+			// console.log(invItem)
+			// console.log("item: "+item+", quantity: "+quantity)
+			//if the stack is undefined, a different item, or full, then move on to the next slot
+			if (invItem === undefined || invItem.item !== item || invItem.quantity >= 100) continue;
+			//console.log("match found")
 
-			if (invItem.quantity <= 100) {
-				if (quantity <= 100 - invItem.quantity) {
-					this.mainInventory[i] = {
-						item: item,
-						quantity: invItem.quantity + quantity,
-					};
-					updatePayload.push({
-						item: this.mainInventory[i],
-						slot: i,
-					});
-					return updatePayload
-				}
-
+			//if adding the entire stack would result in a full inventory slot, then set the slot to full and subtract the items that were added from the remaining quantity
+			if (quantity+invItem.quantity>=100) {
+				//console.log("slot "+i+" had combined item quantity of "+quantity+"+"+invItem.quantity+"="+(invItem.quantity+quantity))
 				this.mainInventory[i] = { item: item, quantity: 100 };
 				updatePayload.push({ item: this.mainInventory[i], slot: i });
 				quantity -= 100 - invItem.quantity;
 			}
+			else {
+				//otherwise, add the rest of the items to that slot
+			//console.log("adding "+quantity+" items to slot "+i+" for matching item stack")
+			this.mainInventory[i] = {
+					item: item,
+					quantity: invItem.quantity + quantity,
+				};
+				updatePayload.push({
+					item: this.mainInventory[i],
+					slot: i,
+				});
+				//quantity = 0
+				return updatePayload
+			}
 		}
 
-		for (let i = 0; i < this.mainInventory.length; i++){
-			console.log("yes")
+		//then look for empty stacks
+		for (let i = 0; i < this.mainInventory.length; i++) {
+			//console.log("testing slot "+i+" for empty item stack")
 			const invItem = this.mainInventory[i];
+			//if it's not empty, then move on
 			if (invItem !== undefined) continue;
+			//console.log("match found")
 
+			//if the quantity of items left is more than 100, then set the hotbar slot to 100 and move on
 			if (quantity > 100) {
-				this.mainInventory[i] = {
+			//console.log("set slot "+i+" quantity continue to 100")
+			this.mainInventory[i] = {
 					item: item,
 					quantity: 100,
 				};
@@ -134,14 +148,20 @@ export class Inventory {
 				updatePayload.push({ item: this.mainInventory[i], slot: i });
 				continue;
 			}
+			//console.log("set slot "+i+" quantity full end to "+quantity)
 
+			//otherwise, set it to the quantity and return the function early.
 			this.mainInventory[i] = {
 				item: item,
 				quantity: quantity,
 			};
-			quantity = 0;
+			//quantity = 0; unnecessary line, leaving commented for readability
 			updatePayload.push({ item: this.mainInventory[i], slot: i });
 			return updatePayload
+		}
+
+		if(quantity>0) {
+			console.warn(`there are ${quantity} more items to pick up, these got deleted (Inventory.ts line 150 or so)`);
 		}
 
 		return updatePayload;

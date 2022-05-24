@@ -9,6 +9,7 @@ import { hslToRgb, PlayerEntity } from './world/entities/PlayerEntity';
 import { PlayerAnimations } from './assets/Assets';
 import { AnimationFrame } from './assets/Assets';
 import { ReflectableImageResource } from './assets/resources/ReflectedImageResource';
+import { TileType } from '../global/Tile';
 
 export class NetManager {
 	game: Game;
@@ -118,6 +119,29 @@ export class NetManager {
 						}
 						this.game.world.updateTile(tile.tileIndex, tile.tile);
 					});
+				},
+			);
+
+			this.game.connection.on(
+				'tileEntityDelete',
+				(id: string) => {
+					// If the world is not set
+					if (this.game.world === undefined) return;
+
+					//set its tiles to air
+					for(let coveredTile of this.game.world.tileEntities[id].coveredTiles) {
+						this.game.world.worldTiles[coveredTile] = TileType.Air;
+					}
+
+					//update the reflected tiles to not draw with reflection
+					for(let reflectedTile of this.game.world.tileEntities[id].reflectedTiles) {
+						console.log("drew image at tile "+reflectedTile)
+						this.game.world.drawTile(reflectedTile, true);
+					}
+
+					//remove the tile entity
+					delete this.game.world.tileEntities[id];
+					//console.log(this.game.world.tileEntities[id])
 				},
 			);
 

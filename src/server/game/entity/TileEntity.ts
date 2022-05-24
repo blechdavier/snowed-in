@@ -71,7 +71,7 @@ export abstract class TileEntityBase {
 		});
 	}
 
-	remove() {
+	removeWithoutDeleting() {
 		const updatePayload: {
 			tileIndex: number;
 			tile: TileType | string;
@@ -80,7 +80,7 @@ export abstract class TileEntityBase {
 			this.world.tiles[index] = TileType.Air;
 			updatePayload.push({tile: TileType.Air, tileIndex: index})
 		});
-		delete this.world.tileEntities[this.id];
+		
 		return updatePayload
 	}
 
@@ -114,7 +114,7 @@ export class Tree extends TileEntityBase {
 		let inventoryUpdatePayload: InventoryUpdatePayload = [];
 
 		//if no item cut count is passed in, use 1 item (this is useful for drones)
-		if(!itemCutCount)itemCutCount=1;
+		if(itemCutCount===undefined)itemCutCount=1;
 
 		//give randomly the amount of numbers
 		for(let i = 0; i<itemCutCount; i++) {
@@ -136,6 +136,7 @@ export class Tree extends TileEntityBase {
 		}
 		//if 0 is passed in, cut all of the tree's materials down.
 		if(itemCutCount===0) {
+			console.log(this.woodCount+", "+this.seedCount);
 			inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Wood0Block, this.woodCount))
 			inventoryUpdatePayload = inventoryUpdatePayload.concat(playerInv.attemptPickUp(ItemType.Seed, this.seedCount))
 			this.woodCount = 0;
@@ -143,6 +144,8 @@ export class Tree extends TileEntityBase {
 		}
 		
 		//return the inventory update payload
+		console.log(inventoryUpdatePayload);
+
 		return inventoryUpdatePayload;
 	}
 

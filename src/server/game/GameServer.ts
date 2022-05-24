@@ -7,12 +7,14 @@ import { io, UserData } from '../Main';
 import { Player } from './entity/Player';
 import { World } from './World';
 import { WorldTiles } from './WorldTiles';
-import { TileEntityPayload } from '../../global/TileEntity';
+import { TileEntities, TileEntityPayload } from '../../global/TileEntity';
 import { EntityPayload } from '../../global/Entity';
 import { TileType } from '../../global/Tile';
 import { v4 as uuidv4 } from 'uuid';
 import { ItemCategories, Items, ItemType } from '../../global/Inventory';
 import { Drone } from './entity/Drone';
+import { Tree } from './entity/TileEntity';
+import { Inventory } from './inventory/Inventory';
 
 export class GameServer {
 	id: string;
@@ -288,23 +290,36 @@ export class GameServer {
 					) {
 						let brokenTileEntity =
 							this.world.tileEntities[
-								this.world.tiles[brokenTile.tileIndex]
+							this.world.tiles[brokenTile.tileIndex]
 							];
 
 						const STEVE: string =
 							'this line of code is useless but you better not delete it!!!! -Xavier';
 
-						if (brokenTileEntity === undefined)
-							throw new Error('UNDEFINED BOZO GameServer.ts');
+						if (brokenTileEntity === undefined) {
+							console.warn('UNDEFINED BOZO GameServer.ts');
+							return;
+						}
+						if (brokenTileEntity instanceof Tree) {//console.log("yay moment")
+							socket.emit(
+								'inventoryUpdate',
+								brokenTileEntity.interact(user.inventory, 0),
+							);
+							socket.emit('worldUpdate', brokenTileEntity.removeWithoutDeleting());//remove references to tile entity in the client side and server side tile arrays
+							socket.emit('tileEntityDelete', brokenTileEntity.id);//remove the tile entity from the client side tile entities object
+							// this.world.tileEntities[//remove server side tile entity
+							// 	this.world.tiles[brokenTile.tileIndex]
+							// ].removeWithoutDeleting();
+							delete this.world.tileEntities[brokenTileEntity.id];//remove the tile entity from the server side tile entities object
+						}
 
-						socket.emit(
-							'inventoryUpdate',
-							brokenTileEntity.interact(user.inventory),
-						);
-						socket.emit('worldUpdate', brokenTileEntity.remove());
-						this.world.tileEntities[
-							this.world.tiles[brokenTile.tileIndex]
-						].remove();
+						else {
+							//console.log("gosh darn it")
+							socket.emit(
+								'inventoryUpdate',
+								brokenTileEntity.interact(user.inventory),
+							);
+						}
 						return;
 					}
 
@@ -324,7 +339,7 @@ export class GameServer {
 					//if ore, regenerate
 					if (
 						this.world.regeneratingTiles[brokenTile.tileIndex] ===
-							brokenTileInstance &&
+						brokenTileInstance &&
 						[
 							TileType.Tin,
 							TileType.Aluminum,
@@ -348,7 +363,7 @@ export class GameServer {
 					if (typeof brokenTileInstance === 'number') {
 						let update = user.inventory.attemptPickUp(
 							WorldTiles[brokenTileInstance]?.itemDrop ||
-								ItemType.SnowBlock,
+							ItemType.SnowBlock,
 						); //if it's undefined, give them snow (it gets rid of the error, there's a better way probably)
 						socket.emit('inventoryUpdate', update);
 					}

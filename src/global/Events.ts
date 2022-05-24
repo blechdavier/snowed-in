@@ -56,6 +56,8 @@ export interface ServerEvents {
 	* Sends an entity position snapshot used for interpolation
 	*/
 	onPlayerAnimation: (animationName: string, playerId: string) => void;
+
+	tileEntityDelete: (id: string) => void;
 }
 
 export interface ClientEvents {
