@@ -401,34 +401,34 @@ export const WorldAssets = {
 	tileEntities: [
 		[//tree
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree1.png',
+			'assets/textures/world/tileEntities/trees/Tree1.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree2.png',
+			'assets/textures/world/tileEntities/trees/Tree2.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree3.png',
+			'assets/textures/world/tileEntities/trees/Tree3.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree4.png',
+			'assets/textures/world/tileEntities/trees/Tree4.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree5.png',
+			'assets/textures/world/tileEntities/trees/Tree5.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree6.png',
+			'assets/textures/world/tileEntities/trees/Tree6.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree7.png',
+			'assets/textures/world/tileEntities/trees/Tree7.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree8.png',
+			'assets/textures/world/tileEntities/trees/Tree8.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree9.png',
+			'assets/textures/world/tileEntities/trees/Tree9.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/tree10.png',
+			'assets/textures/world/tileEntities/trees/Tree10.png',
 		),
 		],
 		[//drill tier 1
@@ -498,64 +498,64 @@ export const WorldAssets = {
 	entities: [
 		[
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone01.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone01.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone02.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone02.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone03.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone03.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone04.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone04.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone05.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone05.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone06.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone06.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone07.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone07.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone08.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone08.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone09.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone09.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone10.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone10.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone11.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone11.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone12.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone12.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone13.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone13.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone14.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone14.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone15.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone15.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone16.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone16.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone17.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone17.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone18.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone18.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone19.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone19.png',
 			),
 			new ImageResource(
-				'assets/textures/world/entities/Small Drone/smalldrone20.png',
+				'assets/textures/world/entities/Small Drone/SmallDrone20.png',
 			),
 		],
 	],
