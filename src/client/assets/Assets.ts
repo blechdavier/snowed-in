@@ -401,34 +401,34 @@ export const WorldAssets = {
 	tileEntities: [
 		[//tree
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree1.png',
+			'assets/textures/world/tileEntities/trees/tree1.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree2.png',
+			'assets/textures/world/tileEntities/trees/tree2.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree3.png',
+			'assets/textures/world/tileEntities/trees/tree3.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree4.png',
+			'assets/textures/world/tileEntities/trees/tree4.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree5.png',
+			'assets/textures/world/tileEntities/trees/tree5.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree6.png',
+			'assets/textures/world/tileEntities/trees/tree6.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree7.png',
+			'assets/textures/world/tileEntities/trees/tree7.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree8.png',
+			'assets/textures/world/tileEntities/trees/tree8.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree9.png',
+			'assets/textures/world/tileEntities/trees/tree9.png',
 		),
 		new ReflectableImageResource(
-			'assets/textures/world/tileEntities/trees/Tree10.png',
+			'assets/textures/world/tileEntities/trees/tree10.png',
 		),
 		],
 		[//drill tier 1
