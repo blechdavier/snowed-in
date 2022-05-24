@@ -57,6 +57,9 @@ export interface ServerEvents {
 	*/
 	onPlayerAnimation: (animationName: string, playerId: string) => void;
 
+	/**
+	 * Tells the client to delete the tileEntity
+	 */
 	tileEntityDelete: (id: string) => void;
 }
 

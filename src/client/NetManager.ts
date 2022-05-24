@@ -43,13 +43,8 @@ export class NetManager {
 					player,
 					inventory,
 				) => {
-					//console.log(entities);
-					let id = player.id
-					console.log("player idddadsasdf: " +id)
-					id = player.id.split("-").join("");//string.prototype.replaceAll requires ES2021
-					console.log("player idddadsasdf: " +id)
-					let idNumber = (Number("0x"+id)/100000000000000000000000000000)%1;//get a number 0-1 pseudorandomly selected from the uuid of the player
-					console.log("player idddadsasdf: " +idNumber)
+					const id = player.id.split("-").join("");//string.prototype.replaceAll requires ES2021
+					const idNumber = (Number("0x"+id)/100000000000000000000000000000)%1;//get a number 0-1 pseudorandomly selected from the uuid of the player
 					Object.entries(PlayerAnimations).forEach(element => {
 						for(let frame of element[1]) {
 							frame[0].redefineScarfColor(hslToRgb(idNumber, 1, 0.45), hslToRgb(idNumber, 1, 0.3));
@@ -57,23 +52,11 @@ export class NetManager {
 					});
 					let tileEntities2: {
 						[id: string]: ClientTileEntity
-						// [id: string]: {
-						// 	id: string;
-						// 	coveredTiles: number[];
-						// 	reflectedTiles: number[];//this honestly shouldn't be sent over socket but im tired
-						// 	type_: number;
-						// 	data: {};
-						// 	animFrame: number;
-						// 	animate: boolean;
-						// };
 					} = {};
 					tileEntities.forEach(tileEntity => {
 						console.log('adding tile entity: ' + tileEntity.id);
 						tileEntities2[tileEntity.id] = {
 							...tileEntity,
-							id: tileEntity.id,
-							coveredTiles: tileEntity.coveredTiles,
-							reflectedTiles: tileEntity.reflectedTiles,
 							animFrame: randint(
 								0,
 								WorldAssets.tileEntities[

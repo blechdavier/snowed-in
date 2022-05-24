@@ -4,7 +4,6 @@ import { expose } from 'threads';
 import { Tree } from '../game/entity/TileEntity';
 import { World } from '../game/World';
 import { v4 as uuidv4 } from 'uuid';
-import { isTypeLiteralNode } from 'typescript';
 
 export type WorldWorkerData = typeof workerData;
 

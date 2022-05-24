@@ -10,6 +10,7 @@
 		"strictNullChecks": true,
 		"sourceMap": true,
 		"strict": true,
+		"outDir": "../build",
 		"lib": ["es6", "dom"]
 	},
 	"include": ["./**/*", "../global/**/*"]
