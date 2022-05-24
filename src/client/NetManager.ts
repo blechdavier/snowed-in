@@ -109,6 +109,8 @@ export class NetManager {
 			this.game.connection.on(
 				'worldUpdate',
 				(updatedTiles: { tileIndex: number; tile: number }[]) => {
+
+					console.log("got til update packet wit")
 					// If the world is not set
 					if (this.game.world === undefined) return;
 
@@ -125,6 +127,7 @@ export class NetManager {
 			this.game.connection.on(
 				'tileEntityDelete',
 				(id: string) => {
+					console.log("got til entity delete packet with id: "+id)
 					// If the world is not set
 					if (this.game.world === undefined) return;
 

@@ -71,13 +71,14 @@ export abstract class TileEntityBase {
 		});
 	}
 
-	removeWithoutDeleting() {
+	getDeletePacket() {
 		const updatePayload: {
 			tileIndex: number;
 			tile: TileType | string;
 		}[] = []
 		this.coveredTiles.forEach(index => {
-			this.world.tiles[index] = TileType.Air;
+			//console.log(index)
+			//this.world.tiles[index] = TileType.Stone0 for some reason this doesn't work sooooo idk
 			updatePayload.push({tile: TileType.Air, tileIndex: index})
 		});
 		

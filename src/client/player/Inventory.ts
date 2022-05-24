@@ -1,5 +1,7 @@
 import { CategoryData, InventoryPayload, ItemCategories, Items, ItemStack, ItemType } from '../../global/Inventory';
 import { TileType } from '../../global/Tile';
+import { TileEntities } from '../../global/TileEntity';
+import { AudioAssets } from '../assets/Assets';
 import { game } from '../Game';
 import { ColorParticle } from '../world/particles/ColorParticle';
 import { WorldTiles } from '../world/WorldTiles';
@@ -104,6 +106,9 @@ const ItemActions: Record<ItemCategories, ItemBase> = {
 					game.connection.emit(
 						'worldBreakFinish'
 					);
+					if(game.world.tileEntities[game.world.worldTiles[game.world.width*y+x]].payload.type_===TileEntities.Tree) {
+						AudioAssets.world.treebreak.playRandom(xToStereo(x));
+					}
 					return;
 				}
 			}

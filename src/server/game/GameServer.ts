@@ -293,6 +293,8 @@ export class GameServer {
 							this.world.tiles[brokenTile.tileIndex]
 							];
 
+						console.log(this.world.tiles[brokenTile.tileIndex]);
+
 						const STEVE: string =
 							'this line of code is useless but you better not delete it!!!! -Xavier';
 
@@ -305,8 +307,14 @@ export class GameServer {
 								'inventoryUpdate',
 								brokenTileEntity.interact(user.inventory, 0),
 							);
-							socket.emit('worldUpdate', brokenTileEntity.removeWithoutDeleting());//remove references to tile entity in the client side and server side tile arrays
-							socket.emit('tileEntityDelete', brokenTileEntity.id);//remove the tile entity from the client side tile entities object
+							this.room.emit('worldUpdate', brokenTileEntity.getDeletePacket());//remove references to tile entity in the client side and server side tile arrays
+							this.room.emit('tileEntityDelete', brokenTileEntity.id);//remove the tile entity from the client side tile entities object
+							let w  = this.world;
+							if(w!=undefined) {
+							brokenTileEntity.coveredTiles.forEach(index => {
+								w.tiles[index] = TileType.Air;
+								console.log(w.tiles[index])
+							});}
 							// this.world.tileEntities[//remove server side tile entity
 							// 	this.world.tiles[brokenTile.tileIndex]
 							// ].removeWithoutDeleting();
@@ -314,7 +322,7 @@ export class GameServer {
 						}
 
 						else {
-							//console.log("gosh darn it")
+							console.error("non-tree tile entity exists which is very sad")
 							socket.emit(
 								'inventoryUpdate',
 								brokenTileEntity.interact(user.inventory),

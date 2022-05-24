@@ -423,7 +423,7 @@ export class World implements Tickable, Renderable {
 					game.TILE_HEIGHT,
 				);
 			}
-			if(avoidReflection)
+			if(avoidReflection) return;
 			for(let tileEntity of Object.values(this.tileEntities)) {
 				if(tileEntity.reflectedTiles.includes(tileIndex)) {
 					console.log("reflection at index "+tileIndex);

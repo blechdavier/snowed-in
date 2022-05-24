@@ -1128,6 +1128,7 @@ export const AudioAssets = {
 		hightonalnoise: new AudioResource('assets/sounds/sfx/tiles/ICEBREAK.mp3'),
 		stone: new AudioResource('assets/sounds/sfx/tiles/stone.mp3'),
 		wood: new AudioResource('assets/sounds/sfx/tiles/wood.mp3'),
+		treebreak: new AudioResource('assets/sounds/sfx/tiles/treebreak.mp3')
 	}
 };
 
