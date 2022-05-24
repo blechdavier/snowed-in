@@ -68,6 +68,8 @@ import { Control } from './input/Control';
 import { ColorParticle } from './world/particles/ColorParticle';
 import { TileEntities } from '../global/TileEntity';
 import { Cloud } from './world/entities/Cloud';
+import { randomlyToInt } from './player/PlayerLocal';
+import { AreaEffectCloud } from './world/particles/AreaEffectCloud';
 
 export class Game extends p5 {
 	worldWidth: number = 512; // width of the world in tiles   <!> MAKE SURE THIS IS NEVER LESS THAN 64!!! <!>
@@ -224,7 +226,7 @@ export class Game extends p5 {
 	particleMultiplier: number;
 
 	particles: ColorParticle /*|FootstepParticle*/[];
-	clouds: Cloud /*|FootstepParticle*/[];
+	clouds: Cloud[];
 	breaking: boolean = true;
 	brokenTilesQueue: number[] = [];
 
@@ -669,13 +671,12 @@ export class Game extends p5 {
 	}
 
 	doTick() {
-		if(this.world !== undefined && this.world.tileEntities !== undefined) {//tile entity particles
-			for (let i = 0; i < this.particleMultiplier; i++) {
-				let k = Object.keys(this.world.tileEntities);
-				let r = this.world.tileEntities[k[Math.floor(Math.random()*k.length)]];
-				if(r.payload.type_ === TileEntities.Tree) {
-					let t = r.coveredTiles[Math.floor(Math.random()*r.coveredTiles.length)];
-					this.particles.push(new ColorParticle("#348965", Math.random()*0.1+0.1, 20, t%this.world.width+Math.random(), Math.floor(t/this.world.width)+Math.random(), 0.1*(Math.random()-0.5), 0.06*(Math.random()-0.7), false));
+		if(this.world !== undefined && this.world.areaEffectClouds !== undefined && this.world.areaEffectClouds!==[]) {//tile entity particles
+			for(let areaEffectCloud of this.world.areaEffectClouds) {
+				if(areaEffectCloud.coveredTiles === []) continue;
+				for(let i = 0; i<randomlyToInt(areaEffectCloud.intensity*this.particleMultiplier); i++) {
+					let t = areaEffectCloud.coveredTiles[Math.floor(Math.random()*areaEffectCloud.coveredTiles.length)];
+					this.particles.push(new ColorParticle(areaEffectCloud.color, areaEffectCloud.particleSize, areaEffectCloud.lifespan, t%this.world.width+Math.random(), Math.floor(t/this.world.width)+Math.random(), areaEffectCloud.xVel*(Math.random()-0.5)+areaEffectCloud.xVelOffset, areaEffectCloud.yVel*(Math.random()-0.5)+areaEffectCloud.yVelOffset, areaEffectCloud.gravity, areaEffectCloud.wind));
 				}
 			}
 		}

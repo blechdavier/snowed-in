@@ -490,7 +490,7 @@ export class PlayerLocal extends ServerEntity {
 }
 
 
-function randomlyToInt(f: number) {
+export function randomlyToInt(f: number) {
     if (Math.random() > f - Math.floor(f)) {
         return (Math.floor(f));
     }

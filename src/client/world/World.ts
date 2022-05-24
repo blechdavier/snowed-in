@@ -12,6 +12,7 @@ import { Inventory } from '../player/Inventory';
 import { TileEntityPayload } from '../../global/TileEntity';
 import { ClientTileEntity } from './entities/TileEntity';
 import { WorldAssets } from '../assets/Assets';
+import { AreaEffectCloud } from './particles/AreaEffectCloud';
 
 export class World implements Tickable, Renderable {
 	width: number; // width of the world in tiles
@@ -28,6 +29,7 @@ export class World implements Tickable, Renderable {
 	entities: { [id: string]: ServerEntity } = {};
 
 	tileEntities: { [id: string]: ClientTileEntity };
+	areaEffectClouds: AreaEffectCloud[] = [];
 
 	snapshotInterpolation: SnapshotInterpolation;
 
